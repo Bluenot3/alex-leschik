@@ -1,11 +1,17 @@
 import { useRef, useEffect, useCallback } from "react";
 
-const FIRST = "ALEXANDER";
-const LAST = "LESCHIK";
+const WORD_SETS: string[][] = [
+  ["ALEXANDER", "LESCHIK"],
+  ["DESIGNER"],
+  ["DEVELOPER"],
+  ["VISIONARY"],
+  ["AZ1"],
+];
+
 const CHAR_SIZE = 7;
-const GRID_STEP = 3; // coarser sampling = far fewer particles
+const GRID_STEP = 3;
 const MOUSE_RADIUS = 100;
-const RETURN_SPEED = 0.09;
+const RETURN_SPEED = 0.08;
 const DISPERSE_FORCE = 18;
 
 interface Particle {
@@ -48,6 +54,51 @@ function sampleGlyph(
   return pts;
 }
 
+function buildParticlesForWords(
+  words: string[],
+  w: number,
+  h: number
+): Particle[] {
+  const fontSize = Math.min(w * 0.18, 150);
+  const letterSpacing = fontSize * 0.72;
+  const pts: Particle[] = [];
+
+  const lineCount = words.length;
+  const totalTextH = lineCount * fontSize * 1.1;
+  const startY = (h - totalTextH) / 2 + fontSize * 0.55;
+
+  words.forEach((line, lineIdx) => {
+    const chars = line.split("");
+    const totalW = chars.length * letterSpacing;
+    const startX = (w - totalW) / 2;
+    const lineY = startY + lineIdx * fontSize * 1.1;
+
+    chars.forEach((char, ci) => {
+      const cx = startX + ci * letterSpacing + letterSpacing * 0.5;
+      const cy = lineY;
+      const glyphPts = sampleGlyph(char, fontSize, GRID_STEP);
+      const displayChar = char.toLowerCase();
+
+      glyphPts.forEach((pt) => {
+        pts.push({
+          char: displayChar,
+          homeX: cx + pt.x,
+          homeY: cy + pt.y,
+          x: cx + pt.x,
+          y: cy + pt.y,
+          vx: 0,
+          vy: 0,
+          rot: 0,
+          vr: 0,
+          alpha: 1,
+        });
+      });
+    });
+  });
+
+  return pts;
+}
+
 interface Props {
   scrollProgress: number;
 }
@@ -58,7 +109,38 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const mouse = useRef({ x: -9999, y: -9999 });
   const raf = useRef(0);
   const dpr = useRef(1);
-  const startTime = useRef(Date.now());
+  const dims = useRef({ w: 0, h: 0 });
+  const currentWordIdx = useRef(0);
+  const morphing = useRef(false);
+  const morphStart = useRef(0);
+
+  const scrollRef = useRef(0);
+  scrollRef.current = scrollProgress;
+
+  const rebuildForWord = useCallback((idx: number, scatter: boolean) => {
+    const { w, h } = dims.current;
+    if (w === 0) return;
+    const newPts = buildParticlesForWords(WORD_SETS[idx], w, h);
+
+    if (scatter) {
+      // Scatter new particles from random positions
+      const cx = w / 2;
+      const cy = h / 2;
+      newPts.forEach((p) => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 100 + Math.random() * 200;
+        p.x = cx + Math.cos(angle) * dist;
+        p.y = cy + Math.sin(angle) * dist;
+        p.rot = (Math.random() - 0.5) * 120;
+        p.alpha = 0;
+      });
+    }
+
+    particles.current = newPts;
+    currentWordIdx.current = idx;
+    morphing.current = true;
+    morphStart.current = Date.now();
+  }, []);
 
   const init = useCallback(() => {
     const canvas = canvasRef.current;
@@ -69,51 +151,15 @@ export default function InteractiveName({ scrollProgress }: Props) {
     const rect = container.getBoundingClientRect();
     const w = rect.width;
     const h = rect.height;
+    dims.current = { w, h };
     canvas.width = w * d;
     canvas.height = h * d;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
-    const fontSize = Math.min(w * 0.14, 140);
-    const letterSpacing = fontSize * 0.72;
-    const pts: Particle[] = [];
-
-    const lines = [FIRST, LAST];
-    lines.forEach((line, lineIdx) => {
-      const chars = line.split("");
-      const totalW = chars.length * letterSpacing;
-      const startX = (w - totalW) / 2;
-      const lineY = lineIdx === 0 ? h * 0.36 : h * 0.72;
-
-      chars.forEach((char, ci) => {
-        const cx = startX + ci * letterSpacing + letterSpacing * 0.5;
-        const cy = lineY;
-        const glyphPts = sampleGlyph(char, fontSize, GRID_STEP);
-        const displayChar = char.toLowerCase();
-
-        glyphPts.forEach((pt) => {
-          pts.push({
-            char: displayChar,
-            homeX: cx + pt.x,
-            homeY: cy + pt.y,
-            x: cx + pt.x + (Math.random() - 0.5) * 60,
-            y: cy + pt.y + (Math.random() - 0.5) * 60,
-            vx: 0,
-            vy: 0,
-            rot: (Math.random() - 0.5) * 60,
-            vr: 0,
-            alpha: 0,
-          });
-        });
-      });
-    });
-
-    particles.current = pts;
-    startTime.current = Date.now();
-  }, []);
-
-  const scrollRef = useRef(0);
-  scrollRef.current = scrollProgress;
+    // Initialize with first word set, scattered entrance
+    rebuildForWord(0, true);
+  }, [rebuildForWord]);
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -121,16 +167,29 @@ export default function InteractiveName({ scrollProgress }: Props) {
     const ctx = canvas.getContext("2d")!;
     const d = dpr.current;
     const m = mouse.current;
-    const elapsed = Date.now() - startTime.current;
+    const sp = scrollRef.current;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.scale(d, d);
 
+    // Determine which word set we should be showing based on scroll
+    const wordCount = WORD_SETS.length;
+    const segmentSize = 1 / wordCount;
+    const targetIdx = Math.min(wordCount - 1, Math.floor(sp / segmentSize));
+
+    if (targetIdx !== currentWordIdx.current) {
+      rebuildForWord(targetIdx, true);
+    }
+
+    // Morph-in timing
+    const morphElapsed = Date.now() - morphStart.current;
+    const morphT = Math.min(1, morphElapsed / 800);
+    const morphEase = 1 - Math.pow(1 - morphT, 3);
+
     const rSq = MOUSE_RADIUS * MOUSE_RADIUS;
     const ps = particles.current;
 
-    // Batch font set once
     ctx.font = `900 ${CHAR_SIZE}px "Bebas Neue", "Inter", sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -138,39 +197,31 @@ export default function InteractiveName({ scrollProgress }: Props) {
     for (let i = 0; i < ps.length; i++) {
       const p = ps[i];
 
-      // Simple entrance — clamp to 700ms
-      const entranceT = Math.min(1, elapsed / 700);
-      const ease = 1 - Math.pow(1 - entranceT, 3);
-      p.alpha = ease;
+      p.alpha += (morphEase - p.alpha) * 0.1;
 
-      if (entranceT < 1) {
-        p.x += (p.homeX - p.x) * 0.06;
-        p.y += (p.homeY - p.y) * 0.06;
-        p.rot *= 0.94;
-      } else {
-        const dx = p.x - m.x;
-        const dy = p.y - m.y;
-        const distSq = dx * dx + dy * dy;
+      // Mouse interaction
+      const dx = p.x - m.x;
+      const dy = p.y - m.y;
+      const distSq = dx * dx + dy * dy;
 
-        if (distSq < rSq && distSq > 0.01) {
-          const dist = Math.sqrt(distSq);
-          const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
-          const forceSq = force * force;
-          const angle = Math.atan2(dy, dx);
-          p.vx += Math.cos(angle) * forceSq * DISPERSE_FORCE;
-          p.vy += Math.sin(angle) * forceSq * DISPERSE_FORCE;
-          p.vr += (Math.random() - 0.5) * forceSq * 25;
-        }
-
-        p.vx += (p.homeX - p.x) * RETURN_SPEED;
-        p.vy += (p.homeY - p.y) * RETURN_SPEED;
-        p.vr *= 0.88;
-        p.rot += p.vr;
-        p.vx *= 0.84;
-        p.vy *= 0.84;
-        p.x += p.vx;
-        p.y += p.vy;
+      if (distSq < rSq && distSq > 0.01) {
+        const dist = Math.sqrt(distSq);
+        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
+        const forceSq = force * force;
+        const angle = Math.atan2(dy, dx);
+        p.vx += Math.cos(angle) * forceSq * DISPERSE_FORCE;
+        p.vy += Math.sin(angle) * forceSq * DISPERSE_FORCE;
+        p.vr += (Math.random() - 0.5) * forceSq * 25;
       }
+
+      p.vx += (p.homeX - p.x) * RETURN_SPEED;
+      p.vy += (p.homeY - p.y) * RETURN_SPEED;
+      p.vr *= 0.88;
+      p.rot += p.vr;
+      p.vx *= 0.84;
+      p.vy *= 0.84;
+      p.x += p.vx;
+      p.y += p.vy;
 
       const homeDist = Math.abs(p.x - p.homeX) + Math.abs(p.y - p.homeY);
       const displaceNorm = Math.min(1, homeDist / 120);
@@ -192,7 +243,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
 
     ctx.restore();
     raf.current = requestAnimationFrame(render);
-  }, []);
+  }, [rebuildForWord]);
 
   useEffect(() => {
     init();
@@ -215,23 +266,20 @@ export default function InteractiveName({ scrollProgress }: Props) {
     mouse.current = { x: -9999, y: -9999 };
   }, []);
 
-  // Scroll-driven CSS transforms for smooth parallax without per-particle recalc
-  const opacity = Math.max(0, 1 - scrollProgress * 1.5);
-  const yShift = scrollProgress * -40;
-  const scale = 1 + scrollProgress * 0.04;
+  const opacity = Math.max(0, 1 - scrollProgress * 0.15);
 
   return (
     <div
-      className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none"
+      className="fixed inset-0 z-0 flex items-center justify-start pointer-events-none"
       style={{
         opacity,
-        transform: `translate3d(0, ${yShift}vh, 0) scale(${scale})`,
-        willChange: "transform, opacity",
+        paddingRight: "20vw",
+        willChange: "opacity",
       }}
     >
       <div
         className="pointer-events-auto w-full"
-        style={{ height: "clamp(220px, 36vw, 420px)" }}
+        style={{ height: "clamp(240px, 38vw, 440px)" }}
       >
         <canvas
           ref={canvasRef}
