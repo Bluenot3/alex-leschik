@@ -58,7 +58,7 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
   }, []);
 
   return (
-    <div className="cube-scene">
+    <div className="cube-scene" style={{ pointerEvents: editMode ? "auto" : "none" }}>
       <div
         className="cube"
         style={{
