@@ -271,21 +271,27 @@ export default function InteractiveName({ scrollProgress }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-0 flex items-center justify-start pointer-events-none"
+      className="fixed inset-0 z-0 flex items-center justify-center md:justify-start pointer-events-none"
       style={{
         opacity,
-        paddingRight: "20vw",
+        paddingRight: 0,
         willChange: "opacity",
       }}
     >
       <div
-        className="pointer-events-auto w-full"
-        style={{ height: "clamp(240px, 38vw, 440px)" }}
+        className="pointer-events-auto w-full md:pr-[20vw]"
+        style={{ height: "clamp(180px, 38vw, 440px)" }}
       >
         <canvas
           ref={canvasRef}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
+          onTouchMove={(e) => {
+            const t = e.touches[0];
+            const r = canvasRef.current?.getBoundingClientRect();
+            if (r) mouse.current = { x: t.clientX - r.left, y: t.clientY - r.top };
+          }}
+          onTouchEnd={onLeave}
           className="block w-full h-full"
           style={{ cursor: "default" }}
         />
