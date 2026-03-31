@@ -2,11 +2,11 @@ import { useRef, useEffect, useCallback } from "react";
 
 const FIRST = "ALEXANDER";
 const LAST = "LESCHIK";
-const CHAR_SIZE = 6;
-const GRID_STEP = 2.5;
-const MOUSE_RADIUS = 100;
-const RETURN_SPEED = 0.08;
-const DISPERSE_FORCE = 22;
+const CHAR_SIZE = 8;
+const GRID_STEP = 2;
+const MOUSE_RADIUS = 110;
+const RETURN_SPEED = 0.09;
+const DISPERSE_FORCE = 20;
 
 interface Particle {
   char: string;
@@ -71,8 +71,8 @@ export default function InteractiveName() {
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
-    const fontSize = Math.min(w * 0.14, 140);
-    const letterSpacing = fontSize * 0.68;
+    const fontSize = Math.min(w * 0.16, 160);
+    const letterSpacing = fontSize * 0.72;
     const pts: Particle[] = [];
     let globalIdx = 0;
 
@@ -168,16 +168,16 @@ export default function InteractiveName() {
       const homeDist = Math.sqrt((p.x - p.homeX) ** 2 + (p.y - p.homeY) ** 2);
       const displaceNorm = Math.min(1, homeDist / 100);
 
-      // Rich dark text — very dark at rest, blue-shift on disperse
-      const hue = 215 + displaceNorm * 25;
-      const sat = 20 + displaceNorm * 40;
-      const light = 5 + displaceNorm * 30;
-      const a = p.alpha * Math.max(0.5, 1 - displaceNorm * 0.3);
+      // Bold dark text — near-black at rest, subtle blue-shift on disperse
+      const hue = 220 + displaceNorm * 20;
+      const sat = 15 + displaceNorm * 35;
+      const light = 2 + displaceNorm * 22;
+      const a = p.alpha * Math.max(0.7, 1 - displaceNorm * 0.2);
 
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate((p.rot * Math.PI) / 180);
-      ctx.font = `900 ${CHAR_SIZE}px "Inter", "Helvetica Neue", sans-serif`;
+      ctx.font = `900 ${CHAR_SIZE}px "Bebas Neue", "Inter", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
