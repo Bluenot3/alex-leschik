@@ -11,7 +11,7 @@ interface HUDProps {
   onOpenCmd?: () => void;
 }
 
-export default function HUD({ progress, currentSection, onDotClick, editMode, onToggleEdit }: HUDProps) {
+export default function HUD({ progress, currentSection, onDotClick, editMode, onToggleEdit, onOpenCmd }: HUDProps) {
   const pct = String(Math.round(progress * 100)).padStart(3, "0");
   const name = SECTION_NAMES[currentSection] ?? "";
 
