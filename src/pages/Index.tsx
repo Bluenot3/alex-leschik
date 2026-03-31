@@ -49,7 +49,6 @@ export default function Index() {
         {/* S0: Hero */}
         <ScrollSection index={0}>
           <RevealTag>Portfolio — Alex Leschik</RevealTag>
-          <InteractiveName />
           <RevealBody>
             Developer, creator, builder of things that matter.
             Code projects, creative experiments, and everything in between.
