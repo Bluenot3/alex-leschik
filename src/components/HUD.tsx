@@ -1,3 +1,5 @@
+import { Terminal } from "lucide-react";
+
 const SECTION_NAMES = ["ORIGIN", "PROJECTS", "VISION", "CRAFT", "GALLERY", "CONNECT"];
 
 interface HUDProps {
@@ -6,6 +8,7 @@ interface HUDProps {
   onDotClick: (index: number) => void;
   editMode: boolean;
   onToggleEdit: () => void;
+  onOpenCmd?: () => void;
 }
 
 export default function HUD({ progress, currentSection, onDotClick, editMode, onToggleEdit }: HUDProps) {
