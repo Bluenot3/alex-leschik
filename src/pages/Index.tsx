@@ -3,6 +3,8 @@ import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
+import GalleryShowcase from "@/components/GalleryShowcase";
+import CommandDashboard from "@/components/CommandDashboard";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -18,6 +20,7 @@ export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
   const [editMode, setEditMode] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
 
   return (
     <div className="relative">
@@ -31,7 +34,9 @@ export default function Index() {
         onDotClick={scrollToSection}
         editMode={editMode}
         onToggleEdit={() => setEditMode((v) => !v)}
+        onOpenCmd={() => setCmdOpen(true)}
       />
+      <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       <div className="relative z-[1]">
         {/* S0: Hero */}
@@ -123,7 +128,7 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(4)}>See more</RevealCTA>
         </ScrollSection>
 
-        {/* S4: Gallery */}
+        {/* S4: Gallery — with showcase grid */}
         <ScrollSection index={4}>
           <RevealLine />
           <RevealTag>04 — Gallery</RevealTag>
@@ -139,6 +144,11 @@ export default function Index() {
           </RevealBody>
           <RevealCTA onClick={() => scrollToSection(5)}>Final turn</RevealCTA>
         </ScrollSection>
+
+        {/* Gallery showcase grid — full-width between sections */}
+        <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
+          <GalleryShowcase />
+        </section>
 
         {/* S5: Connect */}
         <ScrollSection index={5} align="right">
