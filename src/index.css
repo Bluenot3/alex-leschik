@@ -85,13 +85,43 @@
 }
 
 @layer components {
-  /* Glass cube wrapper removed — now inline styled */
+  /* ── Glass Cube Section ── */
+  .glass-cube-section {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+  }
 
+  .glass-cube-canvas-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    max-height: 480px;
+  }
+
+  .glass-cube-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  .glass-cube-label-sep {
+    color: hsl(var(--muted-foreground) / 0.2);
+  }
+
+  /* ── Interactive Name ── */
   .interactive-name-container {
     cursor: default;
     user-select: none;
     width: 100%;
-    height: clamp(140px, 22vw, 220px);
+    height: clamp(160px, 26vw, 260px);
     position: relative;
   }
 
