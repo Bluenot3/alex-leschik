@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
+import GlassCube from "@/components/GlassCube";
 import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
+import InteractiveName from "@/components/InteractiveName";
 import GalleryShowcase from "@/components/GalleryShowcase";
 import CommandDashboard from "@/components/CommandDashboard";
 import ScrollSection, {
@@ -27,6 +29,7 @@ export default function Index() {
       <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
 
       <CubeScene rotation={cubeRotation} editMode={editMode} />
+      <GlassCube />
       <ImageVortex progress={smoothProgress} />
       <HUD
         progress={smoothProgress}
@@ -42,13 +45,7 @@ export default function Index() {
         {/* S0: Hero */}
         <ScrollSection index={0}>
           <RevealTag>Portfolio — Alex Leschik</RevealTag>
-          <RevealHeading size="xl">
-            BUILD
-            <br />
-            BREAK
-            <br />
-            SHIP
-          </RevealHeading>
+          <InteractiveName />
           <RevealBody>
             Developer, creator, builder of things that matter.
             Code projects, creative experiments, and everything in between.

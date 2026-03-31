@@ -85,6 +85,50 @@
 }
 
 @layer components {
+  /* Three.js Glass Cube */
+  .glass-cube-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    top: 55%;
+    height: 45%;
+    opacity: 0.85;
+  }
+
+  /* Interactive Name */
+  .interactive-name-container {
+    cursor: default;
+    user-select: none;
+    padding: 0.5rem 0;
+  }
+
+  .interactive-name-row {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0;
+    line-height: 0.88;
+  }
+
+  .interactive-name-last {
+    margin-top: -0.1em;
+  }
+
+  .interactive-char {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 9vw, 7rem);
+    letter-spacing: 0.03em;
+    color: hsl(var(--foreground));
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+
+  .interactive-name-container:hover .interactive-char {
+    text-shadow: 0 0 40px hsl(var(--primary) / 0.15);
+  }
+
+  /* 3D Cube — slate wireframe on white */
   /* 3D Cube — slate wireframe on white */
   .cube-scene {
     position: fixed;
