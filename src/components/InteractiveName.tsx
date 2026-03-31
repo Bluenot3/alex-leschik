@@ -168,11 +168,11 @@ export default function InteractiveName() {
       const homeDist = Math.sqrt((p.x - p.homeX) ** 2 + (p.y - p.homeY) ** 2);
       const displaceNorm = Math.min(1, homeDist / 100);
 
-      // Rich dark text — very dark at rest, blue-shift on disperse
-      const hue = 215 + displaceNorm * 25;
-      const sat = 20 + displaceNorm * 40;
-      const light = 5 + displaceNorm * 30;
-      const a = p.alpha * Math.max(0.5, 1 - displaceNorm * 0.3);
+      // Bold dark text — near-black at rest, subtle blue-shift on disperse
+      const hue = 220 + displaceNorm * 20;
+      const sat = 15 + displaceNorm * 35;
+      const light = 2 + displaceNorm * 22;
+      const a = p.alpha * Math.max(0.7, 1 - displaceNorm * 0.2);
 
       ctx.save();
       ctx.translate(p.x, p.y);
