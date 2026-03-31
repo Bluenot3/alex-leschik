@@ -121,7 +121,7 @@
     cursor: default;
     user-select: none;
     width: 100%;
-    height: clamp(180px, 30vw, 320px);
+    height: clamp(200px, 34vw, 380px);
     position: relative;
   }
 
@@ -197,17 +197,40 @@
   .cube-face-top { transform: rotateX(-90deg) translateZ(calc(var(--cube-size) / 2)); }
   .cube-face-bottom { transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2)); }
 
-  /* Liquid glass card */
+  /* Liquid glass card — premium */
   .glass-card {
-    max-width: 25rem;
-    padding: 2.5rem 2.25rem;
-    background: var(--glass-bg);
-    border: var(--hairline) solid var(--glass-border);
-    border-radius: 1.5rem;
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+    max-width: 28rem;
+    padding: 2.75rem 2.5rem;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.65) 0%,
+      rgba(255, 255, 255, 0.40) 50%,
+      rgba(245, 248, 255, 0.55) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 1.75rem;
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.06),
+      0 1.5px 4px rgba(0, 0, 0, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
     overflow: hidden;
+    position: relative;
+  }
+
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 40%
+    );
+    pointer-events: none;
   }
 
   .glass-card-right {

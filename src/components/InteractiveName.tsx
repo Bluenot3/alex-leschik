@@ -2,11 +2,11 @@ import { useRef, useEffect, useCallback } from "react";
 
 const FIRST = "ALEXANDER";
 const LAST = "LESCHIK";
-const CHAR_SIZE = 4.5; // size of each mini-character in px
-const GRID_STEP = 2.5; // sampling density — lower = denser
-const MOUSE_RADIUS = 80;
-const RETURN_SPEED = 0.06;
-const DISPERSE_FORCE = 18;
+const CHAR_SIZE = 6;
+const GRID_STEP = 2.5;
+const MOUSE_RADIUS = 100;
+const RETURN_SPEED = 0.08;
+const DISPERSE_FORCE = 22;
 
 interface Particle {
   char: string;
@@ -18,7 +18,7 @@ interface Particle {
   vy: number;
   rot: number;
   vr: number;
-  delay: number; // stagger entrance
+  delay: number;
   alpha: number;
 }
 
@@ -55,7 +55,6 @@ export default function InteractiveName() {
   const mouse = useRef({ x: -9999, y: -9999 });
   const raf = useRef(0);
   const dpr = useRef(1);
-  const timeRef = useRef(0);
   const startTime = useRef(Date.now());
 
   const init = useCallback(() => {
@@ -72,8 +71,8 @@ export default function InteractiveName() {
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
-    const fontSize = Math.min(w * 0.13, 130);
-    const letterSpacing = fontSize * 0.66;
+    const fontSize = Math.min(w * 0.14, 140);
+    const letterSpacing = fontSize * 0.68;
     const pts: Particle[] = [];
     let globalIdx = 0;
 
@@ -81,27 +80,29 @@ export default function InteractiveName() {
     lines.forEach((line, lineIdx) => {
       const chars = line.split("");
       const totalW = chars.length * letterSpacing;
-      // Left-aligned with slight offset
-      const startX = w * 0.04;
-      const lineY = lineIdx === 0 ? h * 0.38 : h * 0.72;
+      const startX = (w - totalW) / 2;
+      const lineY = lineIdx === 0 ? h * 0.36 : h * 0.72;
 
       chars.forEach((char, ci) => {
         const cx = startX + ci * letterSpacing + letterSpacing * 0.5;
         const cy = lineY;
         const glyphPts = sampleGlyph(char, fontSize, GRID_STEP);
 
+        // Each particle displays the LOWERCASE version of its parent letter
+        const displayChar = char.toLowerCase();
+
         glyphPts.forEach((pt) => {
           pts.push({
-            char,
+            char: displayChar,
             homeX: cx + pt.x,
             homeY: cy + pt.y,
-            x: cx + pt.x + (Math.random() - 0.5) * 200,
-            y: cy + pt.y + (Math.random() - 0.5) * 200,
+            x: cx + pt.x + (Math.random() - 0.5) * 80,
+            y: cy + pt.y + (Math.random() - 0.5) * 80,
             vx: 0,
             vy: 0,
-            rot: (Math.random() - 0.5) * 360,
+            rot: (Math.random() - 0.5) * 90,
             vr: 0,
-            delay: globalIdx * 0.3, // ms stagger
+            delay: globalIdx * 0.05,
             alpha: 0,
           });
           globalIdx++;
@@ -118,11 +119,8 @@ export default function InteractiveName() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     const d = dpr.current;
-    const w = canvas.width / d;
-    const h = canvas.height / d;
     const m = mouse.current;
     const elapsed = Date.now() - startTime.current;
-    timeRef.current += 0.016;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
@@ -134,18 +132,15 @@ export default function InteractiveName() {
     for (let i = 0; i < ps.length; i++) {
       const p = ps[i];
 
-      // Entrance animation — fade & converge
-      const entranceT = Math.min(1, Math.max(0, (elapsed - p.delay) / 800));
-      const ease = 1 - Math.pow(1 - entranceT, 3); // ease-out cubic
+      const entranceT = Math.min(1, Math.max(0, (elapsed - p.delay) / 700));
+      const ease = 1 - Math.pow(1 - entranceT, 3);
       p.alpha = ease;
 
       if (entranceT < 1) {
-        // Still converging to home
-        p.x += (p.homeX - p.x) * 0.05;
-        p.y += (p.homeY - p.y) * 0.05;
-        p.rot *= 0.95;
+        p.x += (p.homeX - p.x) * 0.06;
+        p.y += (p.homeY - p.y) * 0.06;
+        p.rot *= 0.94;
       } else {
-        // Mouse interaction
         const dx = p.x - m.x;
         const dy = p.y - m.y;
         const distSq = dx * dx + dy * dy;
@@ -153,58 +148,41 @@ export default function InteractiveName() {
         if (distSq < rSq && distSq > 0.01) {
           const dist = Math.sqrt(distSq);
           const force = ((MOUSE_RADIUS - dist) / MOUSE_RADIUS);
-          const forceSq = force * force; // quadratic falloff for smoother feel
+          const forceSq = force * force;
           const angle = Math.atan2(dy, dx);
           p.vx += Math.cos(angle) * forceSq * DISPERSE_FORCE;
           p.vy += Math.sin(angle) * forceSq * DISPERSE_FORCE;
-          p.vr += (Math.random() - 0.5) * forceSq * 25;
+          p.vr += (Math.random() - 0.5) * forceSq * 30;
         }
 
-        // Spring to home
         p.vx += (p.homeX - p.x) * RETURN_SPEED;
         p.vy += (p.homeY - p.y) * RETURN_SPEED;
-        p.vr *= 0.9;
+        p.vr *= 0.88;
         p.rot += p.vr;
-        p.vx *= 0.86;
-        p.vy *= 0.86;
+        p.vx *= 0.84;
+        p.vy *= 0.84;
         p.x += p.vx;
         p.y += p.vy;
       }
 
-      // Distance from home for visual effects
       const homeDist = Math.sqrt((p.x - p.homeX) ** 2 + (p.y - p.homeY) ** 2);
       const displaceNorm = Math.min(1, homeDist / 100);
 
-      // Color shift: slate → slight blue when displaced
-      const hue = 215 + displaceNorm * 15;
-      const sat = 20 + displaceNorm * 15;
-      const light = 12 + displaceNorm * 35;
-      const a = p.alpha * Math.max(0.15, 1 - displaceNorm * 0.6);
+      // Rich dark text — very dark at rest, blue-shift on disperse
+      const hue = 215 + displaceNorm * 25;
+      const sat = 20 + displaceNorm * 40;
+      const light = 5 + displaceNorm * 30;
+      const a = p.alpha * Math.max(0.5, 1 - displaceNorm * 0.3);
 
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate((p.rot * Math.PI) / 180);
-      ctx.font = `bold ${CHAR_SIZE}px "Bebas Neue", Impact, sans-serif`;
+      ctx.font = `900 ${CHAR_SIZE}px "Inter", "Helvetica Neue", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
       ctx.fillText(p.char, 0, 0);
       ctx.restore();
-    }
-
-    // Subtle ambient floating particles (decorative)
-    const ambientCount = 30;
-    const t = timeRef.current;
-    ctx.font = `${2.5}px "DM Mono", monospace`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const symbols = "·∘○◇△▽∗";
-    for (let i = 0; i < ambientCount; i++) {
-      const ax = (Math.sin(t * 0.3 + i * 2.1) * 0.5 + 0.5) * w;
-      const ay = (Math.cos(t * 0.2 + i * 1.7) * 0.5 + 0.5) * h;
-      const flicker = Math.sin(t * 1.5 + i * 3.3) * 0.5 + 0.5;
-      ctx.fillStyle = `hsla(215, 15%, 70%, ${flicker * 0.12})`;
-      ctx.fillText(symbols[i % symbols.length], ax, ay);
     }
 
     ctx.restore();
