@@ -162,7 +162,9 @@
     box-shadow: var(--glass-inner-shadow), 0 0 0 0.5px hsl(215 20% 85% / 0.4);
   }
 
-  .cube-face img {
+  .cube-face img,
+  .cube-face video,
+  .cube-face-video {
     position: absolute;
     inset: 0;
     width: 100%;
