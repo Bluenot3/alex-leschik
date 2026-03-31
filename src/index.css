@@ -43,7 +43,7 @@
     --font-sans: "Inter", sans-serif;
     --hairline: 0.5px;
     --ui-inset: 2rem;
-    --cube-size: min(55vw, 55vh, 520px);
+    --cube-size: min(68vw, 68vh, 520px);
 
     /* Liquid glass tokens */
     --glass-bg: rgba(255, 255, 255, 0.45);
@@ -143,13 +143,7 @@
     justify-content: center;
     perspective: 1100px;
     pointer-events: none;
-    padding-left: 0;
-  }
-
-  @media (min-width: 768px) {
-    .cube-scene {
-      padding-left: 18vw;
-    }
+    padding-left: 18vw;
   }
 
   .cube {

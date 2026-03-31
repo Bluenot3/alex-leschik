@@ -59,8 +59,7 @@ function buildParticlesForWords(
   w: number,
   h: number
 ): Particle[] {
-  const isMobile = w < 600;
-  const fontSize = isMobile ? Math.min(w * 0.14, 60) : Math.min(w * 0.18, 150);
+  const fontSize = Math.min(w * 0.18, 150);
   const letterSpacing = fontSize * 0.72;
   const pts: Particle[] = [];
 
@@ -271,28 +270,21 @@ export default function InteractiveName({ scrollProgress }: Props) {
 
   return (
     <div
-      className="fixed inset-x-0 top-0 z-0 flex items-start md:items-center justify-center md:justify-start pointer-events-none"
+      className="fixed inset-0 z-0 flex items-center justify-start pointer-events-none"
       style={{
         opacity,
-        bottom: 0,
-        paddingTop: "6vh",
+        paddingRight: "20vw",
         willChange: "opacity",
       }}
     >
       <div
-        className="pointer-events-auto w-full md:pr-[20vw]"
-        style={{ height: "clamp(140px, 30vw, 440px)" }}
+        className="pointer-events-auto w-full"
+        style={{ height: "clamp(240px, 38vw, 440px)" }}
       >
         <canvas
           ref={canvasRef}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
-          onTouchMove={(e) => {
-            const t = e.touches[0];
-            const r = canvasRef.current?.getBoundingClientRect();
-            if (r) mouse.current = { x: t.clientX - r.left, y: t.clientY - r.top };
-          }}
-          onTouchEnd={onLeave}
           className="block w-full h-full"
           style={{ cursor: "default" }}
         />

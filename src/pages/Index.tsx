@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
-// CubeScene removed
+import CubeScene from "@/components/CubeScene";
 import GlassCube from "@/components/GlassCube";
 import CubeRain from "@/components/CubeRain";
 import AZ1Logo3D from "@/components/AZ1Logo3D";
@@ -32,7 +32,7 @@ export default function Index() {
     <div className="relative">
       <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
 
-      
+      <CubeScene rotation={cubeRotation} editMode={editMode} />
       <InteractiveName scrollProgress={smoothProgress} />
       <ImageVortex progress={smoothProgress} />
       <HUD
