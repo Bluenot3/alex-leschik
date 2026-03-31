@@ -3,6 +3,7 @@ import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import GlassCube from "@/components/GlassCube";
 import CubeRain from "@/components/CubeRain";
+import AZ1Hologram from "@/components/AZ1Hologram";
 import Amphitheatre from "@/components/Amphitheatre";
 import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
