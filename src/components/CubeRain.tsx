@@ -36,57 +36,48 @@ function MiniPhoto({ texture }: { texture: THREE.Texture }) {
 
 function FallingCubeInstance({
   cube,
-  progress,
+  progressRef,
   texture,
 }: {
   cube: FallingCube;
-  progress: number;
+  progressRef: React.RefObject<number>;
   texture: THREE.Texture;
 }) {
   const groupRef = useRef<THREE.Group>(null!);
   const timeRef = useRef(0);
+  const smoothProgress = useRef(0);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
     timeRef.current += delta;
 
-    // Delayed start based on progress
-    const effectiveProgress = Math.max(0, progress - cube.delay);
-    if (effectiveProgress <= 0) {
+    // Lerp toward target for buttery smoothness
+    const target = Math.max(0, (progressRef.current ?? 0) - cube.delay);
+    smoothProgress.current += (target - smoothProgress.current) * 0.06;
+
+    if (smoothProgress.current < 0.001) {
       groupRef.current.visible = false;
       return;
     }
     groupRef.current.visible = true;
 
-    // Fall from top
-    const fallY = 12 - effectiveProgress * cube.speed * 28;
+    const p = smoothProgress.current;
+    const fallY = 12 - p * cube.speed * 28;
     const sway = Math.sin(timeRef.current * 1.2 + cube.startX * 3) * 0.8;
 
-    groupRef.current.position.set(
-      cube.startX + sway,
-      fallY,
-      cube.startZ
-    );
-
+    groupRef.current.position.set(cube.startX + sway, fallY, cube.startZ);
     groupRef.current.rotation.x += delta * cube.rotSpeed.x;
     groupRef.current.rotation.y += delta * cube.rotSpeed.y;
     groupRef.current.rotation.z += delta * cube.rotSpeed.z;
 
-    // Fade out when below view
     const scale = fallY < -8 ? Math.max(0, 1 + (fallY + 8) * 0.2) : 1;
-    const s = cube.scale * scale;
-    groupRef.current.scale.setScalar(s);
+    groupRef.current.scale.setScalar(cube.scale * scale);
   });
 
   return (
     <group ref={groupRef} visible={false}>
       <MiniPhoto texture={texture} />
-      <RoundedBox
-        args={[0.7, 0.7, 0.35]}
-        radius={0.08}
-        smoothness={16}
-        renderOrder={1}
-      >
+      <RoundedBox args={[0.7, 0.7, 0.35]} radius={0.08} smoothness={16} renderOrder={1}>
         <MeshTransmissionMaterial
           transmission={1}
           roughness={0}
@@ -106,7 +97,7 @@ function FallingCubeInstance({
   );
 }
 
-function CubeRainScene({ progress }: { progress: number }) {
+function CubeRainScene({ progressRef }: { progressRef: React.RefObject<number> }) {
   const texture = useLoader(THREE.TextureLoader, zzLogo);
 
   const cubes = useMemo<FallingCube[]>(() => {
@@ -139,40 +130,30 @@ function CubeRainScene({ progress }: { progress: number }) {
       <directionalLight position={[-5, 8, -5]} intensity={2} />
       <directionalLight position={[3, 10, 5]} intensity={1.5} />
       {cubes.map((cube, i) => (
-        <FallingCubeInstance
-          key={i}
-          cube={cube}
-          progress={progress}
-          texture={texture}
-        />
+        <FallingCubeInstance key={i} cube={cube} progressRef={progressRef} texture={texture} />
       ))}
     </>
   );
 }
 
 interface CubeRainProps {
-  progress: number; // 0-1 within the rain section
+  progress: number;
 }
 
 export default function CubeRain({ progress }: CubeRainProps) {
+  const progressRef = useRef(0);
+  progressRef.current = progress;
+
   if (progress <= 0) return null;
 
   return (
-    <div
-      className="cube-rain-wrap"
-      style={{ opacity: Math.min(1, progress * 3) }}
-    >
+    <div className="cube-rain-wrap" style={{ opacity: Math.min(1, progress * 3) }}>
       <Canvas
         camera={{ position: [0, 0, 10], fov: 50 }}
-        gl={{
-          antialias: true,
-          alpha: true,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.1,
-        }}
+        gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
         style={{ background: "transparent" }}
       >
-        <CubeRainScene progress={progress} />
+        <CubeRainScene progressRef={progressRef} />
       </Canvas>
     </div>
   );
