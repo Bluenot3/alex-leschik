@@ -2,8 +2,8 @@ import { useRef, useEffect, useCallback } from "react";
 
 const FIRST = "ALEXANDER";
 const LAST = "LESCHIK";
-const CHAR_SIZE = 3.2; // size of each mini-character in px
-const GRID_STEP = 4; // sampling density
+const CHAR_SIZE = 4.5; // size of each mini-character in px
+const GRID_STEP = 2.5; // sampling density — lower = denser
 const MOUSE_RADIUS = 80;
 const RETURN_SPEED = 0.06;
 const DISPERSE_FORCE = 18;
@@ -72,8 +72,8 @@ export default function InteractiveName() {
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
-    const fontSize = Math.min(w * 0.115, 110);
-    const letterSpacing = fontSize * 0.68;
+    const fontSize = Math.min(w * 0.13, 130);
+    const letterSpacing = fontSize * 0.66;
     const pts: Particle[] = [];
     let globalIdx = 0;
 
