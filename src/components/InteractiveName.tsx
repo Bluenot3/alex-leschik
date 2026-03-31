@@ -59,7 +59,8 @@ function buildParticlesForWords(
   w: number,
   h: number
 ): Particle[] {
-  const fontSize = Math.min(w * 0.18, 150);
+  const isMobile = w < 600;
+  const fontSize = isMobile ? Math.min(w * 0.14, 60) : Math.min(w * 0.18, 150);
   const letterSpacing = fontSize * 0.72;
   const pts: Particle[] = [];
 
