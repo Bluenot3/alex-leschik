@@ -384,16 +384,9 @@
     border-radius: 1.25rem;
     border: 1.5px dashed hsl(var(--border));
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    z-index: 5;
-  }
-
-  .cube-face:hover .upload-zone,
-  .upload-zone.dragging {
     opacity: 1;
-    pointer-events: auto;
+    transition: opacity 0.3s ease;
+    z-index: 5;
   }
 
   /* Upload panel (liquid glass) */
