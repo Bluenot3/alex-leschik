@@ -2,8 +2,8 @@ import { useRef, useEffect, useCallback } from "react";
 
 const FIRST = "ALEXANDER";
 const LAST = "LESCHIK";
-const CHAR_SIZE = 7;
-const GRID_STEP = 3;
+const CHAR_SIZE = 6;
+const GRID_STEP = 2.5;
 const MOUSE_RADIUS = 100;
 const RETURN_SPEED = 0.08;
 const DISPERSE_FORCE = 22;
