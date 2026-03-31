@@ -72,8 +72,8 @@ export default function InteractiveName() {
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
-    const fontSize = Math.min(w * 0.115, 110);
-    const letterSpacing = fontSize * 0.68;
+    const fontSize = Math.min(w * 0.13, 130);
+    const letterSpacing = fontSize * 0.66;
     const pts: Particle[] = [];
     let globalIdx = 0;
 
