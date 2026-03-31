@@ -1037,3 +1037,136 @@
     }
   }
 }
+
+/* ── Cube Rain ── */
+.cube-rain-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 80vh;
+  pointer-events: none;
+}
+
+/* ── Amphitheatre ── */
+.amphitheatre-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 90vh;
+  overflow: hidden;
+}
+
+.amphitheatre-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.amphitheatre-tiles {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+  padding: 3rem 2rem;
+  gap: 2rem;
+}
+
+.amphitheatre-tiles-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.5);
+}
+
+.amphitheatre-grid {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 900px;
+  width: 100%;
+  transition: opacity 0.8s ease;
+}
+
+.amphitheatre-tile {
+  aspect-ratio: 16/10;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  border: 0.5px solid hsl(var(--border) / 0.3);
+  background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(245,248,255,0.2));
+  backdrop-filter: blur(16px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.amphitheatre-tile:hover,
+.amphitheatre-tile-active {
+  border-color: hsl(var(--foreground) / 0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  transform: scale(1.04) translateY(-4px) !important;
+}
+
+.amphitheatre-tile-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.amphitheatre-tile-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.amphitheatre-tile-ascii {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  color: hsl(var(--muted-foreground) / 0.25);
+}
+
+.amphitheatre-tile-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(transparent, rgba(0,0,0,0.4));
+  border-radius: 0 0 0.75rem 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.amphitheatre-tile:hover .amphitheatre-tile-info {
+  opacity: 1;
+}
+
+.amphitheatre-tile-title {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .amphitheatre-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .cube-rain-wrap {
+    height: 50vh;
+  }
+}

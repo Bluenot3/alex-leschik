@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import GlassCube from "@/components/GlassCube";
+import CubeRain from "@/components/CubeRain";
+import Amphitheatre from "@/components/Amphitheatre";
 import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
 import InteractiveName from "@/components/InteractiveName";
