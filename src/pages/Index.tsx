@@ -30,7 +30,6 @@ export default function Index() {
       <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
 
       <CubeScene rotation={cubeRotation} editMode={editMode} />
-      <GlassCube />
       <ImageVortex progress={smoothProgress} />
       <HUD
         progress={smoothProgress}
