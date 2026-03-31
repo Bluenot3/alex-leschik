@@ -155,6 +155,11 @@ export default function Index() {
           <CubeRain progress={Math.max(0, (smoothProgress - 0.55) / 0.15)} />
         </section>
 
+        {/* AZ1 Hologram ASCII Art */}
+        <section className="relative z-[1] px-6 md:px-12 lg:px-20 py-8">
+          <AZ1Hologram progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
+        </section>
+
         {/* Amphitheatre — surround video screening room */}
         <section className="relative z-[1]">
           <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
