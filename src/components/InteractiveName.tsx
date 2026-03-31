@@ -96,13 +96,13 @@ export default function InteractiveName() {
             char: displayChar,
             homeX: cx + pt.x,
             homeY: cy + pt.y,
-            x: cx + pt.x + (Math.random() - 0.5) * 300,
-            y: cy + pt.y + (Math.random() - 0.5) * 300,
+            x: cx + pt.x + (Math.random() - 0.5) * 80,
+            y: cy + pt.y + (Math.random() - 0.5) * 80,
             vx: 0,
             vy: 0,
-            rot: (Math.random() - 0.5) * 360,
+            rot: (Math.random() - 0.5) * 90,
             vr: 0,
-            delay: globalIdx * 0.15,
+            delay: globalIdx * 0.05,
             alpha: 0,
           });
           globalIdx++;
