@@ -20,6 +20,7 @@ export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
   const [editMode, setEditMode] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
 
   return (
     <div className="relative">
