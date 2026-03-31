@@ -3,6 +3,8 @@ import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
+import GalleryShowcase from "@/components/GalleryShowcase";
+import CommandDashboard from "@/components/CommandDashboard";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
