@@ -149,7 +149,17 @@ export default function Index() {
           <GalleryShowcase />
         </section>
 
-        {/* Glass Cube — below gallery */}
+        {/* Cube Rain — raining ZZ logo glass cubes */}
+        <section className="relative z-[1]">
+          <CubeRain progress={Math.max(0, (smoothProgress - 0.55) / 0.15)} />
+        </section>
+
+        {/* Amphitheatre — surround video screening room */}
+        <section className="relative z-[1]">
+          <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
+        </section>
+
+        {/* Glass Cube — below amphitheatre */}
         <section className="relative z-[1] flex items-center justify-center py-12">
           <GlassCube />
         </section>
