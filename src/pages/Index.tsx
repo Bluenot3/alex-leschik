@@ -6,6 +6,7 @@ import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
 import InteractiveName from "@/components/InteractiveName";
 import GalleryShowcase from "@/components/GalleryShowcase";
+import ProjectShowcase from "@/components/ProjectShowcase";
 import CommandDashboard from "@/components/CommandDashboard";
 import ScrollSection, {
   RevealTag,
