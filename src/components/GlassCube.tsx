@@ -59,7 +59,16 @@ function GlassShape() {
 
 export default function GlassCube() {
   return (
-    <div className="glass-cube-wrapper">
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        height: 420,
+        margin: "0 auto",
+        position: "relative",
+        zIndex: 1,
+      }}
+    >
       <Canvas
         camera={{ position: [0, 0, 5.5], fov: 45 }}
         gl={{
@@ -77,6 +86,22 @@ export default function GlassCube() {
         <Environment preset="city" />
         <GlassShape />
       </Canvas>
+      <div
+        style={{
+          position: "absolute",
+          bottom: -8,
+          left: "50%",
+          transform: "translateX(-50%)",
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.5rem",
+          letterSpacing: "0.25em",
+          textTransform: "uppercase",
+          color: "hsl(215 12% 55%)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        ZZ — Glass Artifact
+      </div>
     </div>
   );
 }
