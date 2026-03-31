@@ -143,6 +143,7 @@
     justify-content: center;
     perspective: 1100px;
     pointer-events: none;
+    padding-left: 18vw;
   }
 
   .cube {
