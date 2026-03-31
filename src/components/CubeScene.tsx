@@ -47,9 +47,10 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
           const { data: { publicUrl } } = supabase.storage
             .from("portfolio")
             .getPublicUrl(row.storage_path);
+          const mediaType = (row as any).media_type === "video" ? "video" : "image";
           newMedia[row.face_index] = {
             url: publicUrl,
-            type: row.media_type === "video" ? "video" : "image",
+            type: mediaType as "image" | "video",
           };
         });
         setFaceMedia(newMedia);

@@ -143,9 +143,19 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(5)}>Final turn</RevealCTA>
         </ScrollSection>
 
-        {/* Gallery showcase grid — full-width between sections */}
+        {/* Gallery showcase grid */}
         <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
           <GalleryShowcase />
+        </section>
+
+        {/* Glass Cube — below gallery */}
+        <section className="relative z-[1] flex items-center justify-center py-12">
+          <GlassCube />
+        </section>
+
+        {/* Project Showcase — embeds & interactive work */}
+        <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
+          <ProjectShowcase />
         </section>
 
         {/* S5: Connect */}
