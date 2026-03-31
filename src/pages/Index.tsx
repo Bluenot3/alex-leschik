@@ -35,6 +35,7 @@ export default function Index() {
         editMode={editMode}
         onToggleEdit={() => setEditMode((v) => !v)}
       />
+      <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       <div className="relative z-[1]">
         {/* S0: Hero */}
