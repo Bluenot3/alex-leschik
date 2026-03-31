@@ -126,7 +126,7 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(4)}>See more</RevealCTA>
         </ScrollSection>
 
-        {/* S4: Gallery */}
+        {/* S4: Gallery — with showcase grid */}
         <ScrollSection index={4}>
           <RevealLine />
           <RevealTag>04 — Gallery</RevealTag>
@@ -142,6 +142,11 @@ export default function Index() {
           </RevealBody>
           <RevealCTA onClick={() => scrollToSection(5)}>Final turn</RevealCTA>
         </ScrollSection>
+
+        {/* Gallery showcase grid — full-width between sections */}
+        <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
+          <GalleryShowcase />
+        </section>
 
         {/* S5: Connect */}
         <ScrollSection index={5} align="right">
