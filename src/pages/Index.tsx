@@ -34,6 +34,7 @@ export default function Index() {
         onDotClick={scrollToSection}
         editMode={editMode}
         onToggleEdit={() => setEditMode((v) => !v)}
+        onOpenCmd={() => setCmdOpen(true)}
       />
       <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
