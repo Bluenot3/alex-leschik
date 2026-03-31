@@ -20,13 +20,20 @@ const FACE_CLASSES: Record<string, string> = {
   bottom: "cube-face-bottom",
 };
 
+interface FaceMedia {
+  url: string;
+  type: "image" | "video";
+}
+
 interface CubeSceneProps {
   rotation: { rx: number; ry: number };
   editMode?: boolean;
 }
 
 export default function CubeScene({ rotation, editMode = false }: CubeSceneProps) {
-  const [faceImages, setFaceImages] = useState<string[]>([...DEFAULT_IMAGES]);
+  const [faceMedia, setFaceMedia] = useState<FaceMedia[]>(
+    DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }))
+  );
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<number | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -35,14 +42,17 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
     const loadImages = async () => {
       const { data } = await supabase.from("portfolio_images").select("*");
       if (data && data.length > 0) {
-        const newImages = [...DEFAULT_IMAGES];
-        data.forEach((row: { face_index: number; storage_path: string }) => {
+        const newMedia = DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }));
+        data.forEach((row: any) => {
           const { data: { publicUrl } } = supabase.storage
             .from("portfolio")
             .getPublicUrl(row.storage_path);
-          newImages[row.face_index] = publicUrl;
+          newMedia[row.face_index] = {
+            url: publicUrl,
+            type: row.media_type === "video" ? "video" : "image",
+          };
         });
-        setFaceImages(newImages);
+        setFaceMedia(newMedia);
       }
     };
     loadImages();
@@ -53,6 +63,7 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
     try {
       const ext = file.name.split(".").pop();
       const path = `cube-face-${faceIndex}-${Date.now()}.${ext}`;
+      const isVideo = file.type.startsWith("video/");
 
       const { error: uploadError } = await supabase.storage
         .from("portfolio")
@@ -65,13 +76,18 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
         .getPublicUrl(path);
 
       await supabase.from("portfolio_images").upsert(
-        { face_index: faceIndex, storage_path: path, file_name: file.name },
+        {
+          face_index: faceIndex,
+          storage_path: path,
+          file_name: file.name,
+          media_type: isVideo ? "video" : "image",
+        },
         { onConflict: "face_index" }
       );
 
-      setFaceImages((prev) => {
+      setFaceMedia((prev) => {
         const next = [...prev];
-        next[faceIndex] = publicUrl;
+        next[faceIndex] = { url: publicUrl, type: isVideo ? "video" : "image" };
         return next;
       });
 
@@ -93,13 +109,24 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
         >
           {FACES.map((face, i) => (
             <div key={face} className={`cube-face ${FACE_CLASSES[face]}`}>
-              <img
-                src={faceImages[i]}
-                alt={face}
-                width={1024}
-                height={1024}
-                loading={i === 0 ? undefined : "lazy"}
-              />
+              {faceMedia[i].type === "video" ? (
+                <video
+                  src={faceMedia[i].url}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="cube-face-video"
+                />
+              ) : (
+                <img
+                  src={faceMedia[i].url}
+                  alt={face}
+                  width={1024}
+                  height={1024}
+                  loading={i === 0 ? undefined : "lazy"}
+                />
+              )}
               {!editMode && (
                 <span className="cube-face-label">{face.toUpperCase()}</span>
               )}
@@ -108,11 +135,10 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
         </div>
       </div>
 
-      {/* Flat upload panel — no 3D click issues */}
       {editMode && (
         <div className="face-upload-panel">
           <div className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground mb-3">
-            Click a face to upload
+            Upload image or video
           </div>
           <div className="grid grid-cols-3 gap-2">
             {FACES.map((face, i) => (
@@ -122,11 +148,20 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
                 onClick={() => inputRefs.current[i]?.click()}
                 disabled={uploading === i}
               >
-                <img
-                  src={faceImages[i]}
-                  alt={face}
-                  className="face-thumb-img"
-                />
+                {faceMedia[i].type === "video" ? (
+                  <video
+                    src={faceMedia[i].url}
+                    muted
+                    playsInline
+                    className="face-thumb-img"
+                  />
+                ) : (
+                  <img
+                    src={faceMedia[i].url}
+                    alt={face}
+                    className="face-thumb-img"
+                  />
+                )}
                 <div className="face-thumb-overlay">
                   {uploading === i ? (
                     <div className="w-4 h-4 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
