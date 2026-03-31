@@ -4,9 +4,11 @@ interface HUDProps {
   progress: number;
   currentSection: number;
   onDotClick: (index: number) => void;
+  editMode: boolean;
+  onToggleEdit: () => void;
 }
 
-export default function HUD({ progress, currentSection, onDotClick }: HUDProps) {
+export default function HUD({ progress, currentSection, onDotClick, editMode, onToggleEdit }: HUDProps) {
   const pct = String(Math.round(progress * 100)).padStart(3, "0");
   const name = SECTION_NAMES[currentSection] ?? "";
 
@@ -14,11 +16,11 @@ export default function HUD({ progress, currentSection, onDotClick }: HUDProps) 
     <>
       {/* Top-right HUD */}
       <div className="hud">
-        <div>{pct}%</div>
+        <div className="text-muted-foreground">{pct}%</div>
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
         </div>
-        <div className="mt-1.5 text-primary" style={{ fontSize: "0.6rem" }}>{name}</div>
+        <div className="mt-1.5 text-foreground/40" style={{ fontSize: "0.55rem" }}>{name}</div>
       </div>
 
       {/* Left nav dots */}
@@ -40,6 +42,18 @@ export default function HUD({ progress, currentSection, onDotClick }: HUDProps) 
         </div>
         <div className="face-caption-name">{name}</div>
       </div>
+
+      {/* Edit mode toggle — liquid glass pill */}
+      <button
+        onClick={onToggleEdit}
+        className="upload-panel flex items-center gap-2 cursor-pointer"
+        style={{ bottom: "var(--ui-inset)" }}
+      >
+        <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${editMode ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+        <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground">
+          {editMode ? "Editing" : "Edit cube"}
+        </span>
+      </button>
     </>
   );
 }
