@@ -42,7 +42,7 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
     const loadImages = async () => {
       const { data } = await supabase.from("portfolio_images").select("*");
       if (data && data.length > 0) {
-        const newMedia = DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }));
+        const newMedia: FaceMedia[] = DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }));
         data.forEach((row: any) => {
           const { data: { publicUrl } } = supabase.storage
             .from("portfolio")
