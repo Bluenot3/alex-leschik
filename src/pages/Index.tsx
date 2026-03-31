@@ -33,6 +33,7 @@ export default function Index() {
       <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
 
       <CubeScene rotation={cubeRotation} editMode={editMode} />
+      <InteractiveName scrollProgress={smoothProgress} />
       <ImageVortex progress={smoothProgress} />
       <HUD
         progress={smoothProgress}
@@ -48,7 +49,6 @@ export default function Index() {
         {/* S0: Hero */}
         <ScrollSection index={0}>
           <RevealTag>Portfolio — Alex Leschik</RevealTag>
-          <InteractiveName />
           <RevealBody>
             Developer, creator, builder of things that matter.
             Code projects, creative experiments, and everything in between.
