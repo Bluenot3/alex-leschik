@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
-import CubeScene from "@/components/CubeScene";
+// CubeScene removed
 import GlassCube from "@/components/GlassCube";
 import CubeRain from "@/components/CubeRain";
 import AZ1Logo3D from "@/components/AZ1Logo3D";
