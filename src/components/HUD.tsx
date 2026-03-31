@@ -46,17 +46,29 @@ export default function HUD({ progress, currentSection, onDotClick, editMode, on
         <div className="face-caption-name">{name}</div>
       </div>
 
-      {/* Edit mode toggle — liquid glass pill */}
-      <button
-        onClick={onToggleEdit}
-        className="upload-panel flex items-center gap-2 cursor-pointer"
-        style={{ bottom: "var(--ui-inset)" }}
-      >
-        <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${editMode ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
-        <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground">
-          {editMode ? "Editing" : "Edit cube"}
-        </span>
-      </button>
+      {/* Bottom-right controls */}
+      <div className="fixed bottom-[var(--ui-inset)] right-[var(--ui-inset)] z-20 flex items-center gap-2">
+        <button
+          onClick={onOpenCmd}
+          className="upload-panel flex items-center gap-2 cursor-pointer"
+          style={{ position: "relative", bottom: "auto", right: "auto" }}
+        >
+          <Terminal className="w-3 h-3 text-muted-foreground/60" />
+          <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground">
+            Command
+          </span>
+        </button>
+        <button
+          onClick={onToggleEdit}
+          className="upload-panel flex items-center gap-2 cursor-pointer"
+          style={{ position: "relative", bottom: "auto", right: "auto" }}
+        >
+          <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${editMode ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+          <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground">
+            {editMode ? "Editing" : "Edit cube"}
+          </span>
+        </button>
+      </div>
     </>
   );
 }
