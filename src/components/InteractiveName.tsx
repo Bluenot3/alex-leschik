@@ -168,16 +168,16 @@ export default function InteractiveName() {
       const homeDist = Math.sqrt((p.x - p.homeX) ** 2 + (p.y - p.homeY) ** 2);
       const displaceNorm = Math.min(1, homeDist / 100);
 
-      // Darker, crisper text — near-black at rest, shifts to deep blue when dispersed
-      const hue = 215 + displaceNorm * 20;
-      const sat = 15 + displaceNorm * 30;
-      const light = 8 + displaceNorm * 25;
-      const a = p.alpha * Math.max(0.3, 1 - displaceNorm * 0.4);
+      // Rich dark text — very dark at rest, blue-shift on disperse
+      const hue = 215 + displaceNorm * 25;
+      const sat = 20 + displaceNorm * 40;
+      const light = 5 + displaceNorm * 30;
+      const a = p.alpha * Math.max(0.5, 1 - displaceNorm * 0.3);
 
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate((p.rot * Math.PI) / 180);
-      ctx.font = `800 ${CHAR_SIZE}px "Inter", "Helvetica Neue", sans-serif`;
+      ctx.font = `900 ${CHAR_SIZE}px "Inter", "Helvetica Neue", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
