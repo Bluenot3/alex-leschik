@@ -1,24 +1,28 @@
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef, useEffect, useMemo } from "react";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 
 function PhotoPlane() {
-  const texture = new THREE.TextureLoader().load(zzLogo);
-  texture.colorSpace = THREE.SRGBColorSpace;
+  const texture = useLoader(THREE.TextureLoader, zzLogo);
+
+  const material = useMemo(() => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.needsUpdate = true;
+    return new THREE.MeshStandardMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+      roughness: 0.15,
+      metalness: 0.05,
+      transparent: true,
+      alphaTest: 0.01,
+    });
+  }, [texture]);
 
   return (
-    <mesh position={[0, 0, 0]} renderOrder={0}>
-      <planeGeometry args={[1.6, 1.6]} />
-      <meshStandardMaterial
-        map={texture}
-        side={THREE.DoubleSide}
-        roughness={0.2}
-        metalness={0.1}
-        transparent
-        alphaTest={0.01}
-      />
+    <mesh position={[0, 0, 0]} renderOrder={0} material={material}>
+      <planeGeometry args={[1.65, 1.65]} />
     </mesh>
   );
 }
@@ -28,27 +32,27 @@ function GlassShape() {
 
   useFrame((_, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.4;
-      groupRef.current.rotation.x = Math.sin(Date.now() * 0.0004) * 0.2;
-      groupRef.current.rotation.z = Math.cos(Date.now() * 0.0003) * 0.08;
+      groupRef.current.rotation.y += delta * 0.35;
+      groupRef.current.rotation.x = Math.sin(Date.now() * 0.0003) * 0.15;
+      groupRef.current.rotation.z = Math.cos(Date.now() * 0.00025) * 0.06;
     }
   });
 
   return (
     <group ref={groupRef}>
       <PhotoPlane />
-      <RoundedBox args={[2.1, 2.1, 1]} radius={0.25} smoothness={32} renderOrder={1}>
+      <RoundedBox args={[2.2, 2.2, 1.1]} radius={0.28} smoothness={32} renderOrder={1}>
         <MeshTransmissionMaterial
           transmission={1}
           roughness={0}
-          thickness={1.2}
-          ior={1.5}
-          chromaticAberration={0.06}
+          thickness={1.4}
+          ior={1.45}
+          chromaticAberration={0.08}
           clearcoat={1}
           clearcoatRoughness={0}
-          envMapIntensity={1}
+          envMapIntensity={1.2}
           transparent
-          opacity={0.95}
+          opacity={0.92}
           side={THREE.DoubleSide}
           depthWrite={false}
         />
@@ -59,48 +63,30 @@ function GlassShape() {
 
 export default function GlassCube() {
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 420,
-        height: 420,
-        margin: "0 auto",
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
-      <Canvas
-        camera={{ position: [0, 0, 5.5], fov: 45 }}
-        gl={{
-          antialias: true,
-          alpha: true,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.0,
-        }}
-        style={{ background: "transparent" }}
-      >
-        <ambientLight intensity={1} />
-        <directionalLight position={[-5, 2, -10]} intensity={3} />
-        <directionalLight position={[0, 10, 0]} intensity={2} />
-        <directionalLight position={[0, 2, 10]} intensity={1} />
-        <Environment preset="city" />
-        <GlassShape />
-      </Canvas>
-      <div
-        style={{
-          position: "absolute",
-          bottom: -8,
-          left: "50%",
-          transform: "translateX(-50%)",
-          fontFamily: "var(--font-mono)",
-          fontSize: "0.5rem",
-          letterSpacing: "0.25em",
-          textTransform: "uppercase",
-          color: "hsl(215 12% 55%)",
-          whiteSpace: "nowrap",
-        }}
-      >
-        ZZ — Glass Artifact
+    <div className="glass-cube-section">
+      <div className="glass-cube-canvas-wrap">
+        <Canvas
+          camera={{ position: [0, 0, 5.5], fov: 45 }}
+          gl={{
+            antialias: true,
+            alpha: true,
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.1,
+          }}
+          style={{ background: "transparent" }}
+        >
+          <ambientLight intensity={1.2} />
+          <directionalLight position={[-5, 3, -10]} intensity={3.5} />
+          <directionalLight position={[0, 10, 0]} intensity={2} />
+          <directionalLight position={[0, 2, 10]} intensity={1.5} />
+          <Environment preset="city" />
+          <GlassShape />
+        </Canvas>
+      </div>
+      <div className="glass-cube-label">
+        <span>ZZ</span>
+        <span className="glass-cube-label-sep">—</span>
+        <span>Glass Artifact</span>
       </div>
     </div>
   );

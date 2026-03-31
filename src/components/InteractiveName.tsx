@@ -1,11 +1,12 @@
 import { useRef, useEffect, useCallback } from "react";
 
-const NAME = "ALEXANDER LESCHIK";
-const PARTICLE_FONT_SIZE = 5; // px — tiny letters
-const GRID_STEP = 6; // spacing between particles
-const MOUSE_RADIUS = 60; // px radius of dispersion
-const RETURN_SPEED = 0.08; // how fast particles return (0-1)
-const DISPERSE_FORCE = 12; // how far particles fly
+const FIRST = "ALEXANDER";
+const LAST = "LESCHIK";
+const CHAR_SIZE = 3.2; // size of each mini-character in px
+const GRID_STEP = 4; // sampling density
+const MOUSE_RADIUS = 80;
+const RETURN_SPEED = 0.06;
+const DISPERSE_FORCE = 18;
 
 interface Particle {
   char: string;
@@ -15,196 +16,220 @@ interface Particle {
   y: number;
   vx: number;
   vy: number;
-  rotation: number;
+  rot: number;
   vr: number;
+  delay: number; // stagger entrance
+  alpha: number;
 }
 
-/**
- * For each big letter, sample a grid of positions that fall inside the letter shape.
- * We render the letter to an offscreen canvas, read pixels, and keep positions where alpha > 0.
- */
-function sampleLetterShape(
+function sampleGlyph(
   char: string,
   fontSize: number,
-  gridStep: number
+  step: number
 ): { x: number; y: number }[] {
-  const canvas = document.createElement("canvas");
-  const size = Math.ceil(fontSize * 1.3);
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d")!;
-  ctx.font = `bold ${fontSize}px "Bebas Neue", Impact, sans-serif`;
+  const c = document.createElement("canvas");
+  const s = Math.ceil(fontSize * 1.4);
+  c.width = s;
+  c.height = s;
+  const ctx = c.getContext("2d")!;
+  ctx.font = `900 ${fontSize}px "Bebas Neue", Impact, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#000";
-  ctx.fillText(char, size / 2, size / 2);
-
-  const imageData = ctx.getImageData(0, 0, size, size);
-  const points: { x: number; y: number }[] = [];
-
-  for (let py = 0; py < size; py += gridStep) {
-    for (let px = 0; px < size; px += gridStep) {
-      const idx = (py * size + px) * 4;
-      if (imageData.data[idx + 3] > 80) {
-        points.push({ x: px - size / 2, y: py - size / 2 });
+  ctx.fillText(char, s / 2, s / 2);
+  const id = ctx.getImageData(0, 0, s, s);
+  const pts: { x: number; y: number }[] = [];
+  for (let py = 0; py < s; py += step) {
+    for (let px = 0; px < s; px += step) {
+      if (id.data[(py * s + px) * 4 + 3] > 60) {
+        pts.push({ x: px - s / 2, y: py - s / 2 });
       }
     }
   }
-  return points;
+  return pts;
 }
 
 export default function InteractiveName() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const mouseRef = useRef({ x: -9999, y: -9999 });
-  const rafRef = useRef<number>(0);
-  const dprRef = useRef(1);
+  const particles = useRef<Particle[]>([]);
+  const mouse = useRef({ x: -9999, y: -9999 });
+  const raf = useRef(0);
+  const dpr = useRef(1);
+  const timeRef = useRef(0);
+  const startTime = useRef(Date.now());
 
   const init = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const container = canvas.parentElement!;
-    const dpr = window.devicePixelRatio || 1;
-    dprRef.current = dpr;
+    const d = window.devicePixelRatio || 1;
+    dpr.current = d;
     const rect = container.getBoundingClientRect();
     const w = rect.width;
     const h = rect.height;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
+    canvas.width = w * d;
+    canvas.height = h * d;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
-    // Layout: two lines
-    const lines = NAME.split(" ");
-    const bigFontSize = Math.min(w * 0.12, 100);
-    const particles: Particle[] = [];
+    const fontSize = Math.min(w * 0.115, 110);
+    const letterSpacing = fontSize * 0.68;
+    const pts: Particle[] = [];
+    let globalIdx = 0;
 
+    const lines = [FIRST, LAST];
     lines.forEach((line, lineIdx) => {
       const chars = line.split("");
-      const totalLetterWidth = chars.length * bigFontSize * 0.7;
-      const startX = (w - totalLetterWidth) / 2;
-      const startY = lineIdx === 0 ? h * 0.3 : h * 0.7;
+      const totalW = chars.length * letterSpacing;
+      // Left-aligned with slight offset
+      const startX = w * 0.04;
+      const lineY = lineIdx === 0 ? h * 0.38 : h * 0.72;
 
-      chars.forEach((char, charIdx) => {
-        const letterCenterX = startX + charIdx * bigFontSize * 0.7 + bigFontSize * 0.35;
-        const letterCenterY = startY;
-        const points = sampleLetterShape(char, bigFontSize, GRID_STEP);
+      chars.forEach((char, ci) => {
+        const cx = startX + ci * letterSpacing + letterSpacing * 0.5;
+        const cy = lineY;
+        const glyphPts = sampleGlyph(char, fontSize, GRID_STEP);
 
-        points.forEach((pt) => {
-          particles.push({
+        glyphPts.forEach((pt) => {
+          pts.push({
             char,
-            homeX: letterCenterX + pt.x,
-            homeY: letterCenterY + pt.y,
-            x: letterCenterX + pt.x,
-            y: letterCenterY + pt.y,
+            homeX: cx + pt.x,
+            homeY: cy + pt.y,
+            x: cx + pt.x + (Math.random() - 0.5) * 200,
+            y: cy + pt.y + (Math.random() - 0.5) * 200,
             vx: 0,
             vy: 0,
-            rotation: 0,
+            rot: (Math.random() - 0.5) * 360,
             vr: 0,
+            delay: globalIdx * 0.3, // ms stagger
+            alpha: 0,
           });
+          globalIdx++;
         });
       });
     });
 
-    particlesRef.current = particles;
+    particles.current = pts;
+    startTime.current = Date.now();
   }, []);
 
-  const animate = useCallback(() => {
+  const render = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    const dpr = dprRef.current;
-    const w = canvas.width / dpr;
-    const h = canvas.height / dpr;
-    const mouse = mouseRef.current;
+    const d = dpr.current;
+    const w = canvas.width / d;
+    const h = canvas.height / d;
+    const m = mouse.current;
+    const elapsed = Date.now() - startTime.current;
+    timeRef.current += 0.016;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    ctx.scale(dpr, dpr);
+    ctx.scale(d, d);
 
-    const particles = particlesRef.current;
     const rSq = MOUSE_RADIUS * MOUSE_RADIUS;
+    const ps = particles.current;
 
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
+    for (let i = 0; i < ps.length; i++) {
+      const p = ps[i];
 
-      // Mouse repulsion
-      const dx = p.x - mouse.x;
-      const dy = p.y - mouse.y;
-      const distSq = dx * dx + dy * dy;
+      // Entrance animation — fade & converge
+      const entranceT = Math.min(1, Math.max(0, (elapsed - p.delay) / 800));
+      const ease = 1 - Math.pow(1 - entranceT, 3); // ease-out cubic
+      p.alpha = ease;
 
-      if (distSq < rSq && distSq > 0.01) {
-        const dist = Math.sqrt(distSq);
-        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
-        const angle = Math.atan2(dy, dx);
-        p.vx += Math.cos(angle) * force * DISPERSE_FORCE;
-        p.vy += Math.sin(angle) * force * DISPERSE_FORCE;
-        p.vr += (Math.random() - 0.5) * force * 20;
+      if (entranceT < 1) {
+        // Still converging to home
+        p.x += (p.homeX - p.x) * 0.05;
+        p.y += (p.homeY - p.y) * 0.05;
+        p.rot *= 0.95;
+      } else {
+        // Mouse interaction
+        const dx = p.x - m.x;
+        const dy = p.y - m.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < rSq && distSq > 0.01) {
+          const dist = Math.sqrt(distSq);
+          const force = ((MOUSE_RADIUS - dist) / MOUSE_RADIUS);
+          const forceSq = force * force; // quadratic falloff for smoother feel
+          const angle = Math.atan2(dy, dx);
+          p.vx += Math.cos(angle) * forceSq * DISPERSE_FORCE;
+          p.vy += Math.sin(angle) * forceSq * DISPERSE_FORCE;
+          p.vr += (Math.random() - 0.5) * forceSq * 25;
+        }
+
+        // Spring to home
+        p.vx += (p.homeX - p.x) * RETURN_SPEED;
+        p.vy += (p.homeY - p.y) * RETURN_SPEED;
+        p.vr *= 0.9;
+        p.rot += p.vr;
+        p.vx *= 0.86;
+        p.vy *= 0.86;
+        p.x += p.vx;
+        p.y += p.vy;
       }
 
-      // Spring back to home
-      p.vx += (p.homeX - p.x) * RETURN_SPEED;
-      p.vy += (p.homeY - p.y) * RETURN_SPEED;
-      p.vr *= 0.92; // rotation damping
-      p.rotation += p.vr;
+      // Distance from home for visual effects
+      const homeDist = Math.sqrt((p.x - p.homeX) ** 2 + (p.y - p.homeY) ** 2);
+      const displaceNorm = Math.min(1, homeDist / 100);
 
-      // Damping
-      p.vx *= 0.88;
-      p.vy *= 0.88;
+      // Color shift: slate → slight blue when displaced
+      const hue = 215 + displaceNorm * 15;
+      const sat = 20 + displaceNorm * 15;
+      const light = 12 + displaceNorm * 35;
+      const a = p.alpha * Math.max(0.15, 1 - displaceNorm * 0.6);
 
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // Draw the mini letter
       ctx.save();
       ctx.translate(p.x, p.y);
-      ctx.rotate((p.rotation * Math.PI) / 180);
-      ctx.font = `${PARTICLE_FONT_SIZE}px "Bebas Neue", Impact, sans-serif`;
+      ctx.rotate((p.rot * Math.PI) / 180);
+      ctx.font = `bold ${CHAR_SIZE}px "Bebas Neue", Impact, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-
-      // Opacity based on distance from home (more displaced = more transparent)
-      const homeDist = Math.sqrt(
-        (p.x - p.homeX) ** 2 + (p.y - p.homeY) ** 2
-      );
-      const alpha = Math.max(0.2, 1 - homeDist / 120);
-      ctx.fillStyle = `hsla(215, 25%, 12%, ${alpha})`;
+      ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
       ctx.fillText(p.char, 0, 0);
       ctx.restore();
     }
 
+    // Subtle ambient floating particles (decorative)
+    const ambientCount = 30;
+    const t = timeRef.current;
+    ctx.font = `${2.5}px "DM Mono", monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const symbols = "·∘○◇△▽∗";
+    for (let i = 0; i < ambientCount; i++) {
+      const ax = (Math.sin(t * 0.3 + i * 2.1) * 0.5 + 0.5) * w;
+      const ay = (Math.cos(t * 0.2 + i * 1.7) * 0.5 + 0.5) * h;
+      const flicker = Math.sin(t * 1.5 + i * 3.3) * 0.5 + 0.5;
+      ctx.fillStyle = `hsla(215, 15%, 70%, ${flicker * 0.12})`;
+      ctx.fillText(symbols[i % symbols.length], ax, ay);
+    }
+
     ctx.restore();
-    rafRef.current = requestAnimationFrame(animate);
+    raf.current = requestAnimationFrame(render);
   }, []);
 
   useEffect(() => {
     init();
-    rafRef.current = requestAnimationFrame(animate);
-
-    const handleResize = () => {
-      init();
-    };
-    window.addEventListener("resize", handleResize);
-
+    raf.current = requestAnimationFrame(render);
+    window.addEventListener("resize", init);
     return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(raf.current);
+      window.removeEventListener("resize", init);
     };
-  }, [init, animate]);
+  }, [init, render]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    mouseRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+  const onMove = useCallback((e: React.MouseEvent) => {
+    const c = canvasRef.current;
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    mouse.current = { x: e.clientX - r.left, y: e.clientY - r.top };
   }, []);
 
-  const handleMouseLeave = useCallback(() => {
-    mouseRef.current = { x: -9999, y: -9999 };
+  const onLeave = useCallback(() => {
+    mouse.current = { x: -9999, y: -9999 };
   }, []);
 
   return (
@@ -219,8 +244,8 @@ export default function InteractiveName() {
     >
       <canvas
         ref={canvasRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
         className="interactive-name-canvas"
       />
     </div>
