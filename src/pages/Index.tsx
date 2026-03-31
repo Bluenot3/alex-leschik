@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import HUD from "@/components/HUD";
@@ -15,23 +16,22 @@ const SECTION_COUNT = 6;
 export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
+  const [editMode, setEditMode] = useState(false);
 
   return (
     <div className="relative">
-      {/* SEO */}
       <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
 
-      {/* 3D Cube Background */}
-      <CubeScene rotation={cubeRotation} />
+      <CubeScene rotation={cubeRotation} editMode={editMode} />
 
-      {/* HUD Overlay */}
       <HUD
         progress={smoothProgress}
         currentSection={currentSection}
         onDotClick={scrollToSection}
+        editMode={editMode}
+        onToggleEdit={() => setEditMode((v) => !v)}
       />
 
-      {/* Scroll Sections */}
       <div className="relative z-[1]">
         {/* S0: Hero */}
         <ScrollSection index={0}>
@@ -161,10 +161,7 @@ export default function Index() {
               transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s",
             }}
           >
-            <a
-              href="mailto:hello@alexleschik.com"
-              className="cta-btn"
-            >
+            <a href="mailto:hello@alexleschik.com" className="cta-btn">
               Get in touch
               <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                 <path d="M1 6h10M6 1l5 5-5 5" />

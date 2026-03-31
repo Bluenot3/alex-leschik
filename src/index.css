@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400&family=Inter:wght@300;400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,56 +6,60 @@
 
 @layer base {
   :root {
-    /* Core palette — warm cinematic dark */
-    --background: 20 18% 10%;
-    --foreground: 36 30% 90%;
+    /* White/Slate/Glass — Iconic Minimalist */
+    --background: 0 0% 98%;
+    --foreground: 215 25% 12%;
 
-    --card: 20 18% 12%;
-    --card-foreground: 36 30% 90%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 12%;
 
-    --popover: 20 18% 12%;
-    --popover-foreground: 36 30% 90%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 12%;
 
-    --primary: 39 62% 56%;
-    --primary-foreground: 20 18% 10%;
+    --primary: 215 20% 25%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 20 12% 18%;
-    --secondary-foreground: 36 30% 85%;
+    --secondary: 210 15% 94%;
+    --secondary-foreground: 215 20% 25%;
 
-    --muted: 25 10% 22%;
-    --muted-foreground: 28 12% 50%;
+    --muted: 210 12% 92%;
+    --muted-foreground: 215 12% 55%;
 
-    --accent: 39 62% 56%;
-    --accent-foreground: 20 18% 10%;
+    --accent: 210 15% 94%;
+    --accent-foreground: 215 20% 25%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 25 15% 20%;
-    --input: 25 15% 20%;
-    --ring: 39 62% 56%;
+    --border: 210 16% 90%;
+    --input: 210 16% 90%;
+    --ring: 215 20% 25%;
 
-    --radius: 0.25rem;
+    --radius: 1rem;
 
     /* Portfolio tokens */
     --font-display: "Bebas Neue", sans-serif;
     --font-mono: "DM Mono", monospace;
-    --hairline: 0.0625rem;
+    --font-sans: "Inter", sans-serif;
+    --hairline: 0.5px;
     --ui-inset: 2rem;
-    --card-glass: hsla(20, 18%, 10%, 0.82);
-    --card-border-accent: hsla(39, 62%, 56%, 0.2);
-    --reveal-offset: 0.625rem;
-    --reveal-duration: 0.5s;
-    --cube-size: min(74vw, 74vh, 560px);
+    --cube-size: min(68vw, 68vh, 520px);
 
-    --sidebar-background: 20 18% 8%;
-    --sidebar-foreground: 36 30% 85%;
-    --sidebar-primary: 39 62% 56%;
-    --sidebar-primary-foreground: 20 18% 10%;
-    --sidebar-accent: 20 12% 15%;
-    --sidebar-accent-foreground: 36 30% 85%;
-    --sidebar-border: 25 15% 18%;
-    --sidebar-ring: 39 62% 56%;
+    /* Liquid glass tokens */
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.65);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --glass-blur: blur(24px) saturate(180%);
+    --glass-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 215 25% 12%;
+    --sidebar-primary: 215 20% 25%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 210 15% 94%;
+    --sidebar-accent-foreground: 215 20% 25%;
+    --sidebar-border: 210 16% 90%;
+    --sidebar-ring: 215 20% 25%;
   }
 
   * {
@@ -64,24 +68,24 @@
 
   html {
     scroll-behavior: auto;
-    color-scheme: dark;
   }
 
   body {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    background: hsl(var(--primary) / 0.3);
+    background: hsl(var(--primary) / 0.12);
     color: hsl(var(--foreground));
   }
 }
 
-/* Portfolio-specific styles */
 @layer components {
-  /* 3D Cube */
+  /* 3D Cube — slate wireframe on white */
   .cube-scene {
     position: fixed;
     inset: 0;
@@ -106,10 +110,12 @@
     inset: 0;
     overflow: hidden;
     backface-visibility: hidden;
+    border-radius: 1.25rem;
     background:
-      repeating-linear-gradient(0deg, hsla(0, 0%, 100%, 0.02) 0, hsla(0, 0%, 100%, 0.02) 1px, transparent 1px, transparent 48px),
-      repeating-linear-gradient(90deg, hsla(0, 0%, 100%, 0.02) 0, hsla(0, 0%, 100%, 0.02) 1px, transparent 1px, transparent 48px),
-      hsl(20, 20%, 7%);
+      repeating-linear-gradient(0deg, hsl(215 20% 85% / 0.15) 0, hsl(215 20% 85% / 0.15) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(90deg, hsl(215 20% 85% / 0.15) 0, hsl(215 20% 85% / 0.15) 1px, transparent 1px, transparent 48px),
+      hsl(210 15% 96%);
+    box-shadow: var(--glass-inner-shadow), 0 0 0 0.5px hsl(215 20% 85% / 0.4);
   }
 
   .cube-face img {
@@ -119,6 +125,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: 1.25rem;
   }
 
   .cube-face-label {
@@ -128,7 +135,7 @@
     font-family: var(--font-display);
     font-size: clamp(2rem, 8vw, 5rem);
     letter-spacing: 0.04em;
-    color: hsla(0, 0%, 100%, 0.06);
+    color: hsl(215 20% 75% / 0.15);
     pointer-events: none;
     user-select: none;
   }
@@ -140,39 +147,42 @@
   .cube-face-top { transform: rotateX(-90deg) translateZ(calc(var(--cube-size) / 2)); }
   .cube-face-bottom { transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2)); }
 
-  /* Glass cards */
+  /* Liquid glass card */
   .glass-card {
-    max-width: 23.75rem;
-    padding: 2.25rem 2rem;
-    background: var(--card-glass);
-    border-left: var(--hairline) solid var(--card-border-accent);
-    backdrop-filter: blur(6px) saturate(120%);
-    -webkit-backdrop-filter: blur(6px) saturate(120%);
+    max-width: 25rem;
+    padding: 2.5rem 2.25rem;
+    background: var(--glass-bg);
+    border: var(--hairline) solid var(--glass-border);
+    border-radius: 1.5rem;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
     overflow: hidden;
   }
 
   .glass-card-right {
     margin-inline-start: auto;
-    border-left: none;
-    border-right: var(--hairline) solid var(--card-border-accent);
     text-align: right;
   }
 
   /* Tag label */
   .tag-label {
+    font-family: var(--font-mono);
     font-size: 0.6rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: hsl(var(--primary));
+    color: hsl(var(--muted-foreground));
     margin-block-end: 1.1rem;
+    font-weight: 400;
   }
 
   /* Display headings */
   .display-heading {
     font-family: var(--font-display);
     font-weight: 400;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     line-height: 0.92;
+    color: hsl(var(--foreground));
   }
 
   .display-xl {
@@ -183,82 +193,89 @@
     font-size: clamp(2.2rem, 5vw, 4rem);
   }
 
-  .display-hero {
-    font-size: clamp(4rem, 12vw, 10rem);
-  }
-
-  /* Body text muted */
+  /* Body text */
   .body-muted {
-    font-size: 0.78rem;
-    line-height: 1.8;
-    color: hsl(var(--foreground) / 0.55);
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    line-height: 1.75;
+    color: hsl(var(--muted-foreground));
     margin-block-start: 1.25rem;
+    font-weight: 300;
   }
 
   /* Accent line */
   .accent-line {
-    width: 3.125rem;
-    height: var(--hairline);
-    background: hsl(var(--primary));
+    width: 2.5rem;
+    height: 1.5px;
+    background: hsl(var(--foreground) / 0.2);
     margin-block-end: 1.2rem;
+    border-radius: 1px;
   }
 
   /* Stats */
   .stat-number {
     font-family: var(--font-display);
     font-size: 2.2rem;
-    color: hsl(var(--primary));
+    color: hsl(var(--foreground));
     line-height: 1;
   }
 
   .stat-label {
-    font-size: 0.58rem;
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: hsl(var(--muted-foreground));
   }
 
-  /* CTA buttons */
+  /* CTA buttons — liquid glass style */
   .cta-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.6rem 1.25rem;
-    border: var(--hairline) solid hsl(var(--primary));
-    color: hsl(var(--primary));
+    padding: 0.65rem 1.5rem;
+    border: var(--hairline) solid hsl(var(--foreground) / 0.15);
+    color: hsl(var(--foreground));
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     text-decoration: none;
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    background: transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: hsl(var(--background) / 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 100px;
   }
 
   .cta-btn:hover {
-    background: hsl(var(--primary));
+    background: hsl(var(--foreground));
     color: hsl(var(--background));
+    border-color: hsl(var(--foreground));
+    box-shadow: 0 4px 20px hsl(var(--foreground) / 0.15);
   }
 
   .cta-btn-muted {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.6rem 1.25rem;
-    border: var(--hairline) solid hsl(var(--muted-foreground) / 0.45);
+    padding: 0.65rem 1.5rem;
+    border: var(--hairline) solid hsl(var(--muted-foreground) / 0.2);
     color: hsl(var(--muted-foreground));
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     text-decoration: none;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 100px;
+    background: transparent;
+    cursor: pointer;
   }
 
   .cta-btn-muted:hover {
-    background: hsl(var(--muted-foreground) / 0.12);
-    border-color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.5);
+    border-color: hsl(var(--muted-foreground) / 0.4);
     color: hsl(var(--foreground));
   }
 
@@ -269,44 +286,50 @@
     right: var(--ui-inset);
     z-index: 10;
     text-align: right;
-    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
     letter-spacing: 0.15em;
     color: hsl(var(--muted-foreground));
     text-transform: uppercase;
   }
 
   .progress-bar {
-    width: 7.5rem;
-    height: var(--hairline);
-    background: hsl(var(--muted-foreground));
+    width: 6rem;
+    height: 1.5px;
+    background: hsl(var(--border));
     margin-block-start: 0.5rem;
     margin-inline-start: auto;
     position: relative;
     overflow: hidden;
+    border-radius: 1px;
   }
 
   .progress-fill {
     position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
-    background: hsl(var(--primary));
+    background: hsl(var(--foreground));
     transition: width 0.1s linear;
+    border-radius: 1px;
   }
 
   /* Scene dots */
   .scene-dot {
     display: block;
-    width: 0.25rem;
-    height: 0.25rem;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
-    background: hsl(var(--muted-foreground));
-    transition: background 0.3s, transform 0.3s;
+    background: hsl(var(--border));
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    border: none;
+    padding: 0;
   }
 
   .scene-dot-active {
-    background: hsl(var(--primary));
-    transform: scale(1.8);
+    background: hsl(var(--foreground));
+    transform: scale(1.6);
+    box-shadow: 0 0 0 3px hsl(var(--foreground) / 0.1);
   }
 
   /* Section scroll */
@@ -332,20 +355,61 @@
   }
 
   .face-caption-num {
-    font-size: 0.58rem;
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
     letter-spacing: 0.28em;
-    color: hsl(var(--primary));
+    color: hsl(var(--muted-foreground));
     text-transform: uppercase;
     margin-block-end: 0.15rem;
   }
 
   .face-caption-name {
     font-family: var(--font-display);
-    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    font-size: clamp(1.6rem, 4vw, 3rem);
     letter-spacing: 0.08em;
-    color: hsl(var(--muted-foreground));
-    opacity: 0.5;
+    color: hsl(var(--muted-foreground) / 0.3);
     line-height: 1;
+  }
+
+  /* Upload overlay */
+  .upload-zone {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(12px);
+    border-radius: 1.25rem;
+    border: 1.5px dashed hsl(var(--border));
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .cube-face:hover .upload-zone,
+  .upload-zone.dragging {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Upload panel (liquid glass) */
+  .upload-panel {
+    position: fixed;
+    bottom: calc(var(--ui-inset) + 4rem);
+    right: var(--ui-inset);
+    z-index: 20;
+    background: var(--glass-bg);
+    border: var(--hairline) solid var(--glass-border);
+    border-radius: 1rem;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+    padding: 1.25rem 1.5rem;
+    min-width: 220px;
   }
 }
 
@@ -359,7 +423,7 @@
 
     .glass-card, .glass-card-right {
       max-width: 100%;
-      padding: 1.5rem 1.25rem;
+      padding: 1.75rem 1.5rem;
     }
   }
 }
