@@ -121,7 +121,7 @@
     cursor: default;
     user-select: none;
     width: 100%;
-    height: clamp(160px, 26vw, 260px);
+    height: clamp(180px, 30vw, 320px);
     position: relative;
   }
 
