@@ -177,7 +177,7 @@ export default function InteractiveName() {
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate((p.rot * Math.PI) / 180);
-      ctx.font = `900 ${CHAR_SIZE}px "Inter", "Helvetica Neue", sans-serif`;
+      ctx.font = `900 ${CHAR_SIZE}px "Bebas Neue", "Inter", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
