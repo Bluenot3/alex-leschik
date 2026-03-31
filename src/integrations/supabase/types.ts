@@ -59,6 +59,7 @@ export type Database = {
           face_index: number
           file_name: string
           id: string
+          media_type: string
           storage_path: string
         }
         Insert: {
@@ -66,6 +67,7 @@ export type Database = {
           face_index: number
           file_name: string
           id?: string
+          media_type?: string
           storage_path: string
         }
         Update: {
@@ -73,6 +75,7 @@ export type Database = {
           face_index?: number
           file_name?: string
           id?: string
+          media_type?: string
           storage_path?: string
         }
         Relationships: []
