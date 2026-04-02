@@ -171,9 +171,9 @@ export default function Index() {
           <GlassCube />
         </section>
 
-        {/* Project Showcase — embeds & interactive work */}
-        <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
-          <ProjectShowcase />
+        {/* Scroll Project Reel — live embeds */}
+        <section className="relative z-[1]">
+          <ScrollProjectReel />
         </section>
 
         {/* S5: Connect */}
