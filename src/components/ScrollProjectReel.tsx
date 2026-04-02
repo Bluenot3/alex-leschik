@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
 
 interface Project {
@@ -6,82 +6,109 @@ interface Project {
   description: string;
   repoUrl: string;
   embedUrl: string;
+  tag: string;
 }
 
 const PROJECTS: Project[] = [
   {
     title: "ROAM",
-    description: "Explore the world through an interactive roaming experience.",
+    description: "Interactive roaming experience across the world.",
     repoUrl: "https://github.com/Bluenot3/ROAM",
     embedUrl: "https://bluenot3.github.io/ROAM/",
+    tag: "exploration",
   },
   {
     title: "AI Literacy Constitution",
-    description: "The foundational framework for youth AI literacy education.",
+    description: "The foundational framework for youth AI literacy.",
     repoUrl: "https://github.com/Bluenot3/AI-Literacy-Constitution",
     embedUrl: "https://bluenot3.github.io/AI-Literacy-Constitution/",
+    tag: "education",
   },
   {
     title: "Agent Arena",
-    description: "Template for building competitive AI agent environments.",
+    description: "Competitive AI agent environment template.",
     repoUrl: "https://github.com/Bluenot3/AGENT-ARENA-TEMPLATE",
     embedUrl: "https://bluenot3.github.io/AGENT-ARENA-TEMPLATE/",
+    tag: "ai · agents",
   },
   {
     title: "Popup Pastries",
     description: "A delightful popup pastry shop experience.",
     repoUrl: "https://github.com/Bluenot3/popuppastries",
     embedUrl: "https://bluenot3.github.io/popuppastries/",
+    tag: "commerce",
   },
   {
     title: "Globe.gl",
-    description: "Interactive 3D globe visualization powered by WebGL.",
+    description: "Interactive 3D globe visualization.",
     repoUrl: "https://github.com/Bluenot3/globe.gl",
     embedUrl: "https://bluenot3.github.io/globe.gl/",
+    tag: "webgl · data",
   },
   {
     title: "Homeschool Kit",
-    description: "Comprehensive toolkit for modern homeschool education.",
+    description: "Modern toolkit for homeschool education.",
     repoUrl: "https://github.com/Bluenot3/homeschool-kit",
     embedUrl: "https://bluenot3.github.io/homeschool-kit/",
+    tag: "education",
   },
   {
     title: "Vibe Book PM",
-    description: "Project management with a creative, vibe-driven approach.",
+    description: "Creative, vibe-driven project management.",
     repoUrl: "https://github.com/Bluenot3/vibe-book-pm",
     embedUrl: "https://bluenot3.github.io/vibe-book-pm/",
+    tag: "productivity",
   },
   {
     title: "V3",
-    description: "Next-generation interface and interaction experiments.",
+    description: "Next-gen interface and interaction experiments.",
     repoUrl: "https://github.com/Bluenot3/V3",
     embedUrl: "https://bluenot3.github.io/V3/",
+    tag: "experimental",
   },
   {
     title: "Fus3",
     description: "Fusion of creative coding and interactive design.",
     repoUrl: "https://github.com/Bluenot3/Fus3",
     embedUrl: "https://bluenot3.github.io/Fus3/",
+    tag: "creative code",
   },
   {
     title: "Brooks Showcase Studio",
-    description: "A premium showcase studio for creative portfolios.",
+    description: "Premium showcase studio for creative portfolios.",
     repoUrl: "https://github.com/Bluenot3/brooks-showcase-studio",
     embedUrl: "https://bluenot3.github.io/brooks-showcase-studio/",
+    tag: "portfolio",
   },
 ];
+
+const GLYPHS = "01アイウエオカキクケコ∷∵∴⊕⊗※÷≈≡∞";
+
+function scrambleText(text: string, progress: number): string {
+  return text
+    .split("")
+    .map((ch, i) => {
+      if (ch === " ") return " ";
+      const threshold = (i / text.length) * 1.2;
+      return progress > threshold
+        ? ch
+        : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+    })
+    .join("");
+}
 
 function ReelCard({ project, index }: { project: Project; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [shouldMount, setShouldMount] = useState(false);
   const [iframeError, setIframeError] = useState(false);
+  const [titleText, setTitleText] = useState(project.title);
+  const scrambleRef = useRef<ReturnType<typeof setInterval>>();
   const side = index % 2 === 0 ? "left" : "right";
 
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-
     const io = new IntersectionObserver(
       ([entry]) => {
         setVisible(entry.isIntersecting);
@@ -89,10 +116,28 @@ function ReelCard({ project, index }: { project: Project; index: number }) {
       },
       { rootMargin: "200px 0px", threshold: 0.15 }
     );
-
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  // Scramble title text on reveal
+  useEffect(() => {
+    if (!visible) return;
+    let frame = 0;
+    const total = 18;
+    scrambleRef.current = setInterval(() => {
+      frame++;
+      const progress = frame / total;
+      setTitleText(scrambleText(project.title, progress));
+      if (frame >= total) {
+        setTitleText(project.title);
+        clearInterval(scrambleRef.current);
+      }
+    }, 40);
+    return () => {
+      if (scrambleRef.current) clearInterval(scrambleRef.current);
+    };
+  }, [visible, project.title]);
 
   // Unmount iframe when far from viewport
   useEffect(() => {
@@ -105,47 +150,52 @@ function ReelCard({ project, index }: { project: Project; index: number }) {
   return (
     <div
       ref={cardRef}
-      className={`reel-card reel-card--${side} ${visible ? "reel-card--visible" : ""}`}
+      className={`proj-card proj-card--${side} ${visible ? "proj-card--visible" : ""}`}
     >
-      <div className="reel-card__label">
-        <span className="reel-card__number">
-          {String(index + 1).padStart(2, "0")}
-        </span>
-        <span className="reel-card__title">{project.title}</span>
+      {/* Cryptic index number */}
+      <div className="proj-card__index">
+        {String(index + 1).padStart(2, "0")}
       </div>
 
-      <div className="reel-card__body">
-        <div className="reel-card__embed">
-          {shouldMount && !iframeError ? (
-            <iframe
-              src={project.embedUrl}
-              title={project.title}
-              loading="lazy"
-              sandbox="allow-scripts allow-same-origin allow-popups"
-              onError={() => setIframeError(true)}
-              className="reel-card__iframe"
-            />
-          ) : (
-            <div className="reel-card__fallback">
-              <span className="font-mono text-[0.6rem] tracking-widest uppercase text-muted-foreground/50">
-                {iframeError ? "Preview unavailable" : "Loading…"}
-              </span>
-            </div>
-          )}
-        </div>
+      {/* Embed preview */}
+      <div className="proj-card__embed">
+        {shouldMount && !iframeError ? (
+          <iframe
+            src={project.embedUrl}
+            title={project.title}
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups"
+            onError={() => setIframeError(true)}
+            className="proj-card__iframe"
+          />
+        ) : (
+          <div className="proj-card__fallback">
+            <span className="proj-card__fallback-text">
+              {iframeError ? "PREVIEW RESTRICTED" : "LOADING"}
+            </span>
+            {/* Decorative scanlines */}
+            <div className="proj-card__scanlines" />
+          </div>
+        )}
+        {/* Overlay gradient */}
+        <div className="proj-card__overlay" />
+      </div>
 
-        <div className="reel-card__info">
-          <p className="reel-card__desc">{project.description}</p>
-          <a
-            href={project.repoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="reel-card__link"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            View on GitHub
-          </a>
+      {/* Info strip */}
+      <div className="proj-card__meta">
+        <div className="proj-card__meta-left">
+          <span className="proj-card__tag">{project.tag}</span>
+          <h4 className="proj-card__title">{titleText}</h4>
+          <p className="proj-card__desc">{project.description}</p>
         </div>
+        <a
+          href={project.repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="proj-card__link"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
       </div>
     </div>
   );
@@ -153,21 +203,19 @@ function ReelCard({ project, index }: { project: Project; index: number }) {
 
 export default function ScrollProjectReel() {
   return (
-    <div className="scroll-reel">
-      <div className="scroll-reel__header">
-        <span className="tag-label">Live Projects & Embeds</span>
+    <div className="proj-reel">
+      <div className="proj-reel__header">
+        <span className="tag-label">Live Deployments</span>
         <h3 className="display-heading display-lg">
           INTER&shy;ACTIVE<br />WORK
         </h3>
-        <p className="body-muted" style={{ maxWidth: "36rem" }}>
-          Scroll through live demos of real projects — each card is a window
-          into a deployed application.
-        </p>
       </div>
 
-      {PROJECTS.map((project, i) => (
-        <ReelCard key={project.title} project={project} index={i} />
-      ))}
+      <div className="proj-reel__grid">
+        {PROJECTS.map((project, i) => (
+          <ReelCard key={project.title} project={project} index={i} />
+        ))}
+      </div>
     </div>
   );
 }
