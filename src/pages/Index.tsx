@@ -9,7 +9,7 @@ import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
 import InteractiveName from "@/components/InteractiveName";
 import GalleryShowcase from "@/components/GalleryShowcase";
-import ProjectShowcase from "@/components/ProjectShowcase";
+import ScrollProjectReel from "@/components/ScrollProjectReel";
 import CommandDashboard from "@/components/CommandDashboard";
 import ScrollSection, {
   RevealTag,
@@ -171,9 +171,9 @@ export default function Index() {
           <GlassCube />
         </section>
 
-        {/* Project Showcase — embeds & interactive work */}
-        <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
-          <ProjectShowcase />
+        {/* Scroll Project Reel — live embeds */}
+        <section className="relative z-[1]">
+          <ScrollProjectReel />
         </section>
 
         {/* S5: Connect */}
