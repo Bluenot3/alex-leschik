@@ -9,7 +9,9 @@ const WORD_SETS: string[][] = [
 ];
 
 const CHAR_SIZE = 7;
-const GRID_STEP = 3;
+const BASE_GRID_STEP = 4;
+const MAX_PARTICLES = 2200;
+const TARGET_FPS = 30;
 const MOUSE_RADIUS = 100;
 const RETURN_SPEED = 0.08;
 const DISPERSE_FORCE = 18;
@@ -59,9 +61,14 @@ function buildParticlesForWords(
   w: number,
   h: number
 ): Particle[] {
-  const fontSize = Math.min(w * 0.18, 150);
-  const letterSpacing = fontSize * 0.72;
+  const fontSize = Math.min(w * 0.16, 128);
+  const letterSpacing = fontSize * 0.68;
   const pts: Particle[] = [];
+  const totalChars = words.reduce((count, word) => count + word.length, 0);
+  const step = Math.max(
+    BASE_GRID_STEP,
+    Math.ceil(Math.sqrt((fontSize * Math.max(totalChars, 1)) / 48))
+  );
 
   const lineCount = words.length;
   const totalTextH = lineCount * fontSize * 1.1;
@@ -76,12 +83,11 @@ function buildParticlesForWords(
     chars.forEach((char, ci) => {
       const cx = startX + ci * letterSpacing + letterSpacing * 0.5;
       const cy = lineY;
-      const glyphPts = sampleGlyph(char, fontSize, GRID_STEP);
-      const displayChar = char.toLowerCase();
+      const glyphPts = sampleGlyph(char, fontSize, step);
 
       glyphPts.forEach((pt) => {
         pts.push({
-          char: displayChar,
+          char: char.toLowerCase(),
           homeX: cx + pt.x,
           homeY: cy + pt.y,
           x: cx + pt.x,
@@ -96,7 +102,10 @@ function buildParticlesForWords(
     });
   });
 
-  return pts;
+  if (pts.length <= MAX_PARTICLES) return pts;
+
+  const stride = Math.ceil(pts.length / MAX_PARTICLES);
+  return pts.filter((_, index) => index % stride === 0);
 }
 
 interface Props {
@@ -113,6 +122,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const currentWordIdx = useRef(0);
   const morphing = useRef(false);
   const morphStart = useRef(0);
+  const lastFrame = useRef(0);
 
   const scrollRef = useRef(0);
   scrollRef.current = scrollProgress;
@@ -161,9 +171,17 @@ export default function InteractiveName({ scrollProgress }: Props) {
     rebuildForWord(0, true);
   }, [rebuildForWord]);
 
-  const render = useCallback(() => {
+  const render = useCallback((now: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    if (now - lastFrame.current < 1000 / TARGET_FPS) {
+      raf.current = requestAnimationFrame(render);
+      return;
+    }
+
+    lastFrame.current = now;
+
     const ctx = canvas.getContext("2d")!;
     const d = dpr.current;
     const m = mouse.current;
@@ -190,10 +208,6 @@ export default function InteractiveName({ scrollProgress }: Props) {
     const rSq = MOUSE_RADIUS * MOUSE_RADIUS;
     const ps = particles.current;
 
-    ctx.font = `900 ${CHAR_SIZE}px "Bebas Neue", "Inter", sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
     for (let i = 0; i < ps.length; i++) {
       const p = ps[i];
 
@@ -211,13 +225,10 @@ export default function InteractiveName({ scrollProgress }: Props) {
         const angle = Math.atan2(dy, dx);
         p.vx += Math.cos(angle) * forceSq * DISPERSE_FORCE;
         p.vy += Math.sin(angle) * forceSq * DISPERSE_FORCE;
-        p.vr += (Math.random() - 0.5) * forceSq * 25;
       }
 
       p.vx += (p.homeX - p.x) * RETURN_SPEED;
       p.vy += (p.homeY - p.y) * RETURN_SPEED;
-      p.vr *= 0.88;
-      p.rot += p.vr;
       p.vx *= 0.84;
       p.vy *= 0.84;
       p.x += p.vx;
@@ -233,12 +244,14 @@ export default function InteractiveName({ scrollProgress }: Props) {
 
       if (a < 0.02) continue;
 
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate((p.rot * Math.PI) / 180);
+      const pointSize = CHAR_SIZE * (0.22 + displaceNorm * 0.16);
       ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
-      ctx.fillText(p.char, 0, 0);
-      ctx.restore();
+      ctx.fillRect(
+        p.x - pointSize / 2,
+        p.y - pointSize / 2,
+        pointSize,
+        pointSize
+      );
     }
 
     ctx.restore();

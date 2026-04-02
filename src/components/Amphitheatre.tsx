@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+const TARGET_SCENE_FPS = 24;
+
 interface VideoItem {
   url: string;
   title: string;
@@ -19,6 +21,8 @@ export default function Amphitheatre({ progress }: { progress: number }) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [previewVid, setPreviewVid] = useState<HTMLVideoElement | null>(null);
   const rafRef = useRef<number>(0);
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
 
   // Load video items from gallery
   useEffect(() => {
@@ -69,20 +73,26 @@ export default function Amphitheatre({ progress }: { progress: number }) {
     }
   }, [hoveredIdx, videos]);
 
-  const renderScene = useCallback(() => {
+  const drawScene = useCallback((time: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
+    const nextWidth = Math.floor(w * dpr);
+    const nextHeight = Math.floor(h * dpr);
+
+    if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
+      canvas.width = nextWidth;
+      canvas.height = nextHeight;
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
 
-    const t = performance.now() * 0.001;
-    const reveal = Math.min(1, progress * 2);
+    const t = time * 0.001;
+    const reveal = Math.min(1, progressRef.current * 2);
 
     // -- Draw amphitheatre structure in ASCII/line art --
     const cx = w / 2;
@@ -214,19 +224,38 @@ export default function Amphitheatre({ progress }: { progress: number }) {
       ctx.fillText(starChar, sx, sy);
     }
 
-    rafRef.current = requestAnimationFrame(renderScene);
-  }, [progress]);
+  }, []);
+
+  const isVisible = progress > 0;
 
   useEffect(() => {
-    if (progress <= 0) {
+    if (!isVisible) {
       cancelAnimationFrame(rafRef.current);
       return;
     }
-    rafRef.current = requestAnimationFrame(renderScene);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [progress, renderScene]);
 
-  if (progress <= 0) return null;
+    let lastFrame = 0;
+
+    const loop = (now: number) => {
+      if (now - lastFrame >= 1000 / TARGET_SCENE_FPS) {
+        drawScene(now);
+        lastFrame = now;
+      }
+
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [drawScene, isVisible]);
+
+  useEffect(() => {
+    if (isVisible) {
+      drawScene(performance.now());
+    }
+  }, [drawScene, isVisible, progress]);
+
+  if (!isVisible) return null;
 
   // Layout video tiles in a curved grid
   const tileCount = Math.min(videos.length, 12);

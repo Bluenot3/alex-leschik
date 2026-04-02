@@ -32,6 +32,7 @@ export function useScrollEngine(sectionCount: number) {
   const lastNowRef = useRef(performance.now());
   const maxScrollRef = useRef(1);
   const sectionTopsRef = useRef<number[]>([]);
+  const frameRef = useRef(0);
 
   const buildSectionTops = useCallback(() => {
     const sections = document.querySelectorAll("[data-scroll-section]");
@@ -88,7 +89,7 @@ export function useScrollEngine(sectionCount: number) {
     const frame = (now: number) => {
       if (document.hidden) {
         lastNowRef.current = now;
-        requestAnimationFrame(frame);
+        frameRef.current = requestAnimationFrame(frame);
         return;
       }
 
@@ -111,14 +112,26 @@ export function useScrollEngine(sectionCount: number) {
       const si = sectionIndexFromScroll(window.scrollY);
       const rotation = getCubeRotation(smoothRef.current);
 
-      setState({
-        progress: tgtRef.current,
-        smoothProgress: smoothRef.current,
-        currentSection: si,
-        cubeRotation: rotation,
+      setState((prev) => {
+        if (
+          prev.currentSection === si &&
+          Math.abs(prev.progress - tgtRef.current) < 0.0015 &&
+          Math.abs(prev.smoothProgress - smoothRef.current) < 0.0015 &&
+          Math.abs(prev.cubeRotation.rx - rotation.rx) < 0.2 &&
+          Math.abs(prev.cubeRotation.ry - rotation.ry) < 0.2
+        ) {
+          return prev;
+        }
+
+        return {
+          progress: tgtRef.current,
+          smoothProgress: smoothRef.current,
+          currentSection: si,
+          cubeRotation: rotation,
+        };
       });
 
-      requestAnimationFrame(frame);
+      frameRef.current = requestAnimationFrame(frame);
     };
 
     resize();
@@ -133,14 +146,14 @@ export function useScrollEngine(sectionCount: number) {
     });
     ro.observe(document.documentElement);
 
-    const raf = requestAnimationFrame(frame);
+    frameRef.current = requestAnimationFrame(frame);
 
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("wheel", onWheel);
       ro.disconnect();
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(frameRef.current);
     };
   }, [buildSectionTops, sectionIndexFromScroll, getCubeRotation]);
 
