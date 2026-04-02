@@ -12,10 +12,11 @@ export default function AZ1Logo3D({ progress }: AZ1Logo3DProps) {
   const lastPos = useRef({ x: 0, y: 0 });
   const velocity = useRef({ x: 0, y: 0 });
   const animFrame = useRef(0);
+  const isVisible = progress > 0;
 
   // Auto-rotate when not dragging
   useEffect(() => {
-    if (isDragging || progress <= 0) return;
+    if (isDragging || !isVisible) return;
     let running = true;
     const spin = () => {
       if (!running) return;
@@ -33,7 +34,7 @@ export default function AZ1Logo3D({ progress }: AZ1Logo3DProps) {
       running = false;
       cancelAnimationFrame(animFrame.current);
     };
-  }, [isDragging, progress]);
+  }, [isDragging, isVisible]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     setIsDragging(true);
@@ -60,7 +61,7 @@ export default function AZ1Logo3D({ progress }: AZ1Logo3DProps) {
     setIsDragging(false);
   }, []);
 
-  if (progress <= 0) return null;
+  if (!isVisible) return null;
 
   const scale = Math.min(1, progress * 2);
   const opacity = Math.min(1, progress * 3);

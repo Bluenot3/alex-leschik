@@ -3,6 +3,33 @@ import { supabase } from "@/integrations/supabase/client";
 
 // ASCII character ramp from dark to light
 const ASCII_RAMP = " .,:;+*?%S#@";
+const SAMPLE_SIZE = 18;
+const TARGET_VIDEO_FPS = 15;
+
+let sharedSampleCanvas: HTMLCanvasElement | null = null;
+let sharedSampleContext: CanvasRenderingContext2D | null = null;
+
+function getSharedSampleContext() {
+  if (!sharedSampleCanvas) {
+    sharedSampleCanvas = document.createElement("canvas");
+    sharedSampleCanvas.width = SAMPLE_SIZE;
+    sharedSampleCanvas.height = SAMPLE_SIZE;
+    sharedSampleContext = sharedSampleCanvas.getContext("2d");
+  }
+
+  if (!sharedSampleCanvas || !sharedSampleContext) return null;
+
+  if (
+    sharedSampleCanvas.width !== SAMPLE_SIZE ||
+    sharedSampleCanvas.height !== SAMPLE_SIZE
+  ) {
+    sharedSampleCanvas.width = SAMPLE_SIZE;
+    sharedSampleCanvas.height = SAMPLE_SIZE;
+  }
+
+  sharedSampleContext.clearRect(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
+  return sharedSampleContext;
+}
 
 interface FloatingMedia {
   url: string;
@@ -23,6 +50,8 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
   const imagesLoadedRef = useRef<(HTMLImageElement | HTMLVideoElement)[]>([]);
   const rafRef = useRef<number>(0);
   const [loaded, setLoaded] = useState(false);
+  const [hasVideo, setHasVideo] = useState(false);
+  const progressRef = useRef(0);
 
   // Load gallery media from storage
   useEffect(() => {
@@ -74,6 +103,7 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
 
         mediaRef.current = items;
         imagesLoadedRef.current = elements;
+        setHasVideo(elements.some((element) => element instanceof HTMLVideoElement));
         setLoaded(true);
       } else {
         // Fallback: use cube face images
@@ -99,34 +129,51 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
 
           mediaRef.current = items;
           imagesLoadedRef.current = elements;
+          setHasVideo(false);
           setLoaded(true);
         }
       }
     };
 
     loadMedia();
+
+    return () => {
+      imagesLoadedRef.current.forEach((element) => {
+        if (element instanceof HTMLVideoElement) {
+          element.pause();
+          element.src = "";
+        }
+      });
+    };
   }, []);
 
   const vortexProgress = Math.max(0, (progress - 0.4) / 0.6);
+  progressRef.current = vortexProgress;
   const isVisible = vortexProgress > 0;
 
-  const render = useCallback(() => {
+  const drawFrame = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-    ctx.scale(dpr, dpr);
+    const nextWidth = Math.floor(w * dpr);
+    const nextHeight = Math.floor(h * dpr);
+
+    if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
+      canvas.width = nextWidth;
+      canvas.height = nextHeight;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     ctx.clearRect(0, 0, w, h);
 
     const elements = imagesLoadedRef.current;
-    const t = vortexProgress;
+    const t = progressRef.current;
     const count = elements.length;
 
     if (count === 0) {
@@ -145,18 +192,45 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
         renderMediaAsAscii(ctx, el, cx, cy, size, t, i);
       });
     }
-
-    rafRef.current = requestAnimationFrame(render);
-  }, [vortexProgress]);
+  }, []);
 
   useEffect(() => {
-    if (!isVisible) {
+    if (isVisible) {
+      drawFrame();
+    }
+  }, [drawFrame, isVisible, loaded, progress]);
+
+  useEffect(() => {
+    if (!isVisible || !hasVideo) {
       cancelAnimationFrame(rafRef.current);
       return;
     }
-    rafRef.current = requestAnimationFrame(render);
+
+    let lastFrame = 0;
+
+    const loop = (now: number) => {
+      if (now - lastFrame >= 1000 / TARGET_VIDEO_FPS) {
+        drawFrame();
+        lastFrame = now;
+      }
+
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [isVisible, render]);
+  }, [drawFrame, hasVideo, isVisible]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (isVisible) {
+        drawFrame();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [drawFrame, isVisible]);
 
   if (!isVisible) return null;
 
@@ -187,14 +261,12 @@ function renderMediaAsAscii(
   index: number
 ) {
   // Sample the source into a small buffer
-  const sampleSize = 28;
+  const sampleSize = SAMPLE_SIZE;
   const charW = size / sampleSize;
   const charH = charW * 1.8;
+  const offCtx = getSharedSampleContext();
 
-  const offscreen = document.createElement("canvas");
-  offscreen.width = sampleSize;
-  offscreen.height = sampleSize;
-  const offCtx = offscreen.getContext("2d")!;
+  if (!offCtx) return;
 
   try {
     const sw =
