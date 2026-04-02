@@ -1161,7 +1161,6 @@
     border-color: hsl(var(--foreground));
   }
 }
-}
 
 @layer utilities {
   @media (max-width: 56.25em) {
