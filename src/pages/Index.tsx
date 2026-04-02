@@ -11,6 +11,7 @@ import InteractiveName from "@/components/InteractiveName";
 import GalleryShowcase from "@/components/GalleryShowcase";
 import ScrollProjectReel from "@/components/ScrollProjectReel";
 import CommandDashboard from "@/components/CommandDashboard";
+import CrypticDivider from "@/components/CrypticDivider";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -58,6 +59,8 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(1)}>Enter</RevealCTA>
         </ScrollSection>
 
+        <CrypticDivider lines={4} label="// initializing" />
+
         {/* S1: Projects */}
         <ScrollSection index={1} align="right">
           <RevealLine />
@@ -84,6 +87,8 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(2)}>Explore</RevealCTA>
         </ScrollSection>
 
+        <CrypticDivider lines={5} label="// loading modules" />
+
         {/* S2: Vision */}
         <ScrollSection index={2}>
           <RevealLine />
@@ -102,6 +107,8 @@ export default function Index() {
           </RevealBody>
           <RevealCTA onClick={() => scrollToSection(3)}>Continue</RevealCTA>
         </ScrollSection>
+
+        <CrypticDivider lines={6} label="// compiling assets" />
 
         {/* S3: Craft */}
         <ScrollSection index={3} align="right">
@@ -129,6 +136,8 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(4)}>See more</RevealCTA>
         </ScrollSection>
 
+        <CrypticDivider lines={4} label="// rendering gallery" />
+
         {/* S4: Gallery — with showcase grid */}
         <ScrollSection index={4}>
           <RevealLine />
@@ -151,30 +160,42 @@ export default function Index() {
           <GalleryShowcase />
         </section>
 
+        <CrypticDivider lines={5} label="// streaming data" />
+
         {/* Cube Rain — raining ZZ logo glass cubes */}
         <section className="relative z-[1]">
           <CubeRain progress={Math.max(0, (smoothProgress - 0.55) / 0.15)} />
         </section>
+
+        <CrypticDivider lines={3} label="// building identity" />
 
         {/* AZ1 3D Rotatable Logo */}
         <section className="relative z-[1] px-6 md:px-12 lg:px-20">
           <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
         </section>
 
+        <CrypticDivider lines={6} label="// entering theatre" />
+
         {/* Amphitheatre — surround video screening room */}
         <section className="relative z-[1]">
           <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
         </section>
+
+        <CrypticDivider lines={5} label="// deploying projects" />
 
         {/* Glass Cube — below amphitheatre */}
         <section className="relative z-[1] flex items-center justify-center py-12">
           <GlassCube />
         </section>
 
+        <CrypticDivider lines={4} label="// loading previews" />
+
         {/* Scroll Project Reel — live embeds */}
         <section className="relative z-[1]">
           <ScrollProjectReel />
         </section>
+
+        <CrypticDivider lines={3} label="// end transmission" />
 
         {/* S5: Connect */}
         <ScrollSection index={5} align="right">
