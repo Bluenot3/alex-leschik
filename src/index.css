@@ -1039,16 +1039,42 @@
     transform: translateY(-3px);
   }
 
-  .proj-card__iframe {
+  .proj-card__image {
     width: 100%;
     height: 100%;
-    border: none;
-    pointer-events: none;
-    transition: pointer-events 0.3s;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .proj-card:hover .proj-card__iframe {
-    pointer-events: auto;
+  .proj-card:hover .proj-card__image {
+    transform: scale(1.04);
+  }
+
+  .proj-card__stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .proj-card__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
+  .proj-card__stat-num {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: hsl(var(--foreground));
+    letter-spacing: 0.04em;
+  }
+
+  .proj-card__stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.4rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground) / 0.4);
   }
 
   .proj-card__overlay {
