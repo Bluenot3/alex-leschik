@@ -219,7 +219,7 @@ export default function Index() {
               transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s",
             }}
           >
-            <a href="mailto:hello@alexleschik.com" className="cta-btn">
+            <a href="https://forms.gle/T4cMKd2TL4CkxGLD8" target="_blank" rel="noopener noreferrer" className="cta-btn">
               Get in touch
               <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                 <path d="M1 6h10M6 1l5 5-5 5" />
