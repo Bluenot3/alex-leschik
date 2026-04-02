@@ -22,6 +22,7 @@ import ScrollSection, {
 
 const SECTION_COUNT = 6;
 
+// Portfolio index
 export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
