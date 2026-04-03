@@ -28,9 +28,10 @@ interface FaceMedia {
 interface CubeSceneProps {
   rotation: { rx: number; ry: number };
   editMode?: boolean;
+  shifted?: boolean;
 }
 
-export default function CubeScene({ rotation, editMode = false }: CubeSceneProps) {
+export default function CubeScene({ rotation, editMode = false, shifted = false }: CubeSceneProps) {
   const [faceMedia, setFaceMedia] = useState<FaceMedia[]>(
     DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }))
   );
@@ -103,7 +104,7 @@ export default function CubeScene({ rotation, editMode = false }: CubeSceneProps
 
   return (
     <>
-      <div className="cube-scene">
+      <div className={`cube-scene ${shifted ? "cube-scene--shifted" : ""}`}>
         <div
           className="cube"
           style={{ transform: `rotateX(${rotation.rx}deg) rotateY(${rotation.ry}deg)` }}

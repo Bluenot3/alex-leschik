@@ -9,10 +9,10 @@ import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
 import InteractiveName from "@/components/InteractiveName";
 import GalleryShowcase from "@/components/GalleryShowcase";
-import FeaturedProjects from "@/components/FeaturedProjects";
-import ScrollProjectReel from "@/components/ScrollProjectReel";
+import ProjectSpotlight from "@/components/ProjectSpotlight";
 import CommandDashboard from "@/components/CommandDashboard";
 import CrypticDivider from "@/components/CrypticDivider";
+import CrypticBackground from "@/components/CrypticBackground";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -34,7 +34,7 @@ export default function Index() {
     <div className="relative">
       <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
 
-      <CubeScene rotation={cubeRotation} editMode={editMode} />
+      <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
       <InteractiveName scrollProgress={smoothProgress} />
       <ImageVortex progress={smoothProgress} />
       <HUD
@@ -73,15 +73,15 @@ export default function Index() {
             SHIPS
           </RevealHeading>
           <RevealBody>
-            From full-stack applications to experimental tools,
+            From the first youth AI literacy program in US history to
+            partnerships with Boys & Girls Clubs and NEAR Protocol —
             every project starts with a problem worth solving.
-            Clean architecture. Real users. Measurable impact.
           </RevealBody>
           <RevealStats
             stats={[
-              { num: "12+", label: "Projects" },
-              { num: "50K", label: "Lines" },
-              { num: "∞", label: "Curiosity" },
+              { num: "20+", label: "Projects" },
+              { num: "1st", label: "AI Literacy" },
+              { num: "∞", label: "Impact" },
             ]}
           />
           <RevealCTA onClick={() => scrollToSection(2)}>Explore</RevealCTA>
@@ -89,8 +89,11 @@ export default function Index() {
 
         <CrypticDivider lines={3} label="// deploying flagships" />
 
-        {/* FEATURED PROJECTS — 4 hero cards */}
-        <FeaturedProjects editMode={editMode} />
+        {/* Cryptic background fills white space behind projects */}
+        <div className="relative">
+          <CrypticBackground rows={30} speed={120} opacity={0.045} className="spotlight-bg" />
+          <ProjectSpotlight editMode={editMode} />
+        </div>
 
         <CrypticDivider lines={5} label="// loading modules" />
 
@@ -113,7 +116,10 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(3)}>Continue</RevealCTA>
         </ScrollSection>
 
-        <CrypticDivider lines={6} label="// compiling assets" />
+        <div className="relative">
+          <CrypticBackground rows={15} speed={150} opacity={0.035} />
+          <CrypticDivider lines={6} label="// compiling assets" />
+        </div>
 
         {/* S3: Craft */}
         <ScrollSection index={3} align="right">
@@ -163,9 +169,12 @@ export default function Index() {
           <GalleryShowcase />
         </section>
 
-        <CrypticDivider lines={5} label="// streaming data" />
+        <div className="relative">
+          <CrypticBackground rows={25} speed={100} opacity={0.04} />
+          <CrypticDivider lines={5} label="// streaming data" />
+        </div>
 
-        {/* Cube Rain — self-contained progress */}
+        {/* Cube Rain */}
         <section className="relative z-[1]">
           <CubeRain />
         </section>
@@ -184,21 +193,17 @@ export default function Index() {
           <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
         </section>
 
-        <CrypticDivider lines={5} label="// deploying projects" />
+        <CrypticDivider lines={5} label="// glass artifact" />
 
         {/* Glass Cube */}
         <section className="relative z-[1] flex items-center justify-center py-12">
           <GlassCube />
         </section>
 
-        <CrypticDivider lines={4} label="// loading previews" />
-
-        {/* Remaining 13 projects */}
-        <section className="relative z-[1]">
-          <ScrollProjectReel editMode={editMode} />
-        </section>
-
-        <CrypticDivider lines={3} label="// end transmission" />
+        <div className="relative">
+          <CrypticBackground rows={12} speed={130} opacity={0.04} />
+          <CrypticDivider lines={3} label="// end transmission" />
+        </div>
 
         {/* S5: Connect */}
         <ScrollSection index={5} align="right">
