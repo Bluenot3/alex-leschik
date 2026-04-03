@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=<>{}[]|/\\~^`.,:;!?-_∷∵∴⊕⊗※÷≈≡∞アイウエオカキクケコ";
-const TONES = ["--cryptic-ink", "--cryptic-cool", "--cryptic-warm", "--cryptic-violet"] as const;
+const TONES = ["--cryptic-ink", "--cryptic-cool", "--cryptic-warm", "--cryptic-violet", "--cryptic-blue", "--cryptic-cool", "--cryptic-warm"] as const;
 
 function randomGlyph() {
   return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
@@ -29,7 +29,7 @@ function randomSequence(length: number) {
 
 function generateLine(cols: number): DrizzleLine {
   const density = Math.random();
-  const segmentCount = density < 0.16 ? 0 : density < 0.46 ? 1 : density < 0.8 ? 2 : density < 0.94 ? 3 : 4;
+  const segmentCount = density < 0.08 ? 0 : density < 0.3 ? 1 : density < 0.6 ? 2 : density < 0.85 ? 3 : 4;
   const segments: GlyphSegment[] = [];
   let remaining = cols;
   let gap = Math.floor(Math.random() * Math.max(8, cols * 0.28));
@@ -45,7 +45,7 @@ function generateLine(cols: number): DrizzleLine {
 
     segments.push({
       gap: " ".repeat(Math.max(0, gap)),
-      opacity: 0.34 + Math.random() * 0.48,
+      opacity: 0.55 + Math.random() * 0.4,
       text: randomSequence(length),
       tone: TONES[Math.floor(Math.random() * TONES.length)],
     });
