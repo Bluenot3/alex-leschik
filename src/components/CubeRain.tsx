@@ -4,7 +4,7 @@ import { Environment } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 
-const CUBE_COUNT = 36;
+const CUBE_COUNT = 48;
 
 interface CubeData {
   dir: THREE.Vector3;
@@ -12,6 +12,8 @@ interface CubeData {
   rotSpeed: number;
   scale: number;
   delay: number;
+  wobblePhase: number;
+  wobbleSpeed: number;
 }
 
 function BlastCube({
@@ -33,8 +35,7 @@ function BlastCube({
     if (!meshRef.current) return;
 
     const raw = Math.max(0, (progressRef.current ?? 0) - data.delay);
-    // Smooth damp toward target
-    smoothP.current = THREE.MathUtils.damp(smoothP.current, raw, 6, delta);
+    smoothP.current = THREE.MathUtils.damp(smoothP.current, raw, 4, delta);
     const p = Math.min(smoothP.current, 1);
 
     if (p < 0.001) {
@@ -45,15 +46,16 @@ function BlastCube({
     meshRef.current.visible = true;
     if (planeRef.current) planeRef.current.visible = true;
 
-    // Ease-out cubic for blast motion
-    const ease = 1 - Math.pow(1 - p, 3);
+    // Ultra slow-mo ease — quartic ease-out for dramatic expansion
+    const ease = 1 - Math.pow(1 - p, 4);
 
-    // Position: blast outward from center, then idle float
     const elapsed = state.clock.elapsedTime;
-    const idleX = Math.sin(elapsed * 0.4 + index * 1.7) * 0.08 * ease;
-    const idleY = Math.cos(elapsed * 0.35 + index * 2.3) * 0.06 * ease;
-    const idleZ = Math.sin(elapsed * 0.3 + index * 0.9) * 0.05 * ease;
+    // Organic floating idle
+    const idleX = Math.sin(elapsed * 0.25 + data.wobblePhase) * 0.12 * ease;
+    const idleY = Math.cos(elapsed * 0.2 + data.wobblePhase * 1.3) * 0.1 * ease;
+    const idleZ = Math.sin(elapsed * 0.18 + data.wobblePhase * 0.7) * 0.08 * ease;
 
+    // Blast upward and outward — cubes move UP and toward camera
     const x = data.dir.x * ease + idleX;
     const y = data.dir.y * ease + idleY;
     const z = data.dir.z * ease + idleZ;
@@ -61,27 +63,28 @@ function BlastCube({
     meshRef.current.position.set(x, y, z);
     if (planeRef.current) planeRef.current.position.set(x, y, z);
 
-    // Rotation: spin fast at start, slow to gentle idle
-    const spinFactor = Math.max(0.05, 1 - ease * 0.92);
-    meshRef.current.rotation.x += delta * data.rotSpeed * spinFactor * data.rotAxis.x;
-    meshRef.current.rotation.y += delta * data.rotSpeed * spinFactor * data.rotAxis.y;
-    meshRef.current.rotation.z += delta * data.rotSpeed * spinFactor * data.rotAxis.z;
+    // Elegant slow spin that decays
+    const spinFactor = Math.max(0.02, 1 - ease * 0.95);
+    meshRef.current.rotation.x += delta * data.rotSpeed * spinFactor * data.rotAxis.x * 0.6;
+    meshRef.current.rotation.y += delta * data.rotSpeed * spinFactor * data.rotAxis.y * 0.6;
+    meshRef.current.rotation.z += delta * data.rotSpeed * spinFactor * data.rotAxis.z * 0.3;
     if (planeRef.current) planeRef.current.rotation.copy(meshRef.current.rotation);
 
-    // Scale pop-in
-    const popScale = data.scale * Math.min(1, ease * 1.2);
+    // Scale: start tiny, pop to full with slight overshoot
+    const rawScale = Math.min(1.08, ease * 1.15);
+    const popScale = data.scale * rawScale;
     meshRef.current.scale.setScalar(popScale);
     if (planeRef.current) planeRef.current.scale.setScalar(popScale);
 
-    // Fade opacity as they settle
+    // Opacity
     const mat = meshRef.current.material as THREE.MeshPhysicalMaterial;
-    mat.opacity = 0.6 + ease * 0.3;
+    mat.opacity = 0.5 + ease * 0.4;
   });
 
   return (
     <>
       <mesh ref={planeRef} visible={false} renderOrder={0}>
-        <planeGeometry args={[0.45, 0.45]} />
+        <planeGeometry args={[0.42, 0.42]} />
         <meshStandardMaterial
           map={texture}
           side={THREE.DoubleSide}
@@ -91,19 +94,19 @@ function BlastCube({
         />
       </mesh>
       <mesh ref={meshRef} visible={false} renderOrder={1}>
-        <boxGeometry args={[0.6, 0.6, 0.28]} />
+        <boxGeometry args={[0.55, 0.55, 0.25]} />
         <meshPhysicalMaterial
-          transmission={0.92}
-          roughness={0.06}
-          thickness={0.5}
-          ior={1.45}
+          transmission={0.94}
+          roughness={0.04}
+          thickness={0.6}
+          ior={1.5}
           clearcoat={1}
           clearcoatRoughness={0}
           transparent
           opacity={0.85}
           side={THREE.DoubleSide}
           depthWrite={false}
-          envMapIntensity={1}
+          envMapIntensity={1.2}
         />
       </mesh>
     </>
@@ -116,24 +119,28 @@ function Scene({ progressRef }: { progressRef: React.RefObject<number> }) {
   const cubes = useMemo<CubeData[]>(() => {
     const arr: CubeData[] = [];
     for (let i = 0; i < CUBE_COUNT; i++) {
-      // Distribute in a sphere blast pattern
+      // Upward explosion pattern — biased toward UP and toward camera
       const phi = Math.acos(2 * Math.random() - 1);
       const theta = Math.random() * Math.PI * 2;
-      const radius = 2.5 + Math.random() * 4;
+      const radius = 2.0 + Math.random() * 5;
+
+      // Bias Y upward, Z toward camera
+      const rawX = Math.sin(phi) * Math.cos(theta) * radius;
+      const rawY = Math.abs(Math.sin(phi) * Math.sin(theta)) * radius * 1.2 + radius * 0.3;
+      const rawZ = Math.cos(phi) * radius * 0.5 + Math.random() * 2;
+
       arr.push({
-        dir: new THREE.Vector3(
-          Math.sin(phi) * Math.cos(theta) * radius,
-          Math.sin(phi) * Math.sin(theta) * radius * 0.7,
-          Math.cos(phi) * radius * 0.6
-        ),
+        dir: new THREE.Vector3(rawX, rawY, rawZ),
         rotAxis: new THREE.Vector3(
           Math.random() - 0.5,
           Math.random() - 0.5,
           Math.random() - 0.5
         ).normalize(),
-        rotSpeed: 1.5 + Math.random() * 3,
-        scale: 0.3 + Math.random() * 0.45,
-        delay: Math.random() * 0.25,
+        rotSpeed: 1.0 + Math.random() * 2.5,
+        scale: 0.25 + Math.random() * 0.5,
+        delay: Math.random() * 0.35,
+        wobblePhase: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.3 + Math.random() * 0.4,
       });
     }
     return arr;
@@ -146,10 +153,10 @@ function Scene({ progressRef }: { progressRef: React.RefObject<number> }) {
 
   return (
     <>
-      <ambientLight intensity={2} />
-      <directionalLight position={[-4, 8, -4]} intensity={2.5} />
-      <directionalLight position={[3, 6, 5]} intensity={1.5} />
-      <pointLight position={[0, 0, 3]} intensity={1} color="#88ccff" />
+      <ambientLight intensity={1.8} />
+      <directionalLight position={[-4, 10, -4]} intensity={2} />
+      <directionalLight position={[3, 6, 5]} intensity={1.2} />
+      <pointLight position={[0, 2, 4]} intensity={0.8} color="#88ccff" />
       <Environment preset="city" />
       {cubes.map((c, i) => (
         <BlastCube key={i} data={c} index={i} progressRef={progressRef} texture={texture} />
@@ -165,9 +172,9 @@ export default function CubeRain({ progress }: { progress: number }) {
   if (progress <= 0) return null;
 
   return (
-    <div className="cube-rain-wrap" style={{ opacity: Math.min(1, progress * 3) }}>
+    <div className="cube-rain-wrap" style={{ opacity: Math.min(1, progress * 2.5) }}>
       <Canvas
-        camera={{ position: [0, 0, 9], fov: 50 }}
+        camera={{ position: [0, -1, 10], fov: 48 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         style={{ background: "transparent" }}
         dpr={[1, 1.5]}

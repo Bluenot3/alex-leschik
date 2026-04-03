@@ -27,7 +27,6 @@ export function useScrollEngine(sectionCount: number) {
   });
 
   const smoothRef = useRef(0);
-  const velocityRef = useRef(0);
   const tgtRef = useRef(0);
   const lastNowRef = useRef(performance.now());
   const maxScrollRef = useRef(1);
@@ -76,15 +75,7 @@ export function useScrollEngine(sectionCount: number) {
       tgtRef.current = Math.max(0, Math.min(1, window.scrollY / maxScrollRef.current));
     };
 
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const linePx = 16;
-      const pagePx = window.innerHeight * 0.9;
-      const delta = e.deltaMode === 1 ? e.deltaY * linePx : e.deltaMode === 2 ? e.deltaY * pagePx : e.deltaY;
-      if (Math.abs(delta) < 5) return;
-      velocityRef.current += delta;
-      velocityRef.current = Math.max(-600, Math.min(600, velocityRef.current));
-    };
+    // No custom wheel handler — use native scroll for reliability
 
     const frame = (now: number) => {
       if (document.hidden) {
@@ -95,16 +86,6 @@ export function useScrollEngine(sectionCount: number) {
 
       const dt = Math.min((now - lastNowRef.current) / 1000, 0.05);
       lastNowRef.current = now;
-
-      const friction = Math.abs(velocityRef.current) > 200 ? 0.8 : 0.9;
-      velocityRef.current *= Math.pow(friction, dt * 60);
-      if (Math.abs(velocityRef.current) < 0.01) velocityRef.current = 0;
-
-      if (Math.abs(velocityRef.current) > 0.2) {
-        const next = Math.max(0, Math.min(window.scrollY + velocityRef.current * 0.1, maxScrollRef.current));
-        window.scrollTo(0, next);
-        tgtRef.current = next / maxScrollRef.current;
-      }
 
       smoothRef.current += (tgtRef.current - smoothRef.current) * (1 - Math.exp(-dt * 8));
       smoothRef.current = Math.max(0, Math.min(1, smoothRef.current));
@@ -137,7 +118,6 @@ export function useScrollEngine(sectionCount: number) {
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("wheel", onWheel, { passive: false });
 
     const ro = new ResizeObserver(() => {
       resize();
@@ -151,7 +131,6 @@ export function useScrollEngine(sectionCount: number) {
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("wheel", onWheel);
       ro.disconnect();
       cancelAnimationFrame(frameRef.current);
     };
@@ -160,7 +139,6 @@ export function useScrollEngine(sectionCount: number) {
   const scrollToSection = useCallback((index: number) => {
     if (sectionTopsRef.current[index] !== undefined) {
       const targetY = sectionTopsRef.current[index];
-      velocityRef.current = 0;
 
       const startY = window.scrollY;
       const diff = targetY - startY;
