@@ -1032,12 +1032,18 @@
 
   .proj-card__embed {
     aspect-ratio: 16 / 10;
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     overflow: hidden;
     position: relative;
     background: hsl(var(--foreground) / 0.03);
     border: 0.5px solid hsl(var(--border) / 0.4);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (min-width: 1024px) {
+    .proj-card__embed {
+      aspect-ratio: 16 / 9;
+    }
   }
 
   .proj-card:hover .proj-card__embed {
