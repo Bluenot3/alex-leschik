@@ -1,40 +1,63 @@
 import { useEffect, useRef, useState } from "react";
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=<>{}[]|/\\~^`.,:;!?-_∷∵∴⊕⊗※÷≈≡∞アイウエオカキクケコ";
-
-const COLORS = [
-  "rgba(99,102,241,0.35)",   // indigo
-  "rgba(168,85,247,0.3)",    // purple
-  "rgba(236,72,153,0.25)",   // pink
-  "rgba(34,211,238,0.3)",    // cyan
-  "rgba(74,222,128,0.25)",   // green
-  "rgba(251,191,36,0.25)",   // amber
-  "rgba(248,113,113,0.2)",   // red
-  "rgba(156,163,175,0.3)",   // gray
-];
+const TONES = ["--cryptic-ink", "--cryptic-cool", "--cryptic-warm", "--cryptic-violet"] as const;
 
 function randomGlyph() {
   return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
 }
 
-interface GlyphCell {
-  char: string;
-  color: string;
+interface GlyphSegment {
+  gap: string;
+  opacity: number;
+  text: string;
+  tone: (typeof TONES)[number];
 }
 
-function generateLine(cols: number): GlyphCell[] {
-  const arr: GlyphCell[] = [];
-  for (let i = 0; i < cols; i++) {
-    if (Math.random() < 0.35) {
-      arr.push({ char: " ", color: "transparent" });
-    } else {
-      arr.push({
-        char: randomGlyph(),
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      });
-    }
+interface DrizzleLine {
+  opacity: number;
+  segments: GlyphSegment[];
+}
+
+function randomSequence(length: number) {
+  let value = "";
+  for (let i = 0; i < length; i++) {
+    value += randomGlyph();
   }
-  return arr;
+  return value;
+}
+
+function generateLine(cols: number): DrizzleLine {
+  const density = Math.random();
+  const segmentCount = density < 0.16 ? 0 : density < 0.46 ? 1 : density < 0.8 ? 2 : density < 0.94 ? 3 : 4;
+  const segments: GlyphSegment[] = [];
+  let remaining = cols;
+  let gap = Math.floor(Math.random() * Math.max(8, cols * 0.28));
+
+  for (let i = 0; i < segmentCount && remaining > 4; i++) {
+    remaining -= gap;
+    if (remaining <= 4) break;
+
+    const length = Math.min(
+      remaining,
+      Math.floor(4 + Math.random() * Math.min(20, Math.max(5, remaining - 2)))
+    );
+
+    segments.push({
+      gap: " ".repeat(Math.max(0, gap)),
+      opacity: 0.34 + Math.random() * 0.48,
+      text: randomSequence(length),
+      tone: TONES[Math.floor(Math.random() * TONES.length)],
+    });
+
+    remaining -= length;
+    gap = Math.floor(Math.random() * Math.max(4, Math.min(remaining, cols * 0.2)));
+  }
+
+  return {
+    opacity: 0.48 + Math.random() * 0.36,
+    segments,
+  };
 }
 
 interface Props {
@@ -52,8 +75,9 @@ export default function CrypticBackground({
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [textLines, setTextLines] = useState<GlyphCell[][]>([]);
+  const [textLines, setTextLines] = useState<DrizzleLine[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const enhancedOpacity = Math.min(0.28, opacity * 2.35);
 
   useEffect(() => {
     const el = ref.current;
@@ -71,16 +95,24 @@ export default function CrypticBackground({
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
     }
-    const cols = Math.min(140, Math.floor((ref.current?.clientWidth || 800) / 7));
+
     const update = () => {
-      const newLines: GlyphCell[][] = [];
-      for (let i = 0; i < rows; i++) {
+      const width = ref.current?.clientWidth || 800;
+      const height = ref.current?.clientHeight || rows * 28;
+      const cols = Math.min(160, Math.floor(width / 9));
+      const lineCount = Math.max(rows, Math.ceil(height / 18));
+      const newLines: DrizzleLine[] = [];
+
+      for (let i = 0; i < lineCount; i++) {
         newLines.push(generateLine(cols));
       }
+
       setTextLines(newLines);
     };
+
     update();
     intervalRef.current = setInterval(update, speed);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -88,15 +120,30 @@ export default function CrypticBackground({
 
   return (
     <div
+      aria-hidden="true"
       ref={ref}
       className={`cryptic-bg ${className}`}
       style={{ opacity: visible ? 1 : 0 }}
     >
-      <pre className="cryptic-bg__text" style={{ opacity }}>
+      <pre className="cryptic-bg__text" style={{ opacity: enhancedOpacity }}>
         {textLines.map((line, i) => (
-          <span key={i} style={{ opacity: 0.5 + Math.sin(i * 0.25) * 0.3 }}>
-            {line.map((cell, j) => (
-              <span key={j} style={{ color: cell.color }}>{cell.char}</span>
+          <span
+            key={i}
+            className="cryptic-bg__line"
+            style={{ opacity: Math.max(0.12, line.opacity + Math.sin(i * 0.45) * 0.12) }}
+          >
+            {line.segments.length === 0 ? " " : line.segments.map((segment, j) => (
+              <span
+                key={j}
+                className="cryptic-bg__segment"
+                style={{
+                  color: `hsl(var(${segment.tone}) / ${segment.opacity})`,
+                  textShadow: `0 0 10px hsl(var(${segment.tone}) / 0.18)`,
+                }}
+              >
+                {segment.gap}
+                {segment.text}
+              </span>
             ))}
             {"\n"}
           </span>

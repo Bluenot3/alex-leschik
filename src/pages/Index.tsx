@@ -192,6 +192,7 @@ export default function Index() {
 
         {/* Cube Rain */}
         <section className="relative z-[1]">
+          <CrypticBackground rows={22} speed={125} opacity={0.06} />
           <CubeRain />
         </section>
 
@@ -207,6 +208,7 @@ export default function Index() {
 
         {/* Amphitheatre */}
         <section className="relative z-[1]">
+          <CrypticBackground rows={18} speed={145} opacity={0.05} />
           <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
         </section>
 
@@ -214,6 +216,7 @@ export default function Index() {
 
         {/* Glass Cube */}
         <section className="relative z-[1] flex items-center justify-center py-12">
+          <CrypticBackground rows={16} speed={150} opacity={0.05} />
           <GlassCube />
         </section>
 
