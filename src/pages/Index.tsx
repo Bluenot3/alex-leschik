@@ -9,6 +9,7 @@ import HUD from "@/components/HUD";
 import ImageVortex from "@/components/ImageVortex";
 import InteractiveName from "@/components/InteractiveName";
 import GalleryShowcase from "@/components/GalleryShowcase";
+import FeaturedProjects from "@/components/FeaturedProjects";
 import ScrollProjectReel from "@/components/ScrollProjectReel";
 import CommandDashboard from "@/components/CommandDashboard";
 import CrypticDivider from "@/components/CrypticDivider";
@@ -23,7 +24,6 @@ import ScrollSection, {
 
 const SECTION_COUNT = 6;
 
-// Portfolio index
 export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
@@ -87,6 +87,11 @@ export default function Index() {
           <RevealCTA onClick={() => scrollToSection(2)}>Explore</RevealCTA>
         </ScrollSection>
 
+        <CrypticDivider lines={3} label="// deploying flagships" />
+
+        {/* FEATURED PROJECTS — 4 hero cards */}
+        <FeaturedProjects editMode={editMode} />
+
         <CrypticDivider lines={5} label="// loading modules" />
 
         {/* S2: Vision */}
@@ -138,7 +143,7 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// rendering gallery" />
 
-        {/* S4: Gallery — with showcase grid */}
+        {/* S4: Gallery */}
         <ScrollSection index={4}>
           <RevealLine />
           <RevealTag>04 — Gallery</RevealTag>
@@ -150,47 +155,47 @@ export default function Index() {
           <RevealBody>
             Screenshots, prototypes, design explorations.
             The visual trail of building something from nothing.
-            Each face of the cube holds a different story.
           </RevealBody>
           <RevealCTA onClick={() => scrollToSection(5)}>Final turn</RevealCTA>
         </ScrollSection>
 
-        {/* Gallery showcase grid */}
         <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
           <GalleryShowcase />
         </section>
 
+        <CrypticDivider lines={5} label="// streaming data" />
+
+        {/* Cube Rain — self-contained progress */}
+        <section className="relative z-[1]">
+          <CubeRain />
+        </section>
+
         <CrypticDivider lines={3} label="// building identity" />
 
-        {/* AZ1 3D Rotatable Logo */}
+        {/* AZ1 3D Logo */}
         <section className="relative z-[1] px-6 md:px-12 lg:px-20">
           <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
         </section>
 
         <CrypticDivider lines={6} label="// entering theatre" />
 
-        {/* Amphitheatre — surround video screening room */}
+        {/* Amphitheatre */}
         <section className="relative z-[1]">
           <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
         </section>
 
-        <CrypticDivider lines={5} label="// crystallizing signal" />
+        <CrypticDivider lines={5} label="// deploying projects" />
 
-        {/* Glass Cube + micro logo cube blast */}
-        <section className="relative z-[1] flex min-h-[68vh] items-center justify-center overflow-hidden py-16 md:min-h-[72vh]">
-          <div className="absolute inset-0">
-            <CubeRain progress={Math.max(0, (smoothProgress - 0.72) / 0.2)} />
-          </div>
-          <div className="relative z-[2]">
-            {smoothProgress > 0.62 ? <GlassCube /> : null}
-          </div>
+        {/* Glass Cube */}
+        <section className="relative z-[1] flex items-center justify-center py-12">
+          <GlassCube />
         </section>
 
         <CrypticDivider lines={4} label="// loading previews" />
 
-        {/* Scroll Project Reel — live embeds */}
+        {/* Remaining 13 projects */}
         <section className="relative z-[1]">
-          <ScrollProjectReel />
+          <ScrollProjectReel editMode={editMode} />
         </section>
 
         <CrypticDivider lines={3} label="// end transmission" />
