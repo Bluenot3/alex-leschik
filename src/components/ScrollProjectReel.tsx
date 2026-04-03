@@ -167,14 +167,13 @@ function scrambleText(text: string, progress: number): string {
 function ReelCard({ item, index }: { item: Project; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [nearView, setNearView] = useState(false);
+  const [mountIframe, setMountIframe] = useState(false);
   const [titleText, setTitleText] = useState(item.title);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
   const side = index % 2 === 0 ? "left" : "right";
 
-  // Visibility for animation
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
@@ -186,17 +185,22 @@ function ReelCard({ item, index }: { item: Project; index: number }) {
     return () => io.disconnect();
   }, []);
 
-  // Separate observer for iframe lazy load — only mount when close
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setNearView(true); },
-      { rootMargin: "200px 0px", threshold: 0 }
+      ([entry]) => setMountIframe(entry.isIntersecting),
+      { rootMargin: "140px 0px", threshold: 0 }
     );
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!mountIframe) {
+      setIframeLoaded(false);
+    }
+  }, [mountIframe]);
 
   useEffect(() => {
     if (!visible) return;
@@ -233,7 +237,7 @@ function ReelCard({ item, index }: { item: Project; index: number }) {
                 <div className="proj-card__fallback-text">loading&hellip;</div>
               </div>
             )}
-            {nearView && (
+            {mountIframe && (
               <iframe
                 src={item.url}
                 title={item.title}
