@@ -1018,17 +1018,7 @@
     transform: translateX(0) translateY(0);
   }
 
-  .proj-card__index {
-    position: absolute;
-    top: -0.5rem;
-    left: -0.25rem;
-    font-family: var(--font-display);
-    font-size: 3rem;
-    color: hsl(var(--foreground) / 0.04);
-    line-height: 1;
-    pointer-events: none;
-    z-index: 2;
-  }
+  .proj-card__embed {
 
   .proj-card__embed {
     aspect-ratio: 16 / 10;
