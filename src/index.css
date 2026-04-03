@@ -41,10 +41,11 @@
     --font-display: "Bebas Neue", sans-serif;
     --font-mono: "DM Mono", monospace;
     --font-sans: "Inter", sans-serif;
+    --cryptic-blue: 210 85% 58%;
     --cryptic-ink: 214 18% 60%;
-    --cryptic-cool: 202 92% 67%;
-    --cryptic-warm: 31 92% 65%;
-    --cryptic-violet: 243 75% 72%;
+    --cryptic-cool: 205 88% 62%;
+    --cryptic-warm: 25 95% 58%;
+    --cryptic-violet: 255 72% 66%;
     --hairline: 0.5px;
     --ui-inset: 2rem;
     --cube-size: min(68vw, 68vh, 520px);
