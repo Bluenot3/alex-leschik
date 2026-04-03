@@ -77,7 +77,7 @@ export default function CrypticBackground({
   const [visible, setVisible] = useState(false);
   const [textLines, setTextLines] = useState<DrizzleLine[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
-  const enhancedOpacity = Math.min(0.28, opacity * 2.35);
+  const enhancedOpacity = Math.min(0.7, opacity * 6);
 
   useEffect(() => {
     const el = ref.current;
@@ -99,8 +99,8 @@ export default function CrypticBackground({
     const update = () => {
       const width = ref.current?.clientWidth || 800;
       const height = ref.current?.clientHeight || rows * 28;
-      const cols = Math.min(160, Math.floor(width / 9));
-      const lineCount = Math.max(rows, Math.ceil(height / 18));
+      const cols = Math.min(200, Math.floor(width / 7));
+      const lineCount = Math.max(rows, Math.ceil(height / 14));
       const newLines: DrizzleLine[] = [];
 
       for (let i = 0; i < lineCount; i++) {
