@@ -1174,10 +1174,9 @@
 
   .cryptic-bg__text {
     font-family: var(--font-mono);
-    font-size: 0.5rem;
-    line-height: 1.5;
-    letter-spacing: 0.06em;
-    color: hsl(var(--foreground) / 0.15);
+    font-size: 0.55rem;
+    line-height: 1.6;
+    letter-spacing: 0.08em;
     text-align: center;
     white-space: pre;
     overflow: hidden;
