@@ -8,13 +8,13 @@ const WORD_SETS: string[][] = [
   ["AZ1"],
 ];
 
-const CHAR_SIZE = 7;
-const BASE_GRID_STEP = 4;
-const MAX_PARTICLES = 2200;
-const TARGET_FPS = 30;
-const MOUSE_RADIUS = 100;
-const RETURN_SPEED = 0.08;
-const DISPERSE_FORCE = 18;
+const CHAR_SIZE = 8;
+const BASE_GRID_STEP = 3;
+const MAX_PARTICLES = 4800;
+const TARGET_FPS = 60;
+const MOUSE_RADIUS = 110;
+const RETURN_SPEED = 0.07;
+const DISPERSE_FORCE = 16;
 
 interface Particle {
   char: string;
@@ -61,13 +61,13 @@ function buildParticlesForWords(
   w: number,
   h: number
 ): Particle[] {
-  const fontSize = Math.min(w * 0.16, 128);
+  const fontSize = Math.min(w * 0.18, 150);
   const letterSpacing = fontSize * 0.68;
   const pts: Particle[] = [];
   const totalChars = words.reduce((count, word) => count + word.length, 0);
   const step = Math.max(
     BASE_GRID_STEP,
-    Math.ceil(Math.sqrt((fontSize * Math.max(totalChars, 1)) / 48))
+    Math.ceil(Math.sqrt((fontSize * Math.max(totalChars, 1)) / 90))
   );
 
   const lineCount = words.length;
@@ -237,14 +237,14 @@ export default function InteractiveName({ scrollProgress }: Props) {
       const homeDist = Math.abs(p.x - p.homeX) + Math.abs(p.y - p.homeY);
       const displaceNorm = Math.min(1, homeDist / 120);
 
-      const hue = 218 + displaceNorm * 15;
-      const sat = 18 + displaceNorm * 30;
-      const light = 28 + displaceNorm * 18;
-      const a = p.alpha * Math.max(0.55, 0.85 - displaceNorm * 0.25);
+      const hue = 216 + displaceNorm * 20;
+      const sat = 32 + displaceNorm * 35;
+      const light = 18 + displaceNorm * 14;
+      const a = p.alpha * Math.max(0.7, 0.95 - displaceNorm * 0.2);
 
       if (a < 0.02) continue;
 
-      const pointSize = CHAR_SIZE * (0.22 + displaceNorm * 0.16);
+      const pointSize = CHAR_SIZE * (0.28 + displaceNorm * 0.18);
       ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
       ctx.fillRect(
         p.x - pointSize / 2,

@@ -1,63 +1,28 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=<>{}[]|/\\~^`.,:;!?-_∷∵∴⊕⊗※÷≈≡∞アイウエオカキクケコ";
-const TONES = ["--cryptic-ink", "--cryptic-cool", "--cryptic-warm", "--cryptic-violet", "--cryptic-blue", "--cryptic-cool", "--cryptic-warm"] as const;
+
+const PALETTE = [
+  [105, 145, 210],  // blue
+  [140, 115, 195],  // violet
+  [210, 140, 90],   // warm orange
+  [90, 170, 210],   // cyan
+  [130, 140, 165],  // ink/slate
+  [180, 100, 180],  // purple
+  [95, 185, 160],   // teal
+];
+
+interface Glyph {
+  char: string;
+  x: number;
+  y: number;
+  color: number[];
+  alpha: number;
+  nextSwap: number;
+}
 
 function randomGlyph() {
   return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-}
-
-interface GlyphSegment {
-  gap: string;
-  opacity: number;
-  text: string;
-  tone: (typeof TONES)[number];
-}
-
-interface DrizzleLine {
-  opacity: number;
-  segments: GlyphSegment[];
-}
-
-function randomSequence(length: number) {
-  let value = "";
-  for (let i = 0; i < length; i++) {
-    value += randomGlyph();
-  }
-  return value;
-}
-
-function generateLine(cols: number): DrizzleLine {
-  const density = Math.random();
-  const segmentCount = density < 0.08 ? 0 : density < 0.3 ? 1 : density < 0.6 ? 2 : density < 0.85 ? 3 : 4;
-  const segments: GlyphSegment[] = [];
-  let remaining = cols;
-  let gap = Math.floor(Math.random() * Math.max(8, cols * 0.28));
-
-  for (let i = 0; i < segmentCount && remaining > 4; i++) {
-    remaining -= gap;
-    if (remaining <= 4) break;
-
-    const length = Math.min(
-      remaining,
-      Math.floor(4 + Math.random() * Math.min(20, Math.max(5, remaining - 2)))
-    );
-
-    segments.push({
-      gap: " ".repeat(Math.max(0, gap)),
-      opacity: 0.55 + Math.random() * 0.4,
-      text: randomSequence(length),
-      tone: TONES[Math.floor(Math.random() * TONES.length)],
-    });
-
-    remaining -= length;
-    gap = Math.floor(Math.random() * Math.max(4, Math.min(remaining, cols * 0.2)));
-  }
-
-  return {
-    opacity: 0.48 + Math.random() * 0.36,
-    segments,
-  };
 }
 
 interface Props {
@@ -69,86 +34,137 @@ interface Props {
 
 export default function CrypticBackground({
   rows = 20,
-  speed = 100,
-  opacity = 0.08,
+  speed = 120,
+  opacity = 0.06,
   className = "",
 }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  const [textLines, setTextLines] = useState<DrizzleLine[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
-  const enhancedOpacity = Math.min(0.7, opacity * 6);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const glyphsRef = useRef<Glyph[]>([]);
+  const rafRef = useRef(0);
+  const visibleRef = useRef(false);
+  const lastRef = useRef(0);
+
+  const effectiveOpacity = Math.min(0.55, opacity * 4.5);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => setVisible(e.isIntersecting),
-      { threshold: 0.01, rootMargin: "100px 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
 
-  useEffect(() => {
-    if (!visible) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      return;
-    }
+    const ctx = canvas.getContext("2d", { alpha: true })!;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const update = () => {
-      const width = ref.current?.clientWidth || 800;
-      const height = ref.current?.clientHeight || rows * 28;
-      const cols = Math.min(200, Math.floor(width / 7));
-      const lineCount = Math.max(rows, Math.ceil(height / 14));
-      const newLines: DrizzleLine[] = [];
+    const buildGlyphs = () => {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w === 0 || h === 0) return;
 
-      for (let i = 0; i < lineCount; i++) {
-        newLines.push(generateLine(cols));
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+
+      const cellW = 9;
+      const cellH = 16;
+      const cols = Math.floor(w / cellW);
+      const lineCount = Math.max(rows, Math.floor(h / cellH));
+      const glyphs: Glyph[] = [];
+      const now = performance.now();
+
+      for (let row = 0; row < lineCount; row++) {
+        let col = Math.floor(Math.random() * 6);
+        while (col < cols) {
+          if (Math.random() < 0.55) {
+            const segLen = 3 + Math.floor(Math.random() * 14);
+            const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+            const baseAlpha = 0.35 + Math.random() * 0.5;
+
+            for (let s = 0; s < segLen && col + s < cols; s++) {
+              glyphs.push({
+                char: randomGlyph(),
+                x: (col + s) * cellW,
+                y: row * cellH + cellH * 0.75,
+                color,
+                alpha: baseAlpha * (0.7 + Math.random() * 0.3),
+                nextSwap: now + Math.random() * speed * 8,
+              });
+            }
+            col += segLen + 2 + Math.floor(Math.random() * 8);
+          } else {
+            col += 2 + Math.floor(Math.random() * 10);
+          }
+        }
       }
 
-      setTextLines(newLines);
+      glyphsRef.current = glyphs;
     };
 
-    update();
-    intervalRef.current = setInterval(update, speed);
+    const io = new IntersectionObserver(
+      ([e]) => { visibleRef.current = e.isIntersecting; },
+      { threshold: 0.01, rootMargin: "200px 0px" }
+    );
+    io.observe(container);
+
+    buildGlyphs();
+
+    const ro = new ResizeObserver(() => buildGlyphs());
+    ro.observe(container);
+
+    const paint = (now: number) => {
+      rafRef.current = requestAnimationFrame(paint);
+
+      if (!visibleRef.current) return;
+      if (now - lastRef.current < speed * 0.8) return;
+      lastRef.current = now;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      const fontSize = 10;
+      ctx.font = `300 ${fontSize}px "DM Mono", monospace`;
+      ctx.textBaseline = "middle";
+
+      const glyphs = glyphsRef.current;
+      for (let i = 0; i < glyphs.length; i++) {
+        const g = glyphs[i];
+
+        if (now > g.nextSwap) {
+          g.char = randomGlyph();
+          g.nextSwap = now + speed * (3 + Math.random() * 6);
+        }
+
+        const pulse = 0.85 + Math.sin(now * 0.001 + i * 0.37) * 0.15;
+        const a = g.alpha * effectiveOpacity * pulse;
+        if (a < 0.01) continue;
+
+        const [r, gc, b] = g.color;
+        ctx.fillStyle = `rgba(${r},${gc},${b},${a})`;
+        ctx.fillText(g.char, g.x, g.y);
+      }
+
+      ctx.restore();
+    };
+
+    rafRef.current = requestAnimationFrame(paint);
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      cancelAnimationFrame(rafRef.current);
+      io.disconnect();
+      ro.disconnect();
     };
-  }, [visible, rows, speed]);
+  }, [rows, speed, effectiveOpacity]);
 
   return (
     <div
       aria-hidden="true"
-      ref={ref}
+      ref={containerRef}
       className={`cryptic-bg ${className}`}
-      style={{ opacity: visible ? 1 : 0 }}
     >
-      <pre className="cryptic-bg__text" style={{ opacity: enhancedOpacity }}>
-        {textLines.map((line, i) => !line ? null : (
-          <span
-            key={i}
-            className="cryptic-bg__line"
-            style={{ opacity: Math.max(0.12, (line.opacity ?? 0.5) + Math.sin(i * 0.45) * 0.12) }}
-          >
-            {!line.segments || line.segments.length === 0 ? " " : line.segments.map((segment, j) => (
-              <span
-                key={j}
-                className="cryptic-bg__segment"
-                style={{
-                  color: `hsl(var(${segment.tone}) / ${segment.opacity})`,
-                  textShadow: `0 0 10px hsl(var(${segment.tone}) / 0.18)`,
-                }}
-              >
-                {segment.gap}
-                {segment.text}
-              </span>
-            ))}
-            {"\n"}
-          </span>
-        ))}
-      </pre>
+      <canvas ref={canvasRef} className="cryptic-bg__canvas" />
     </div>
   );
 }
