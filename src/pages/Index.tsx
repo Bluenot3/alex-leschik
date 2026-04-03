@@ -34,7 +34,7 @@ export default function Index() {
     <div className="relative">
       <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
 
-      <CubeScene rotation={cubeRotation} editMode={editMode} />
+      <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
       <InteractiveName scrollProgress={smoothProgress} />
       <ImageVortex progress={smoothProgress} />
       <HUD
