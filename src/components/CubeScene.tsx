@@ -31,7 +31,7 @@ interface CubeSceneProps {
   shifted?: boolean;
 }
 
-export default function CubeScene({ rotation, editMode = false }: CubeSceneProps) {
+export default function CubeScene({ rotation, editMode = false, shifted = false }: CubeSceneProps) {
   const [faceMedia, setFaceMedia] = useState<FaceMedia[]>(
     DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }))
   );
