@@ -283,16 +283,20 @@ export default function InteractiveName({ scrollProgress }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-0 flex items-center justify-start pointer-events-none"
+      className="fixed inset-0 z-0 flex items-center justify-start pointer-events-none hero-name-layer"
       style={{
         opacity,
-        paddingRight: "20vw",
         willChange: "opacity",
       }}
     >
       <div
-        className="pointer-events-auto w-full"
-        style={{ height: "clamp(240px, 38vw, 440px)" }}
+        className="pointer-events-auto"
+        style={{
+          width: "52vw",
+          maxWidth: "700px",
+          height: "clamp(200px, 30vw, 360px)",
+          marginLeft: "3vw",
+        }}
       >
         <canvas
           ref={canvasRef}

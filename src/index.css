@@ -49,6 +49,7 @@
     --hairline: 0.5px;
     --ui-inset: 2rem;
     --cube-size: min(68vw, 68vh, 520px);
+    --cube-size-mobile: min(55vw, 55vh, 280px);
 
     /* Liquid glass tokens */
     --glass-bg: rgba(255, 255, 255, 0.45);
@@ -138,7 +139,6 @@
   }
 
   /* 3D Cube — slate wireframe on white */
-  /* 3D Cube — slate wireframe on white */
   .cube-scene {
     position: fixed;
     inset: 0;
@@ -148,33 +148,42 @@
     justify-content: flex-end;
     perspective: 1100px;
     pointer-events: none;
-    padding-right: 4vw;
+    padding-right: 2vw;
     transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 1.2s ease;
   }
 
   .cube-scene--shifted {
-    transform: translateX(12vw) translateY(-8vh) scale(0.65);
-    opacity: 0.7;
+    transform: translateX(8vw) translateY(-6vh) scale(0.55);
+    opacity: 0.6;
   }
 
   @media (max-width: 768px) {
     .cube-scene {
       padding-right: 0;
       justify-content: center;
+      align-items: flex-start;
+      padding-top: 6vh;
     }
     .cube-scene--shifted {
-      transform: translateX(20vw) translateY(-15vh) scale(0.45);
-      opacity: 0.5;
+      transform: translateX(0) translateY(-18vh) scale(0.35);
+      opacity: 0.35;
     }
   }
 
   .cube {
-    width: var(--cube-size);
-    height: var(--cube-size);
+    width: min(var(--cube-size), 42vw);
+    height: min(var(--cube-size), 42vw);
     position: relative;
     transform-style: preserve-3d;
     will-change: transform;
+  }
+
+  @media (max-width: 768px) {
+    .cube {
+      width: var(--cube-size-mobile);
+      height: var(--cube-size-mobile);
+    }
   }
 
   .cube-face {
@@ -434,9 +443,15 @@
     min-height: 100vh;
     display: flex;
     align-items: center;
-    padding: 6rem calc(5rem + var(--ui-inset)) 6rem 5rem;
+    padding: 6rem calc(3rem + var(--ui-inset)) 6rem 3rem;
     position: relative;
     z-index: 1;
+  }
+
+  .scroll-section.\!min-h-screen {
+    min-height: 100vh;
+    align-items: flex-end;
+    padding-bottom: 8vh;
   }
 
   /* Face caption */
@@ -1415,14 +1430,24 @@
 @layer utilities {
   @media (max-width: 56.25em) {
     .scroll-section {
-      min-height: 150vh;
+      min-height: 100vh;
+      align-items: center;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    .scroll-section.\!min-h-screen {
+      min-height: 100vh;
       align-items: flex-end;
-      padding: 0 1.5rem 3.5rem;
+      padding-bottom: 6vh;
     }
 
     .glass-card, .glass-card-right {
       max-width: 100%;
       padding: 1.75rem 1.5rem;
+    }
+
+    .hero-name-layer {
+      display: none;
     }
   }
 }
