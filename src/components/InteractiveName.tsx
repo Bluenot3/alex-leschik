@@ -1,21 +1,29 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useLayoutEffect } from "react";
+import {
+  WORD_SETS,
+  clearParticleCaches,
+  getParticleTemplate,
+  prewarmParticleTemplates,
+  type ParticleTemplate,
+} from "@/components/interactive-name/particleLayout";
 
-const WORD_SETS: string[][] = [
-  ["ALEXANDER", "LESCHIK"],
-  ["DESIGNER"],
-  ["DEVELOPER"],
-  ["VISIONARY"],
-  ["AZ1"],
-];
+const MOUSE_RADIUS = 112;
+const DISPERSE_FORCE = 12.5;
+const RETURN_SPEED = 0.11;
+const HERO_RETURN_SPEED = 0.095;
 
-const CHAR_SIZE = 6;
-const BASE_GRID_STEP = 4;
-const MAX_PARTICLES = 2400;
-const MOUSE_RADIUS = 100;
-const RETURN_SPEED = 0.12;
-const DISPERSE_FORCE = 14;
+const BASE_COLOR_LUT = Array.from({ length: 101 }, (_, alphaIndex) => {
+  const alpha = (alphaIndex / 100).toFixed(2);
+  return `hsl(218 34% 22% / ${alpha})`;
+});
 
-// SoA for cache-friendly iteration
+const HERO_ACCENT_COLOR_LUT = Array.from({ length: 101 }, (_, alphaIndex) => {
+  const alpha = (alphaIndex / 100).toFixed(2);
+  return `hsl(208 86% 56% / ${alpha})`;
+});
+
+type BuildMode = "immediate" | "scatter";
+
 interface ParticleArrays {
   homeX: Float32Array;
   homeY: Float32Array;
@@ -25,105 +33,72 @@ interface ParticleArrays {
   vy: Float32Array;
   alpha: Float32Array;
   count: number;
+  pointSize: number;
+  accentStride: number;
+  accentScale: number;
+  isHero: boolean;
 }
 
 function emptyArrays(): ParticleArrays {
-  return { homeX: new Float32Array(0), homeY: new Float32Array(0), x: new Float32Array(0), y: new Float32Array(0), vx: new Float32Array(0), vy: new Float32Array(0), alpha: new Float32Array(0), count: 0 };
+  return {
+    homeX: new Float32Array(0),
+    homeY: new Float32Array(0),
+    x: new Float32Array(0),
+    y: new Float32Array(0),
+    vx: new Float32Array(0),
+    vy: new Float32Array(0),
+    alpha: new Float32Array(0),
+    count: 0,
+    pointSize: 1.9,
+    accentStride: 0,
+    accentScale: 1,
+    isHero: false,
+  };
 }
 
-// Pre-computed color LUT
-const COLOR_LUT: string[] = [];
-for (let a = 0; a <= 100; a++) {
-  const alpha = a / 100;
-  COLOR_LUT.push(`hsla(218,42%,22%,${alpha.toFixed(2)})`);
-}
+function createParticleState(
+  template: ParticleTemplate,
+  mode: BuildMode,
+  centerX: number,
+  centerY: number
+): ParticleArrays {
+  const homeX = template.homeX.slice();
+  const homeY = template.homeY.slice();
+  const x = homeX.slice();
+  const y = homeY.slice();
+  const alpha = new Float32Array(template.count);
+  const spread = template.introSpread;
 
-// Glyph cache
-const glyphCache = new Map<string, { x: number; y: number }[]>();
-
-function sampleGlyph(char: string, fontSize: number, step: number): { x: number; y: number }[] {
-  const key = `${char}_${fontSize}_${step}`;
-  const cached = glyphCache.get(key);
-  if (cached) return cached;
-
-  const c = document.createElement("canvas");
-  const s = Math.ceil(fontSize * 1.4);
-  c.width = s;
-  c.height = s;
-  const ctx = c.getContext("2d")!;
-  ctx.font = `900 ${fontSize}px "Bebas Neue", Impact, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "#000";
-  ctx.fillText(char, s / 2, s / 2);
-  const id = ctx.getImageData(0, 0, s, s);
-  const pts: { x: number; y: number }[] = [];
-  for (let py = 0; py < s; py += step) {
-    for (let px = 0; px < s; px += step) {
-      if (id.data[(py * s + px) * 4 + 3] > 60) {
-        pts.push({ x: px - s / 2, y: py - s / 2 });
-      }
+  if (mode === "scatter") {
+    for (let i = 0; i < template.count; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = spread * (0.4 + Math.random() * 0.9);
+      x[i] = centerX + Math.cos(angle) * distance;
+      y[i] = centerY + Math.sin(angle) * distance;
+      alpha[i] = template.isHero ? 0.12 : 0;
+    }
+  } else {
+    for (let i = 0; i < template.count; i += 1) {
+      x[i] += (Math.random() - 0.5) * spread * (template.isHero ? 0.16 : 0.08);
+      y[i] += (Math.random() - 0.5) * spread * (template.isHero ? 0.24 : 0.1);
+      alpha[i] = template.isHero ? 0.82 : 0.68;
     }
   }
-  glyphCache.set(key, pts);
-  return pts;
-}
 
-function buildParticlesForWords(words: string[], w: number, h: number): ParticleArrays {
-  const fontSize = Math.min(w * 0.18, 150);
-  const letterSpacing = fontSize * 0.68;
-  const totalChars = words.reduce((c, word) => c + word.length, 0);
-  const step = Math.max(BASE_GRID_STEP, Math.ceil(Math.sqrt((fontSize * Math.max(totalChars, 1)) / 50)));
-
-  const lineCount = words.length;
-  const totalTextH = lineCount * fontSize * 1.1;
-  const startY = (h - totalTextH) / 2 + fontSize * 0.55;
-
-  const rawPts: { hx: number; hy: number }[] = [];
-
-  words.forEach((line, lineIdx) => {
-    const chars = line.split("");
-    const totalW = chars.length * letterSpacing;
-    const startX = (w - totalW) / 2;
-    const lineY = startY + lineIdx * fontSize * 1.1;
-
-    chars.forEach((char, ci) => {
-      const cx = startX + ci * letterSpacing + letterSpacing * 0.5;
-      const cy = lineY;
-      const glyphPts = sampleGlyph(char, fontSize, step);
-      for (let k = 0; k < glyphPts.length; k++) {
-        rawPts.push({ hx: cx + glyphPts[k].x, hy: cy + glyphPts[k].y });
-      }
-    });
-  });
-
-  let selected = rawPts;
-  if (selected.length > MAX_PARTICLES) {
-    const stride = Math.ceil(selected.length / MAX_PARTICLES);
-    selected = selected.filter((_, i) => i % stride === 0);
-  }
-
-  const n = selected.length;
-  const arrs: ParticleArrays = {
-    homeX: new Float32Array(n),
-    homeY: new Float32Array(n),
-    x: new Float32Array(n),
-    y: new Float32Array(n),
-    vx: new Float32Array(n),
-    vy: new Float32Array(n),
-    alpha: new Float32Array(n),
-    count: n,
+  return {
+    homeX,
+    homeY,
+    x,
+    y,
+    vx: new Float32Array(template.count),
+    vy: new Float32Array(template.count),
+    alpha,
+    count: template.count,
+    pointSize: template.pointSize,
+    accentStride: template.accentStride,
+    accentScale: template.accentScale,
+    isHero: template.isHero,
   };
-
-  for (let i = 0; i < n; i++) {
-    arrs.homeX[i] = selected[i].hx;
-    arrs.homeY[i] = selected[i].hy;
-    arrs.x[i] = selected[i].hx;
-    arrs.y[i] = selected[i].hy;
-    arrs.alpha[i] = 1;
-  }
-
-  return arrs;
 }
 
 interface Props {
@@ -135,6 +110,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const particles = useRef<ParticleArrays>(emptyArrays());
   const mouse = useRef({ x: -9999, y: -9999 });
   const raf = useRef(0);
+  const warmupTimer = useRef<number | null>(null);
   const dpr = useRef(1);
   const dims = useRef({ w: 0, h: 0 });
   const currentWordIdx = useRef(0);
@@ -143,24 +119,12 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const scrollRef = useRef(0);
   scrollRef.current = scrollProgress;
 
-  const rebuildForWord = useCallback((idx: number, scatter: boolean) => {
+  const rebuildForWord = useCallback((idx: number, mode: BuildMode) => {
     const { w, h } = dims.current;
-    if (w === 0) return;
-    const arrs = buildParticlesForWords(WORD_SETS[idx], w, h);
+    if (w === 0 || h === 0) return;
 
-    if (scatter) {
-      const cx = w / 2;
-      const cy = h / 2;
-      for (let i = 0; i < arrs.count; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 50 + Math.random() * 100;
-        arrs.x[i] = cx + Math.cos(angle) * dist;
-        arrs.y[i] = cy + Math.sin(angle) * dist;
-        arrs.alpha[i] = 0;
-      }
-    }
-
-    particles.current = arrs;
+    const template = getParticleTemplate(idx, w, h);
+    particles.current = createParticleState(template, mode, w / 2, h / 2);
     currentWordIdx.current = idx;
     morphStart.current = performance.now();
   }, []);
@@ -179,7 +143,15 @@ export default function InteractiveName({ scrollProgress }: Props) {
     canvas.height = h * d;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
-    rebuildForWord(0, true);
+
+    if (warmupTimer.current !== null) {
+      window.clearTimeout(warmupTimer.current);
+    }
+
+    rebuildForWord(currentWordIdx.current, currentWordIdx.current === 0 ? "immediate" : "scatter");
+    warmupTimer.current = window.setTimeout(() => {
+      prewarmParticleTemplates(w, h);
+    }, 72);
   }, [rebuildForWord]);
 
   const render = useCallback((now: number) => {
@@ -201,66 +173,108 @@ export default function InteractiveName({ scrollProgress }: Props) {
     const targetIdx = Math.min(wordCount - 1, Math.floor(sp / segmentSize));
 
     if (targetIdx !== currentWordIdx.current) {
-      rebuildForWord(targetIdx, true);
+      rebuildForWord(targetIdx, targetIdx === 0 ? "immediate" : "scatter");
     }
 
-    const morphT = Math.min(1, (now - morphStart.current) / 350);
-    const morphEase = 1 - Math.pow(1 - morphT, 3);
+    const active = particles.current;
+    const morphDuration = active.isHero ? 160 : 320;
+    const morphT = Math.min(1, (now - morphStart.current) / morphDuration);
+    const morphEase = 1 - Math.pow(1 - morphT, 4);
+    const targetAlpha = active.isHero ? 1 : morphEase;
+    const returnSpeed = active.isHero ? HERO_RETURN_SPEED : RETURN_SPEED;
+    const friction = active.isHero ? 0.84 : 0.82;
+    const baseSize = active.pointSize * (active.isHero ? 1.1 + (1 - morphEase) * 0.34 : 1 + (1 - morphEase) * 0.1);
+    const baseHalf = baseSize * 0.5;
+    const accentPulse = active.isHero ? 0.88 + Math.sin(now * 0.006) * 0.14 : 1;
 
     const rSq = MOUSE_RADIUS * MOUSE_RADIUS;
-    const { homeX, homeY, x, y, vx, vy, alpha, count } = particles.current;
-    const halfSize = CHAR_SIZE * 0.15;
-    const fullSize = CHAR_SIZE * 0.3;
+    const { homeX, homeY, x, y, vx, vy, alpha, count } = active;
 
     let lastColorIdx = -1;
+    let lastAccentIdx = -1;
 
     for (let i = 0; i < count; i++) {
-      alpha[i] += (morphEase - alpha[i]) * 0.25;
+      alpha[i] += (targetAlpha - alpha[i]) * (active.isHero ? 0.14 : 0.24);
 
       const dx = x[i] - mx;
       const dy = y[i] - my;
       const distSq = dx * dx + dy * dy;
 
       if (distSq < rSq && distSq > 1) {
-        const dist = Math.sqrt(distSq);
-        const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
+        const force = (rSq - distSq) / rSq;
         const ff = force * force;
-        const angle = Math.atan2(dy, dx);
-        vx[i] += Math.cos(angle) * ff * DISPERSE_FORCE;
-        vy[i] += Math.sin(angle) * ff * DISPERSE_FORCE;
+        const invDist = 1 / Math.sqrt(distSq);
+        vx[i] += dx * invDist * ff * DISPERSE_FORCE;
+        vy[i] += dy * invDist * ff * DISPERSE_FORCE;
       }
 
-      vx[i] += (homeX[i] - x[i]) * RETURN_SPEED;
-      vy[i] += (homeY[i] - y[i]) * RETURN_SPEED;
-      vx[i] *= 0.82;
-      vy[i] *= 0.82;
+      vx[i] += (homeX[i] - x[i]) * returnSpeed;
+      vy[i] += (homeY[i] - y[i]) * returnSpeed;
+      vx[i] *= friction;
+      vy[i] *= friction;
       x[i] += vx[i];
       y[i] += vy[i];
 
-      const a = alpha[i] * 0.92;
-      if (a < 0.03) continue;
+      const a = alpha[i] * (active.isHero ? 0.98 : 0.92);
+      if (a < 0.04) continue;
+
+      const isAccent = active.isHero && active.accentStride > 0 && i % active.accentStride === 0;
+
+      if (isAccent) {
+        const accentAlpha = Math.min(1, a * (0.82 + accentPulse * 0.24));
+        const accentIdx = Math.min(100, (accentAlpha * 100) | 0);
+        if (accentIdx !== lastAccentIdx) {
+          ctx.fillStyle = HERO_ACCENT_COLOR_LUT[accentIdx];
+          lastAccentIdx = accentIdx;
+        }
+
+        const accentSize = baseSize * active.accentScale * accentPulse;
+        const accentHalf = accentSize * 0.5;
+        ctx.fillRect(x[i] - accentHalf, y[i] - accentHalf, accentSize, accentSize);
+        lastColorIdx = -1;
+        continue;
+      }
 
       const colorIdx = Math.min(100, (a * 100) | 0);
       if (colorIdx !== lastColorIdx) {
-        ctx.fillStyle = COLOR_LUT[colorIdx];
+        ctx.fillStyle = BASE_COLOR_LUT[colorIdx];
         lastColorIdx = colorIdx;
       }
-      ctx.fillRect(x[i] - halfSize, y[i] - halfSize, fullSize, fullSize);
+      ctx.fillRect(x[i] - baseHalf, y[i] - baseHalf, baseSize, baseSize);
     }
 
     ctx.restore();
     raf.current = requestAnimationFrame(render);
   }, [rebuildForWord]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     init();
     raf.current = requestAnimationFrame(render);
     window.addEventListener("resize", init);
     return () => {
       cancelAnimationFrame(raf.current);
       window.removeEventListener("resize", init);
+      if (warmupTimer.current !== null) {
+        window.clearTimeout(warmupTimer.current);
+      }
     };
   }, [init, render]);
+
+  useEffect(() => {
+    if (!("fonts" in document)) return;
+
+    let cancelled = false;
+
+    document.fonts.ready.then(() => {
+      if (cancelled) return;
+      clearParticleCaches();
+      init();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [init]);
 
   const onMove = useCallback((e: React.MouseEvent) => {
     const c = canvasRef.current;
@@ -277,23 +291,18 @@ export default function InteractiveName({ scrollProgress }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-0 flex items-center justify-start pointer-events-none hero-name-layer"
+      className="fixed inset-0 z-0 pointer-events-none hero-name-layer"
       style={{ opacity, willChange: "opacity" }}
     >
       <div
-        className="pointer-events-auto"
-        style={{
-          width: "52vw",
-          maxWidth: "700px",
-          height: "clamp(200px, 30vw, 360px)",
-          marginLeft: "3vw",
-        }}
+        className="pointer-events-auto interactive-name-container interactive-name-container--hero interactive-name-focus"
       >
         <canvas
           ref={canvasRef}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
-          className="block w-full h-full"
+          className="interactive-name-canvas"
+          aria-hidden="true"
           style={{ cursor: "default" }}
         />
       </div>
