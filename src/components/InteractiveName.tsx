@@ -8,32 +8,44 @@ const WORD_SETS: string[][] = [
   ["AZ1"],
 ];
 
-const CHAR_SIZE = 8;
-const BASE_GRID_STEP = 3;
-const MAX_PARTICLES = 4800;
-const TARGET_FPS = 60;
-const MOUSE_RADIUS = 110;
-const RETURN_SPEED = 0.07;
-const DISPERSE_FORCE = 16;
+const CHAR_SIZE = 6;
+const BASE_GRID_STEP = 4;
+const MAX_PARTICLES = 2400;
+const MOUSE_RADIUS = 100;
+const RETURN_SPEED = 0.12;
+const DISPERSE_FORCE = 14;
 
-interface Particle {
-  char: string;
-  homeX: number;
-  homeY: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  rot: number;
-  vr: number;
-  alpha: number;
+// SoA for cache-friendly iteration
+interface ParticleArrays {
+  homeX: Float32Array;
+  homeY: Float32Array;
+  x: Float32Array;
+  y: Float32Array;
+  vx: Float32Array;
+  vy: Float32Array;
+  alpha: Float32Array;
+  count: number;
 }
 
-function sampleGlyph(
-  char: string,
-  fontSize: number,
-  step: number
-): { x: number; y: number }[] {
+function emptyArrays(): ParticleArrays {
+  return { homeX: new Float32Array(0), homeY: new Float32Array(0), x: new Float32Array(0), y: new Float32Array(0), vx: new Float32Array(0), vy: new Float32Array(0), alpha: new Float32Array(0), count: 0 };
+}
+
+// Pre-computed color LUT
+const COLOR_LUT: string[] = [];
+for (let a = 0; a <= 100; a++) {
+  const alpha = a / 100;
+  COLOR_LUT.push(`hsla(218,42%,22%,${alpha.toFixed(2)})`);
+}
+
+// Glyph cache
+const glyphCache = new Map<string, { x: number; y: number }[]>();
+
+function sampleGlyph(char: string, fontSize: number, step: number): { x: number; y: number }[] {
+  const key = `${char}_${fontSize}_${step}`;
+  const cached = glyphCache.get(key);
+  if (cached) return cached;
+
   const c = document.createElement("canvas");
   const s = Math.ceil(fontSize * 1.4);
   c.width = s;
@@ -53,26 +65,21 @@ function sampleGlyph(
       }
     }
   }
+  glyphCache.set(key, pts);
   return pts;
 }
 
-function buildParticlesForWords(
-  words: string[],
-  w: number,
-  h: number
-): Particle[] {
+function buildParticlesForWords(words: string[], w: number, h: number): ParticleArrays {
   const fontSize = Math.min(w * 0.18, 150);
   const letterSpacing = fontSize * 0.68;
-  const pts: Particle[] = [];
-  const totalChars = words.reduce((count, word) => count + word.length, 0);
-  const step = Math.max(
-    BASE_GRID_STEP,
-    Math.ceil(Math.sqrt((fontSize * Math.max(totalChars, 1)) / 90))
-  );
+  const totalChars = words.reduce((c, word) => c + word.length, 0);
+  const step = Math.max(BASE_GRID_STEP, Math.ceil(Math.sqrt((fontSize * Math.max(totalChars, 1)) / 50)));
 
   const lineCount = words.length;
   const totalTextH = lineCount * fontSize * 1.1;
   const startY = (h - totalTextH) / 2 + fontSize * 0.55;
+
+  const rawPts: { hx: number; hy: number }[] = [];
 
   words.forEach((line, lineIdx) => {
     const chars = line.split("");
@@ -84,28 +91,39 @@ function buildParticlesForWords(
       const cx = startX + ci * letterSpacing + letterSpacing * 0.5;
       const cy = lineY;
       const glyphPts = sampleGlyph(char, fontSize, step);
-
-      glyphPts.forEach((pt) => {
-        pts.push({
-          char: char.toLowerCase(),
-          homeX: cx + pt.x,
-          homeY: cy + pt.y,
-          x: cx + pt.x,
-          y: cy + pt.y,
-          vx: 0,
-          vy: 0,
-          rot: 0,
-          vr: 0,
-          alpha: 1,
-        });
-      });
+      for (let k = 0; k < glyphPts.length; k++) {
+        rawPts.push({ hx: cx + glyphPts[k].x, hy: cy + glyphPts[k].y });
+      }
     });
   });
 
-  if (pts.length <= MAX_PARTICLES) return pts;
+  let selected = rawPts;
+  if (selected.length > MAX_PARTICLES) {
+    const stride = Math.ceil(selected.length / MAX_PARTICLES);
+    selected = selected.filter((_, i) => i % stride === 0);
+  }
 
-  const stride = Math.ceil(pts.length / MAX_PARTICLES);
-  return pts.filter((_, index) => index % stride === 0);
+  const n = selected.length;
+  const arrs: ParticleArrays = {
+    homeX: new Float32Array(n),
+    homeY: new Float32Array(n),
+    x: new Float32Array(n),
+    y: new Float32Array(n),
+    vx: new Float32Array(n),
+    vy: new Float32Array(n),
+    alpha: new Float32Array(n),
+    count: n,
+  };
+
+  for (let i = 0; i < n; i++) {
+    arrs.homeX[i] = selected[i].hx;
+    arrs.homeY[i] = selected[i].hy;
+    arrs.x[i] = selected[i].hx;
+    arrs.y[i] = selected[i].hy;
+    arrs.alpha[i] = 1;
+  }
+
+  return arrs;
 }
 
 interface Props {
@@ -114,15 +132,13 @@ interface Props {
 
 export default function InteractiveName({ scrollProgress }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particles = useRef<Particle[]>([]);
+  const particles = useRef<ParticleArrays>(emptyArrays());
   const mouse = useRef({ x: -9999, y: -9999 });
   const raf = useRef(0);
   const dpr = useRef(1);
   const dims = useRef({ w: 0, h: 0 });
   const currentWordIdx = useRef(0);
-  const morphing = useRef(false);
   const morphStart = useRef(0);
-  const lastFrame = useRef(0);
 
   const scrollRef = useRef(0);
   scrollRef.current = scrollProgress;
@@ -130,26 +146,23 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const rebuildForWord = useCallback((idx: number, scatter: boolean) => {
     const { w, h } = dims.current;
     if (w === 0) return;
-    const newPts = buildParticlesForWords(WORD_SETS[idx], w, h);
+    const arrs = buildParticlesForWords(WORD_SETS[idx], w, h);
 
     if (scatter) {
-      // Scatter new particles from random positions
       const cx = w / 2;
       const cy = h / 2;
-      newPts.forEach((p) => {
+      for (let i = 0; i < arrs.count; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const dist = 100 + Math.random() * 200;
-        p.x = cx + Math.cos(angle) * dist;
-        p.y = cy + Math.sin(angle) * dist;
-        p.rot = (Math.random() - 0.5) * 120;
-        p.alpha = 0;
-      });
+        const dist = 50 + Math.random() * 100;
+        arrs.x[i] = cx + Math.cos(angle) * dist;
+        arrs.y[i] = cy + Math.sin(angle) * dist;
+        arrs.alpha[i] = 0;
+      }
     }
 
-    particles.current = newPts;
+    particles.current = arrs;
     currentWordIdx.current = idx;
-    morphing.current = true;
-    morphStart.current = Date.now();
+    morphStart.current = performance.now();
   }, []);
 
   const init = useCallback(() => {
@@ -166,32 +179,23 @@ export default function InteractiveName({ scrollProgress }: Props) {
     canvas.height = h * d;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
-
-    // Initialize with first word set, scattered entrance
     rebuildForWord(0, true);
   }, [rebuildForWord]);
 
   const render = useCallback((now: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    if (now - lastFrame.current < 1000 / TARGET_FPS) {
-      raf.current = requestAnimationFrame(render);
-      return;
-    }
-
-    lastFrame.current = now;
+    if (!canvas) { raf.current = requestAnimationFrame(render); return; }
 
     const ctx = canvas.getContext("2d")!;
     const d = dpr.current;
-    const m = mouse.current;
+    const mx = mouse.current.x;
+    const my = mouse.current.y;
     const sp = scrollRef.current;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.scale(d, d);
 
-    // Determine which word set we should be showing based on scroll
     const wordCount = WORD_SETS.length;
     const segmentSize = 1 / wordCount;
     const targetIdx = Math.min(wordCount - 1, Math.floor(sp / segmentSize));
@@ -200,58 +204,48 @@ export default function InteractiveName({ scrollProgress }: Props) {
       rebuildForWord(targetIdx, true);
     }
 
-    // Morph-in timing
-    const morphElapsed = Date.now() - morphStart.current;
-    const morphT = Math.min(1, morphElapsed / 800);
+    const morphT = Math.min(1, (now - morphStart.current) / 350);
     const morphEase = 1 - Math.pow(1 - morphT, 3);
 
     const rSq = MOUSE_RADIUS * MOUSE_RADIUS;
-    const ps = particles.current;
+    const { homeX, homeY, x, y, vx, vy, alpha, count } = particles.current;
+    const halfSize = CHAR_SIZE * 0.15;
+    const fullSize = CHAR_SIZE * 0.3;
 
-    for (let i = 0; i < ps.length; i++) {
-      const p = ps[i];
+    let lastColorIdx = -1;
 
-      p.alpha += (morphEase - p.alpha) * 0.1;
+    for (let i = 0; i < count; i++) {
+      alpha[i] += (morphEase - alpha[i]) * 0.25;
 
-      // Mouse interaction
-      const dx = p.x - m.x;
-      const dy = p.y - m.y;
+      const dx = x[i] - mx;
+      const dy = y[i] - my;
       const distSq = dx * dx + dy * dy;
 
-      if (distSq < rSq && distSq > 0.01) {
+      if (distSq < rSq && distSq > 1) {
         const dist = Math.sqrt(distSq);
         const force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
-        const forceSq = force * force;
+        const ff = force * force;
         const angle = Math.atan2(dy, dx);
-        p.vx += Math.cos(angle) * forceSq * DISPERSE_FORCE;
-        p.vy += Math.sin(angle) * forceSq * DISPERSE_FORCE;
+        vx[i] += Math.cos(angle) * ff * DISPERSE_FORCE;
+        vy[i] += Math.sin(angle) * ff * DISPERSE_FORCE;
       }
 
-      p.vx += (p.homeX - p.x) * RETURN_SPEED;
-      p.vy += (p.homeY - p.y) * RETURN_SPEED;
-      p.vx *= 0.84;
-      p.vy *= 0.84;
-      p.x += p.vx;
-      p.y += p.vy;
+      vx[i] += (homeX[i] - x[i]) * RETURN_SPEED;
+      vy[i] += (homeY[i] - y[i]) * RETURN_SPEED;
+      vx[i] *= 0.82;
+      vy[i] *= 0.82;
+      x[i] += vx[i];
+      y[i] += vy[i];
 
-      const homeDist = Math.abs(p.x - p.homeX) + Math.abs(p.y - p.homeY);
-      const displaceNorm = Math.min(1, homeDist / 120);
+      const a = alpha[i] * 0.92;
+      if (a < 0.03) continue;
 
-      const hue = 216 + displaceNorm * 20;
-      const sat = 32 + displaceNorm * 35;
-      const light = 18 + displaceNorm * 14;
-      const a = p.alpha * Math.max(0.7, 0.95 - displaceNorm * 0.2);
-
-      if (a < 0.02) continue;
-
-      const pointSize = CHAR_SIZE * (0.28 + displaceNorm * 0.18);
-      ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${a})`;
-      ctx.fillRect(
-        p.x - pointSize / 2,
-        p.y - pointSize / 2,
-        pointSize,
-        pointSize
-      );
+      const colorIdx = Math.min(100, (a * 100) | 0);
+      if (colorIdx !== lastColorIdx) {
+        ctx.fillStyle = COLOR_LUT[colorIdx];
+        lastColorIdx = colorIdx;
+      }
+      ctx.fillRect(x[i] - halfSize, y[i] - halfSize, fullSize, fullSize);
     }
 
     ctx.restore();
@@ -284,10 +278,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
   return (
     <div
       className="fixed inset-0 z-0 flex items-center justify-start pointer-events-none hero-name-layer"
-      style={{
-        opacity,
-        willChange: "opacity",
-      }}
+      style={{ opacity, willChange: "opacity" }}
     >
       <div
         className="pointer-events-auto"
