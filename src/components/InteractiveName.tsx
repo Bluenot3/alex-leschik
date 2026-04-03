@@ -1,135 +1,86 @@
-import { useRef, useEffect, useCallback, useLayoutEffect } from "react";
+import { useRef, useEffect, useCallback, useLayoutEffect, useMemo } from "react";
 import {
-  WORD_SETS,
   clearParticleCaches,
   getParticleTemplate,
-  prewarmParticleTemplates,
   type ParticleTemplate,
 } from "@/components/interactive-name/particleLayout";
 
-const MOUSE_RADIUS = 112;
-const DISPERSE_FORCE = 12.5;
-const RETURN_SPEED = 0.11;
-const HERO_RETURN_SPEED = 0.095;
+/* ── Physics ── */
+const MOUSE_RADIUS = 120;
+const DISPERSE_FORCE = 13;
+const RETURN_SPEED = 0.1;
+const FRICTION = 0.83;
 
-const BASE_COLOR_LUT = Array.from({ length: 101 }, (_, alphaIndex) => {
-  const alpha = (alphaIndex / 100).toFixed(2);
-  return `hsl(218 34% 22% / ${alpha})`;
-});
+/* ── Color look-up tables (pre-computed for zero-alloc rendering) ── */
+const BASE_LUT = Array.from({ length: 101 }, (_, i) => `hsl(218 36% 20% / ${(i / 100).toFixed(2)})`);
+const ACCENT_LUT = Array.from({ length: 101 }, (_, i) => `hsl(210 88% 54% / ${(i / 100).toFixed(2)})`);
 
-const HERO_ACCENT_COLOR_LUT = Array.from({ length: 101 }, (_, alphaIndex) => {
-  const alpha = (alphaIndex / 100).toFixed(2);
-  return `hsl(208 86% 56% / ${alpha})`;
-});
+/* ── Scroll-transition thresholds (in scrollProgress units 0-1) ── */
+const TRANSITION_START = 0.02;   // start shrinking
+const TRANSITION_END = 0.12;     // fully locked in header
 
-type BuildMode = "immediate" | "scatter";
-
-interface ParticleArrays {
-  homeX: Float32Array;
-  homeY: Float32Array;
-  x: Float32Array;
-  y: Float32Array;
-  vx: Float32Array;
-  vy: Float32Array;
+/* ── Particle state (Structure-of-Arrays) ── */
+interface Particles {
+  homeX: Float32Array; homeY: Float32Array;
+  x: Float32Array; y: Float32Array;
+  vx: Float32Array; vy: Float32Array;
   alpha: Float32Array;
   count: number;
   pointSize: number;
   accentStride: number;
   accentScale: number;
-  isHero: boolean;
 }
 
-function emptyArrays(): ParticleArrays {
-  return {
-    homeX: new Float32Array(0),
-    homeY: new Float32Array(0),
-    x: new Float32Array(0),
-    y: new Float32Array(0),
-    vx: new Float32Array(0),
-    vy: new Float32Array(0),
-    alpha: new Float32Array(0),
-    count: 0,
-    pointSize: 1.9,
-    accentStride: 0,
-    accentScale: 1,
-    isHero: false,
-  };
-}
+const EMPTY: Particles = {
+  homeX: new Float32Array(0), homeY: new Float32Array(0),
+  x: new Float32Array(0), y: new Float32Array(0),
+  vx: new Float32Array(0), vy: new Float32Array(0),
+  alpha: new Float32Array(0),
+  count: 0, pointSize: 2, accentStride: 0, accentScale: 1,
+};
 
-function createParticleState(
-  template: ParticleTemplate,
-  mode: BuildMode,
-  centerX: number,
-  centerY: number
-): ParticleArrays {
-  const homeX = template.homeX.slice();
-  const homeY = template.homeY.slice();
-  const x = homeX.slice();
-  const y = homeY.slice();
-  const alpha = new Float32Array(template.count);
-  const spread = template.introSpread;
-
-  if (mode === "scatter") {
-    for (let i = 0; i < template.count; i += 1) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = spread * (0.4 + Math.random() * 0.9);
-      x[i] = centerX + Math.cos(angle) * distance;
-      y[i] = centerY + Math.sin(angle) * distance;
-      alpha[i] = template.isHero ? 0.12 : 0;
-    }
-  } else {
-    for (let i = 0; i < template.count; i += 1) {
-      x[i] += (Math.random() - 0.5) * spread * (template.isHero ? 0.16 : 0.08);
-      y[i] += (Math.random() - 0.5) * spread * (template.isHero ? 0.24 : 0.1);
-      alpha[i] = template.isHero ? 0.82 : 0.68;
-    }
+function spawnFromTemplate(tpl: ParticleTemplate, cw: number, ch: number): Particles {
+  const n = tpl.count;
+  const hx = tpl.homeX.slice();
+  const hy = tpl.homeY.slice();
+  const px = new Float32Array(n);
+  const py = new Float32Array(n);
+  const al = new Float32Array(n);
+  const cx = cw / 2;
+  const cy = ch / 2;
+  /* Entrance: particles start from a tight cloud center and sweep outward to home */
+  for (let i = 0; i < n; i++) {
+    const ang = Math.random() * 6.2832;
+    const r = 18 + Math.random() * 36;
+    px[i] = cx + Math.cos(ang) * r;
+    py[i] = cy + Math.sin(ang) * r;
+    al[i] = 0.06;
   }
-
   return {
-    homeX,
-    homeY,
-    x,
-    y,
-    vx: new Float32Array(template.count),
-    vy: new Float32Array(template.count),
-    alpha,
-    count: template.count,
-    pointSize: template.pointSize,
-    accentStride: template.accentStride,
-    accentScale: template.accentScale,
-    isHero: template.isHero,
+    homeX: hx, homeY: hy, x: px, y: py,
+    vx: new Float32Array(n), vy: new Float32Array(n), alpha: al,
+    count: n, pointSize: tpl.pointSize,
+    accentStride: tpl.accentStride, accentScale: tpl.accentScale,
   };
 }
 
-interface Props {
-  scrollProgress: number;
-}
+/* ── Component ── */
+interface Props { scrollProgress: number; }
 
 export default function InteractiveName({ scrollProgress }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particles = useRef<ParticleArrays>(emptyArrays());
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const p = useRef<Particles>(EMPTY);
   const mouse = useRef({ x: -9999, y: -9999 });
   const raf = useRef(0);
-  const warmupTimer = useRef<number | null>(null);
   const dpr = useRef(1);
   const dims = useRef({ w: 0, h: 0 });
-  const currentWordIdx = useRef(0);
-  const morphStart = useRef(0);
-
+  const startTime = useRef(performance.now());
   const scrollRef = useRef(0);
   scrollRef.current = scrollProgress;
 
-  const rebuildForWord = useCallback((idx: number, mode: BuildMode) => {
-    const { w, h } = dims.current;
-    if (w === 0 || h === 0) return;
-
-    const template = getParticleTemplate(idx, w, h);
-    particles.current = createParticleState(template, mode, w / 2, h / 2);
-    currentWordIdx.current = idx;
-    morphStart.current = performance.now();
-  }, []);
-
-  const init = useCallback(() => {
+  /* Build particles for the canvas size */
+  const rebuild = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const container = canvas.parentElement!;
@@ -138,172 +89,145 @@ export default function InteractiveName({ scrollProgress }: Props) {
     const rect = container.getBoundingClientRect();
     const w = rect.width;
     const h = rect.height;
+    if (w < 4 || h < 4) return;
     dims.current = { w, h };
     canvas.width = w * d;
     canvas.height = h * d;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
 
-    if (warmupTimer.current !== null) {
-      window.clearTimeout(warmupTimer.current);
-    }
+    const tpl = getParticleTemplate(0, w, h); // index 0 = ALEXANDER LESCHIK
+    p.current = spawnFromTemplate(tpl, w, h);
+    startTime.current = performance.now();
+  }, []);
 
-    rebuildForWord(currentWordIdx.current, currentWordIdx.current === 0 ? "immediate" : "scatter");
-    warmupTimer.current = window.setTimeout(() => {
-      prewarmParticleTemplates(w, h);
-    }, 72);
-  }, [rebuildForWord]);
-
+  /* Render loop */
   const render = useCallback((now: number) => {
     const canvas = canvasRef.current;
     if (!canvas) { raf.current = requestAnimationFrame(render); return; }
-
     const ctx = canvas.getContext("2d")!;
     const d = dpr.current;
     const mx = mouse.current.x;
     const my = mouse.current.y;
-    const sp = scrollRef.current;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.scale(d, d);
 
-    const wordCount = WORD_SETS.length;
-    const segmentSize = 1 / wordCount;
-    const targetIdx = Math.min(wordCount - 1, Math.floor(sp / segmentSize));
+    /* Morph timing — assembles in ~300ms with ease-out-quart */
+    const elapsed = now - startTime.current;
+    const morphT = Math.min(1, elapsed / 300);
+    const ease = 1 - Math.pow(1 - morphT, 4);
 
-    if (targetIdx !== currentWordIdx.current) {
-      rebuildForWord(targetIdx, targetIdx === 0 ? "immediate" : "scatter");
-    }
-
-    const active = particles.current;
-    const morphDuration = active.isHero ? 160 : 320;
-    const morphT = Math.min(1, (now - morphStart.current) / morphDuration);
-    const morphEase = 1 - Math.pow(1 - morphT, 4);
-    const targetAlpha = active.isHero ? 1 : morphEase;
-    const returnSpeed = active.isHero ? HERO_RETURN_SPEED : RETURN_SPEED;
-    const friction = active.isHero ? 0.84 : 0.82;
-    const baseSize = active.pointSize * (active.isHero ? 1.1 + (1 - morphEase) * 0.34 : 1 + (1 - morphEase) * 0.1);
-    const baseHalf = baseSize * 0.5;
-    const accentPulse = active.isHero ? 0.88 + Math.sin(now * 0.006) * 0.14 : 1;
-
+    const { homeX, homeY, x, y, vx, vy, alpha, count, pointSize, accentStride, accentScale } = p.current;
     const rSq = MOUSE_RADIUS * MOUSE_RADIUS;
-    const { homeX, homeY, x, y, vx, vy, alpha, count } = active;
+    const size = pointSize * (1.12 + (1 - ease) * 0.3);
+    const half = size * 0.5;
+    const pulse = 0.88 + Math.sin(now * 0.005) * 0.12;
 
-    let lastColorIdx = -1;
-    let lastAccentIdx = -1;
+    let lastBase = -1;
+    let lastAcc = -1;
 
     for (let i = 0; i < count; i++) {
-      alpha[i] += (targetAlpha - alpha[i]) * (active.isHero ? 0.14 : 0.24);
+      alpha[i] += (ease - alpha[i]) * 0.18;
 
       const dx = x[i] - mx;
       const dy = y[i] - my;
-      const distSq = dx * dx + dy * dy;
-
-      if (distSq < rSq && distSq > 1) {
-        const force = (rSq - distSq) / rSq;
-        const ff = force * force;
-        const invDist = 1 / Math.sqrt(distSq);
-        vx[i] += dx * invDist * ff * DISPERSE_FORCE;
-        vy[i] += dy * invDist * ff * DISPERSE_FORCE;
+      const dSq = dx * dx + dy * dy;
+      if (dSq < rSq && dSq > 1) {
+        const f = (rSq - dSq) / rSq;
+        const ff = f * f;
+        const inv = 1 / Math.sqrt(dSq);
+        vx[i] += dx * inv * ff * DISPERSE_FORCE;
+        vy[i] += dy * inv * ff * DISPERSE_FORCE;
       }
 
-      vx[i] += (homeX[i] - x[i]) * returnSpeed;
-      vy[i] += (homeY[i] - y[i]) * returnSpeed;
-      vx[i] *= friction;
-      vy[i] *= friction;
+      vx[i] += (homeX[i] - x[i]) * RETURN_SPEED;
+      vy[i] += (homeY[i] - y[i]) * RETURN_SPEED;
+      vx[i] *= FRICTION;
+      vy[i] *= FRICTION;
       x[i] += vx[i];
       y[i] += vy[i];
 
-      const a = alpha[i] * (active.isHero ? 0.98 : 0.92);
+      const a = alpha[i] * 0.97;
       if (a < 0.04) continue;
 
-      const isAccent = active.isHero && active.accentStride > 0 && i % active.accentStride === 0;
-
-      if (isAccent) {
-        const accentAlpha = Math.min(1, a * (0.82 + accentPulse * 0.24));
-        const accentIdx = Math.min(100, (accentAlpha * 100) | 0);
-        if (accentIdx !== lastAccentIdx) {
-          ctx.fillStyle = HERO_ACCENT_COLOR_LUT[accentIdx];
-          lastAccentIdx = accentIdx;
-        }
-
-        const accentSize = baseSize * active.accentScale * accentPulse;
-        const accentHalf = accentSize * 0.5;
-        ctx.fillRect(x[i] - accentHalf, y[i] - accentHalf, accentSize, accentSize);
-        lastColorIdx = -1;
+      /* Accent particles (subtle blue highlight) */
+      const isAcc = accentStride > 0 && i % accentStride === 0;
+      if (isAcc) {
+        const ai = Math.min(100, (a * pulse * 100) | 0);
+        if (ai !== lastAcc) { ctx.fillStyle = ACCENT_LUT[ai]; lastAcc = ai; }
+        const as = size * accentScale * pulse;
+        const ah = as * 0.5;
+        ctx.fillRect(x[i] - ah, y[i] - ah, as, as);
+        lastBase = -1;
         continue;
       }
 
-      const colorIdx = Math.min(100, (a * 100) | 0);
-      if (colorIdx !== lastColorIdx) {
-        ctx.fillStyle = BASE_COLOR_LUT[colorIdx];
-        lastColorIdx = colorIdx;
-      }
-      ctx.fillRect(x[i] - baseHalf, y[i] - baseHalf, baseSize, baseSize);
+      const ci = Math.min(100, (a * 100) | 0);
+      if (ci !== lastBase) { ctx.fillStyle = BASE_LUT[ci]; lastBase = ci; }
+      ctx.fillRect(x[i] - half, y[i] - half, size, size);
     }
 
     ctx.restore();
     raf.current = requestAnimationFrame(render);
-  }, [rebuildForWord]);
+  }, []);
 
+  /* Lifecycle */
   useLayoutEffect(() => {
-    init();
+    rebuild();
     raf.current = requestAnimationFrame(render);
-    window.addEventListener("resize", init);
-    return () => {
-      cancelAnimationFrame(raf.current);
-      window.removeEventListener("resize", init);
-      if (warmupTimer.current !== null) {
-        window.clearTimeout(warmupTimer.current);
-      }
-    };
-  }, [init, render]);
+    window.addEventListener("resize", rebuild);
+    return () => { cancelAnimationFrame(raf.current); window.removeEventListener("resize", rebuild); };
+  }, [rebuild, render]);
 
+  /* Re-render on font load */
   useEffect(() => {
     if (!("fonts" in document)) return;
+    let dead = false;
+    document.fonts.ready.then(() => { if (!dead) { clearParticleCaches(); rebuild(); } });
+    return () => { dead = true; };
+  }, [rebuild]);
 
-    let cancelled = false;
-
-    document.fonts.ready.then(() => {
-      if (cancelled) return;
-      clearParticleCaches();
-      init();
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [init]);
-
+  /* Mouse handlers */
   const onMove = useCallback((e: React.MouseEvent) => {
     const c = canvasRef.current;
     if (!c) return;
     const r = c.getBoundingClientRect();
     mouse.current = { x: e.clientX - r.left, y: e.clientY - r.top };
   }, []);
+  const onLeave = useCallback(() => { mouse.current = { x: -9999, y: -9999 }; }, []);
 
-  const onLeave = useCallback(() => {
-    mouse.current = { x: -9999, y: -9999 };
-  }, []);
+  /* ── Scroll-driven transform: hero → sticky header ── */
+  const t = useMemo(() => {
+    if (scrollProgress <= TRANSITION_START) return 0;
+    if (scrollProgress >= TRANSITION_END) return 1;
+    return (scrollProgress - TRANSITION_START) / (TRANSITION_END - TRANSITION_START);
+  }, [scrollProgress]);
 
-  const opacity = Math.max(0, 1 - scrollProgress * 0.15);
+  const ease = t * t * (3 - 2 * t); // smoothstep
+  const scale = 1 - ease * 0.72;          // 1 → 0.28
+  const yShift = ease * -100;             // 0 → -100 (percentage shift upward)
+  const opacity = 1;                       // stays visible throughout
 
   return (
     <div
-      className="fixed inset-0 z-0 pointer-events-none hero-name-layer"
-      style={{ opacity, willChange: "opacity" }}
+      ref={wrapRef}
+      className="hero-name-layer"
+      style={{
+        opacity,
+        transform: `translateY(${yShift}%) scale(${scale})`,
+        transformOrigin: "left top",
+        willChange: "transform",
+      }}
     >
-      <div
-        className="pointer-events-auto interactive-name-container interactive-name-container--hero interactive-name-focus"
-      >
+      <div className="pointer-events-auto interactive-name-container interactive-name-container--hero">
         <canvas
           ref={canvasRef}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
           className="interactive-name-canvas"
           aria-hidden="true"
-          style={{ cursor: "default" }}
         />
       </div>
     </div>
