@@ -41,6 +41,10 @@
     --font-display: "Bebas Neue", sans-serif;
     --font-mono: "DM Mono", monospace;
     --font-sans: "Inter", sans-serif;
+    --cryptic-ink: 214 18% 60%;
+    --cryptic-cool: 202 92% 67%;
+    --cryptic-warm: 31 92% 65%;
+    --cryptic-violet: 243 75% 72%;
     --hairline: 0.5px;
     --ui-inset: 2rem;
     --cube-size: min(68vw, 68vh, 520px);
@@ -1161,27 +1165,95 @@
   /* Cryptic background fill */
   .cryptic-bg {
     position: absolute;
-    inset: 0;
+    inset: -1rem 0;
     overflow: hidden;
     pointer-events: none;
     z-index: 0;
     transition: opacity 0.8s ease;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  }
+
+  .cryptic-bg::before {
+    content: "";
+    position: absolute;
+    inset: -12%;
+    background:
+      radial-gradient(circle at 18% 32%, hsl(var(--cryptic-cool) / 0.11), transparent 28%),
+      radial-gradient(circle at 74% 58%, hsl(var(--cryptic-warm) / 0.11), transparent 24%),
+      radial-gradient(circle at 50% 20%, hsl(var(--cryptic-violet) / 0.08), transparent 22%);
+    filter: blur(34px);
+    opacity: 0.9;
   }
 
   .spotlight-bg {
-    inset: -5rem 0;
+    inset: -8rem 0;
   }
 
   .cryptic-bg__text {
+    position: relative;
+    z-index: 1;
     font-family: var(--font-mono);
-    font-size: 0.55rem;
-    line-height: 1.6;
-    letter-spacing: 0.08em;
-    text-align: center;
+    font-size: clamp(0.42rem, 0.34rem + 0.16vw, 0.58rem);
+    line-height: 1.95;
+    letter-spacing: 0.18em;
+    text-align: left;
     white-space: pre;
     overflow: hidden;
     margin: 0;
+    padding: clamp(1rem, 2vw, 2.75rem) clamp(1.25rem, 3vw, 3.5rem);
     user-select: none;
+    filter: saturate(1.12);
+  }
+
+  .cryptic-bg__line {
+    display: block;
+    min-height: 1.15em;
+    animation: cryptic-drizzle-pulse 10s ease-in-out infinite;
+  }
+
+  .cryptic-bg__line:nth-child(2n) {
+    animation-delay: -2s;
+  }
+
+  .cryptic-bg__line:nth-child(3n) {
+    animation-delay: -4s;
+  }
+
+  .cryptic-bg__segment {
+    color: hsl(var(--cryptic-ink) / 0.55);
+    text-shadow:
+      0 0 10px hsl(var(--cryptic-cool) / 0.08),
+      0 0 18px hsl(var(--cryptic-warm) / 0.04);
+  }
+
+  @keyframes cryptic-drizzle-pulse {
+    0%,
+    100% {
+      opacity: 0.84;
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      opacity: 1;
+      transform: translate3d(0, -2px, 0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .cryptic-bg {
+      inset: -0.5rem 0;
+    }
+
+    .spotlight-bg {
+      inset: -5rem 0;
+    }
+
+    .cryptic-bg__text {
+      font-size: 0.42rem;
+      line-height: 1.75;
+      letter-spacing: 0.12em;
+      padding: 0.85rem 0.9rem;
+    }
   }
 
   .proj-card__stat {
