@@ -104,7 +104,7 @@ export default function CubeScene({ rotation, editMode = false, shifted = false 
 
   return (
     <>
-      <div className="cube-scene">
+      <div className={`cube-scene ${shifted ? "cube-scene--shifted" : ""}`}>
         <div
           className="cube"
           style={{ transform: `rotateX(${rotation.rx}deg) rotateY(${rotation.ry}deg)` }}
