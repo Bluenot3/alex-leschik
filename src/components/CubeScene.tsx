@@ -28,6 +28,7 @@ interface FaceMedia {
 interface CubeSceneProps {
   rotation: { rx: number; ry: number };
   editMode?: boolean;
+  shifted?: boolean;
 }
 
 export default function CubeScene({ rotation, editMode = false }: CubeSceneProps) {
