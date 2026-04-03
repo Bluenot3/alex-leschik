@@ -160,13 +160,6 @@ export default function Index() {
           <GalleryShowcase />
         </section>
 
-        <CrypticDivider lines={5} label="// streaming data" />
-
-        {/* Cube Rain — raining ZZ logo glass cubes */}
-        <section className="relative z-[1]">
-          <CubeRain progress={Math.max(0, (smoothProgress - 0.55) / 0.15)} />
-        </section>
-
         <CrypticDivider lines={3} label="// building identity" />
 
         {/* AZ1 3D Rotatable Logo */}
@@ -181,11 +174,16 @@ export default function Index() {
           <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
         </section>
 
-        <CrypticDivider lines={5} label="// deploying projects" />
+        <CrypticDivider lines={5} label="// crystallizing signal" />
 
-        {/* Glass Cube — below amphitheatre */}
-        <section className="relative z-[1] flex items-center justify-center py-12">
-          <GlassCube />
+        {/* Glass Cube + micro logo cube blast */}
+        <section className="relative z-[1] flex min-h-[68vh] items-center justify-center overflow-hidden py-16 md:min-h-[72vh]">
+          <div className="absolute inset-0">
+            <CubeRain progress={Math.max(0, (smoothProgress - 0.72) / 0.2)} />
+          </div>
+          <div className="relative z-[2]">
+            {smoothProgress > 0.62 ? <GlassCube /> : null}
+          </div>
         </section>
 
         <CrypticDivider lines={4} label="// loading previews" />

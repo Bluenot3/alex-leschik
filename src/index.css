@@ -1337,11 +1337,15 @@
 
 /* ── Cube Rain ── */
 .cube-rain-wrap {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
   width: 100%;
-  height: 80vh;
+  height: 100%;
+  min-height: 36rem;
   pointer-events: none;
+  overflow: hidden;
+  transform: translateZ(0);
 }
 
 /* ── Amphitheatre ── */
@@ -1463,7 +1467,8 @@
   .amphitheatre-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
+
   .cube-rain-wrap {
-    height: 50vh;
+    min-height: 24rem;
   }
 }
