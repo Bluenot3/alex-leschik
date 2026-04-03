@@ -15,7 +15,7 @@ const PROJECTS: Project[] = [
     title: "PARKPULSE",
     url: "https://national-park-service.lovable.app",
     type: "iframe",
-    description: "Live explorer guide for discovering and exploring national parks with real-time data.",
+    description: "Live explorer guide for national parks with real-time data.",
     tag: "exploration · live-data",
     stats: [{ num: "43K+", label: "Parks" }, { num: "Real-time", label: "Updates" }],
   },
@@ -23,7 +23,7 @@ const PROJECTS: Project[] = [
     title: "CLINICALCIPHER",
     url: "https://zenmedcode.lovable.app",
     type: "iframe",
-    description: "Medical coding toolkit for healthcare professionals — encrypt, decode, and manage medical workflows.",
+    description: "Medical coding toolkit — encrypt, decode, manage workflows.",
     tag: "healthcare · automation",
     stats: [{ num: "500+", label: "Codes" }, { num: "HIPAA", label: "Compliant" }],
   },
@@ -31,7 +31,7 @@ const PROJECTS: Project[] = [
     title: "LEXLESCHIK",
     url: "https://leschiks-law.lovable.app",
     type: "iframe",
-    description: "Legal system analyzer and law research platform with intelligent document processing.",
+    description: "Legal system analyzer with intelligent document processing.",
     tag: "legal · ai",
     stats: [{ num: "10K+", label: "Cases" }, { num: "Legal", label: "Precedent" }],
   },
@@ -39,7 +39,7 @@ const PROJECTS: Project[] = [
     title: "CANVASFORGE",
     url: "https://phengine.lovable.app",
     type: "iframe",
-    description: "P5.js creative engine — forge stunning generative art and interactive visualizations in real-time.",
+    description: "P5.js creative engine for generative art and visualizations.",
     tag: "creative · generative",
     stats: [{ num: "60fps", label: "Performance" }, { num: "Infinite", label: "Possibilities" }],
   },
@@ -47,7 +47,7 @@ const PROJECTS: Project[] = [
     title: "TALENTFLOW",
     url: "https://hractions.lovable.app",
     type: "iframe",
-    description: "Seamless onboarding and talent pipeline management — turn hiring chaos into flow.",
+    description: "Seamless onboarding and talent pipeline management.",
     tag: "hr-tech · automation",
     stats: [{ num: "80%", label: "Faster Hire" }, { num: "Real-time", label: "Pipeline" }],
   },
@@ -55,7 +55,7 @@ const PROJECTS: Project[] = [
     title: "WORLDFORGE AI",
     url: "https://prompt-a-planet-forge.lovable.app",
     type: "iframe",
-    description: "Build entire worlds with AI prompts — from concept to fully realized environments.",
+    description: "Build entire worlds with AI — concept to environment.",
     tag: "ai · world-building",
     stats: [{ num: "Infinite", label: "Worlds" }, { num: "AI-Powered", label: "Creation" }],
   },
@@ -63,7 +63,7 @@ const PROJECTS: Project[] = [
     title: "SPARKLAB AI",
     url: "https://prompt-spark-playground.lovable.app",
     type: "iframe",
-    description: "Safe creative lab for experimenting with AI prompts — spark ideas, test theories, iterate fast.",
+    description: "Creative lab for experimenting with AI prompts.",
     tag: "ai · experimentation",
     stats: [{ num: "100K+", label: "Experiments" }, { num: "No-Code", label: "Interface" }],
   },
@@ -71,7 +71,7 @@ const PROJECTS: Project[] = [
     title: "CURATEPRO",
     url: "https://chetbeencool.lovable.app",
     type: "iframe",
-    description: "High-end professional portfolio platform for serious artists — curate, showcase, sell.",
+    description: "Portfolio platform for artists — curate, showcase, sell.",
     tag: "creator-economy · portfolio",
     stats: [{ num: "5K+", label: "Artists" }, { num: "$2M+", label: "Sales" }],
   },
@@ -79,7 +79,7 @@ const PROJECTS: Project[] = [
     title: "STEMSCORE",
     url: "https://stemjudges.lovable.app",
     type: "iframe",
-    description: "Definitive competition management tool for STEM judges — score, rank, and manage tournaments.",
+    description: "Competition management for STEM judges.",
     tag: "education · competition",
     stats: [{ num: "500+", label: "Events" }, { num: "50K+", label: "Competitors" }],
   },
@@ -87,7 +87,7 @@ const PROJECTS: Project[] = [
     title: "ZENTYPE",
     url: "https://terminalz.lovable.app",
     type: "iframe",
-    description: "Minimalist terminal-style letter writing — capture thoughts with zen-like simplicity.",
+    description: "Terminal-style writing with zen-like simplicity.",
     tag: "productivity · minimalist",
     stats: [{ num: "10K+", label: "Letters" }, { num: "Distraction-free", label: "Design" }],
   },
@@ -95,7 +95,7 @@ const PROJECTS: Project[] = [
     title: "INSPIRELENS",
     url: "https://brooks-showcase-studio.lovable.app",
     type: "iframe",
-    description: "Transform moments into inspiration — capture, curate, and share visual moments that matter.",
+    description: "Capture, curate, and share visual moments that matter.",
     tag: "visual-inspiration · media",
     stats: [{ num: "1M+", label: "Moments" }, { num: "Real-time", label: "Sharing" }],
   },
@@ -103,7 +103,7 @@ const PROJECTS: Project[] = [
     title: "GRAVITYGRID",
     url: "https://spacetime-sculptor.lovable.app",
     type: "iframe",
-    description: "Sophisticated physics simulation environment — explore gravity, spacetime, and dynamics.",
+    description: "Physics simulation — gravity, spacetime, and dynamics.",
     tag: "simulation · physics",
     stats: [{ num: "60fps", label: "Rendering" }, { num: "Einstein", label: "Approved" }],
   },
@@ -111,7 +111,7 @@ const PROJECTS: Project[] = [
     title: "ANIMATIC PRO",
     url: "https://toontool.lovable.app",
     type: "iframe",
-    description: "Industry-standard animation and toon-rendering suite for professional animators.",
+    description: "Animation and toon-rendering suite for professionals.",
     tag: "animation · professional",
     stats: [{ num: "24fps+", label: "Smooth" }, { num: "Pro-Grade", label: "Tools" }],
   },
@@ -119,7 +119,7 @@ const PROJECTS: Project[] = [
     title: "CHRONOSLIFE",
     url: "https://birth-spark.lovable.app/",
     type: "iframe",
-    description: "Temporal data visualization — see your life through the lens of time and moments.",
+    description: "See your life through the lens of time and moments.",
     tag: "data-visualization · personal",
     stats: [{ num: "Lifetime", label: "Data" }, { num: "Chronological", label: "Beauty" }],
   },
@@ -127,7 +127,7 @@ const PROJECTS: Project[] = [
     title: "MEDCODE",
     url: "https://zenmedcode.vercel.app",
     type: "iframe",
-    description: "Advanced medical coding platform — streamline clinical workflows with intelligent code lookup.",
+    description: "Advanced medical coding — intelligent code lookup.",
     tag: "healthcare · coding",
     stats: [{ num: "10K+", label: "Codes" }, { num: "ICD-10", label: "Compliant" }],
   },
@@ -135,7 +135,7 @@ const PROJECTS: Project[] = [
     title: "DEADLINEDASH",
     url: "https://decent-ducks-countdown-15.lovable.app",
     type: "iframe",
-    description: "Urgency-driven countdown timer — turn deadlines into momentum.",
+    description: "Urgency-driven countdown timer — deadlines into momentum.",
     tag: "productivity · gamified",
     stats: [{ num: "1M+", label: "Countdowns" }, { num: "Zero", label: "Procrastination" }],
   },
@@ -143,7 +143,7 @@ const PROJECTS: Project[] = [
     title: "BAKERSPOT",
     url: "https://popuppastries.lovable.app",
     type: "iframe",
-    description: "Pop-up pastry marketplace — discover, order, and celebrate artisanal baked goods.",
+    description: "Pop-up pastry marketplace — artisanal baked goods.",
     tag: "commerce · local",
     stats: [{ num: "200+", label: "Bakeries" }, { num: "$500K", label: "Revenue" }],
   },
@@ -167,18 +167,32 @@ function scrambleText(text: string, progress: number): string {
 function ReelCard({ item, index }: { item: Project; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [nearView, setNearView] = useState(false);
   const [titleText, setTitleText] = useState(item.title);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
   const side = index % 2 === 0 ? "left" : "right";
 
+  // Visibility for animation
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => setVisible(entry.isIntersecting),
-      { rootMargin: "100px 0px", threshold: 0.15 }
+      { rootMargin: "50px 0px", threshold: 0.1 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Separate observer for iframe lazy load — only mount when close
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setNearView(true); },
+      { rootMargin: "200px 0px", threshold: 0 }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -211,10 +225,6 @@ function ReelCard({ item, index }: { item: Project; index: number }) {
       ref={cardRef}
       className={`proj-card proj-card--${side} ${visible ? "proj-card--visible" : ""}`}
     >
-      <div className="proj-card__index">
-        {String(index + 1).padStart(2, "0")}
-      </div>
-
       <div className="proj-card__embed">
         {isIframe && !iframeError ? (
           <>
@@ -223,7 +233,7 @@ function ReelCard({ item, index }: { item: Project; index: number }) {
                 <div className="proj-card__fallback-text">loading&hellip;</div>
               </div>
             )}
-            {visible && (
+            {nearView && (
               <iframe
                 src={item.url}
                 title={item.title}
@@ -249,16 +259,6 @@ function ReelCard({ item, index }: { item: Project; index: number }) {
           <span className="proj-card__tag">{item.tag}</span>
           <h4 className="proj-card__title">{titleText}</h4>
           <p className="proj-card__desc">{item.description}</p>
-          {item.stats && (
-            <div className="proj-card__stats">
-              {item.stats.map((s) => (
-                <div key={s.label} className="proj-card__stat">
-                  <span className="proj-card__stat-num">{s.num}</span>
-                  <span className="proj-card__stat-label">{s.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
         <a
           href={item.url}
