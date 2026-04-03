@@ -124,12 +124,12 @@ const PROJECTS: Project[] = [
     stats: [{ num: "Lifetime", label: "Data" }, { num: "Chronological", label: "Beauty" }],
   },
   {
-    title: "NODEVIEW",
-    url: "https://github.com/Bluenot3/collabnet-visualizer-41837",
-    type: "link",
-    description: "Network node visualization and collaboration mapping — see connections, build teams.",
-    tag: "collaboration · open-source",
-    stats: [{ num: "⭐ 500+", label: "Stars" }, { num: "MIT", label: "License" }],
+    title: "MEDCODE",
+    url: "https://zenmedcode.vercel.app",
+    type: "iframe",
+    description: "Advanced medical coding platform — streamline clinical workflows with intelligent code lookup.",
+    tag: "healthcare · coding",
+    stats: [{ num: "10K+", label: "Codes" }, { num: "ICD-10", label: "Compliant" }],
   },
   {
     title: "DEADLINEDASH",
