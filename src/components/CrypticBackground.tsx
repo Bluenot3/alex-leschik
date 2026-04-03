@@ -126,13 +126,13 @@ export default function CrypticBackground({
       style={{ opacity: visible ? 1 : 0 }}
     >
       <pre className="cryptic-bg__text" style={{ opacity: enhancedOpacity }}>
-        {textLines.map((line, i) => (
+        {textLines.map((line, i) => !line ? null : (
           <span
             key={i}
             className="cryptic-bg__line"
-            style={{ opacity: Math.max(0.12, line.opacity + Math.sin(i * 0.45) * 0.12) }}
+            style={{ opacity: Math.max(0.12, (line.opacity ?? 0.5) + Math.sin(i * 0.45) * 0.12) }}
           >
-            {line.segments.length === 0 ? " " : line.segments.map((segment, j) => (
+            {!line.segments || line.segments.length === 0 ? " " : line.segments.map((segment, j) => (
               <span
                 key={j}
                 className="cryptic-bg__segment"
