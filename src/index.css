@@ -1050,6 +1050,20 @@
     transform: scale(1.04);
   }
 
+  .proj-card__iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .proj-card:hover .proj-card__iframe {
+    pointer-events: auto;
+  }
+
   .proj-card__stats {
     display: flex;
     gap: 1rem;
