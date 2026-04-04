@@ -1021,20 +1021,20 @@
   /* ── Project Spotlight ── */
   .spotlight-section {
     position: relative;
-    max-width: 1100px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 3rem 1.5rem 4rem;
+    padding: 4rem 2rem 5rem;
   }
 
   .spotlight-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
   }
 
   .spotlight-list {
     display: flex;
     flex-direction: column;
-    gap: 4rem;
+    gap: 5rem;
   }
 
   .spotlight-card {
@@ -1050,7 +1050,7 @@
   @media (min-width: 768px) {
     .spotlight-card {
       flex-direction: row;
-      gap: 2.5rem;
+      gap: 3rem;
       align-items: center;
     }
     .spotlight-card--right {
@@ -1070,20 +1070,22 @@
   }
 
   .spotlight-card__embed {
-    flex: 1.4;
-    aspect-ratio: 16 / 10;
-    border-radius: 1rem;
+    flex: 1.6;
+    aspect-ratio: 16 / 9.5;
+    border-radius: 1.25rem;
     overflow: hidden;
     position: relative;
     background: hsl(var(--foreground) / 0.03);
-    border: 0.5px solid hsl(var(--border) / 0.5);
+    border: 1px solid hsl(var(--border) / 0.6);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 200px;
+    min-height: 240px;
+    box-shadow: 0 4px 24px hsl(var(--foreground) / 0.04);
   }
 
   .spotlight-card:hover .spotlight-card__embed {
-    border-color: hsl(var(--foreground) / 0.2);
-    box-shadow: 0 20px 60px hsl(var(--foreground) / 0.1);
+    border-color: hsl(var(--foreground) / 0.18);
+    box-shadow: 0 24px 72px hsl(var(--foreground) / 0.12), 0 2px 8px hsl(var(--foreground) / 0.04);
+    transform: translateY(-2px);
   }
 
   .spotlight-card__iframe {
@@ -1109,30 +1111,31 @@
 
   .spotlight-card__title {
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    font-size: clamp(1.4rem, 2.6vw, 2.2rem);
     letter-spacing: 0.04em;
     color: hsl(var(--foreground));
     line-height: 1.05;
-    margin: 0.25rem 0 0.4rem;
+    margin: 0.3rem 0 0.5rem;
   }
 
   .spotlight-card__desc {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     line-height: 1.7;
     color: hsl(var(--muted-foreground));
     font-weight: 300;
+    max-width: 26rem;
   }
 
   .spotlight-card__stats {
     display: flex;
-    gap: 1.5rem;
-    margin-top: 0.5rem;
+    gap: 1.75rem;
+    margin-top: 0.75rem;
   }
 
   .spotlight-card__actions {
     display: flex;
     gap: 0.75rem;
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     flex-wrap: wrap;
   }
 
@@ -1272,7 +1275,7 @@
 
   .proj-card__stat-num {
     font-family: var(--font-display);
-    font-size: 1rem;
+    font-size: 1.15rem;
     color: hsl(var(--foreground));
     letter-spacing: 0.04em;
   }
@@ -1287,10 +1290,10 @@
 
   .proj-card__tag {
     font-family: var(--font-mono);
-    font-size: 0.5rem;
+    font-size: 0.52rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: hsl(var(--muted-foreground) / 0.5);
+    color: hsl(var(--cryptic-blue) / 0.7);
   }
 
   .proj-card__fallback {
