@@ -45,8 +45,8 @@ export default function CrypticBackground({
   const visibleRef = useRef(false);
   const lastRef = useRef(0);
 
-  const effectiveOpacity = Math.min(0.55, opacity * 4.5);
-  const frameInterval = Math.max(speed, 200); // Never paint faster than 5fps for bg texture
+  const effectiveOpacity = Math.min(0.85, opacity * 6);
+  const frameInterval = Math.max(speed, 140);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -79,7 +79,7 @@ export default function CrypticBackground({
           if (Math.random() < 0.55) {
             const segLen = 3 + Math.floor(Math.random() * 14);
             const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
-            const baseAlpha = 0.35 + Math.random() * 0.5;
+            const baseAlpha = 0.5 + Math.random() * 0.5;
 
             for (let s = 0; s < segLen && col + s < cols; s++) {
               glyphs.push({
@@ -131,7 +131,7 @@ export default function CrypticBackground({
 
       const glyphs = glyphsRef.current;
       // Only swap ~15% of glyphs per frame for a subtle shimmer instead of full redraw
-      const swapCount = Math.max(1, (glyphs.length * 0.12) | 0);
+      const swapCount = Math.max(1, (glyphs.length * 0.18) | 0);
       for (let s = 0; s < swapCount; s++) {
         const idx = (Math.random() * glyphs.length) | 0;
         glyphs[idx].char = randomGlyph();
