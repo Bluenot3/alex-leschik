@@ -179,12 +179,12 @@
     .cube-scene {
       padding-right: 0;
       justify-content: center;
-      align-items: flex-start;
-      padding-top: 6vh;
+      align-items: center;
+      padding-top: 42vh;
     }
     .cube-scene--shifted {
-      transform: translateX(0) translateY(-18vh) scale(0.35);
-      opacity: 0.35;
+      transform: translateX(0) translateY(-10vh) scale(0.32);
+      opacity: 0.3;
     }
   }
 
@@ -1468,13 +1468,15 @@
 
     .hero-name-layer {
       padding-left: 1rem;
+      padding-right: 1rem;
       align-items: flex-start;
-      padding-top: 18vh;
+      padding-top: 4vh;
+      justify-content: center;
     }
 
     .interactive-name-container--hero {
-      width: 92vw;
-      height: clamp(180px, 32vw, 280px);
+      width: 94vw;
+      height: clamp(140px, 36vh, 240px);
     }
   }
 }
