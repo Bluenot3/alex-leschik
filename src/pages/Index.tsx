@@ -52,7 +52,7 @@ export default function Index() {
         <div className="relative">
           <CrypticBackground rows={24} speed={130} opacity={0.06} />
           {/* Layered cryptic rain for depth */}
-          <CrypticBackground rows={18} speed={180} opacity={0.04} />
+          <CrypticBackground rows={18} speed={180} opacity={0.06} />
           <ScrollSection index={0}>
             <RevealTag>Portfolio — Alex Leschik</RevealTag>
             <RevealBody>
@@ -68,8 +68,8 @@ export default function Index() {
 
         {/* S1: Projects — cryptic bg */}
         <div className="relative">
-          <CrypticBackground rows={20} speed={110} opacity={0.055} />
-          <CrypticBackground rows={14} speed={160} opacity={0.04} />
+          <CrypticBackground rows={20} speed={110} opacity={0.07} />
+          <CrypticBackground rows={14} speed={160} opacity={0.05} />
           <ScrollSection index={1} align="right">
             <RevealLine />
             <RevealTag>01 — Projects</RevealTag>
@@ -100,7 +100,7 @@ export default function Index() {
 
         {/* Project Spotlight — cryptic bg behind all projects */}
         <div className="relative">
-          <CrypticBackground rows={40} speed={120} opacity={0.05} className="spotlight-bg" />
+          <CrypticBackground rows={40} speed={120} opacity={0.07} className="spotlight-bg" />
           <ProjectSpotlight editMode={editMode} />
         </div>
 
@@ -108,7 +108,7 @@ export default function Index() {
 
         {/* S2: Vision — cryptic bg */}
         <div className="relative">
-          <CrypticBackground rows={18} speed={140} opacity={0.05} />
+          <CrypticBackground rows={18} speed={140} opacity={0.07} />
           <ScrollSection index={2}>
             <RevealLine />
             <RevealTag>02 — Vision</RevealTag>
@@ -129,13 +129,13 @@ export default function Index() {
         </div>
 
         <div className="relative">
-          <CrypticBackground rows={15} speed={150} opacity={0.04} />
+          <CrypticBackground rows={15} speed={150} opacity={0.06} />
           <CrypticDivider lines={6} label="// compiling assets" />
         </div>
 
         {/* S3: Craft — cryptic bg */}
         <div className="relative">
-          <CrypticBackground rows={22} speed={120} opacity={0.05} />
+          <CrypticBackground rows={22} speed={120} opacity={0.07} />
           <ScrollSection index={3} align="right">
             <RevealLine />
             <RevealTag>03 — Craft</RevealTag>
@@ -166,7 +166,7 @@ export default function Index() {
 
         {/* S4: Gallery — cryptic bg */}
         <div className="relative">
-          <CrypticBackground rows={16} speed={130} opacity={0.045} />
+          <CrypticBackground rows={16} speed={130} opacity={0.07} />
           <ScrollSection index={4}>
             <RevealLine />
             <RevealTag>04 — Gallery</RevealTag>
@@ -184,18 +184,18 @@ export default function Index() {
         </div>
 
         <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
-          <CrypticBackground rows={20} speed={140} opacity={0.04} />
+          <CrypticBackground rows={20} speed={140} opacity={0.065} />
           <GalleryShowcase />
         </section>
 
         <div className="relative">
-          <CrypticBackground rows={25} speed={100} opacity={0.05} />
+          <CrypticBackground rows={25} speed={100} opacity={0.07} />
           <CrypticDivider lines={5} label="// streaming data" />
         </div>
 
         {/* Cube Rain */}
         <section className="relative z-[1]">
-          <CrypticBackground rows={22} speed={125} opacity={0.06} />
+          <CrypticBackground rows={22} speed={125} opacity={0.08} />
           <CubeRain />
         </section>
 
@@ -203,7 +203,7 @@ export default function Index() {
 
         {/* AZ1 3D Logo */}
         <section className="relative z-[1] px-6 md:px-12 lg:px-20">
-          <CrypticBackground rows={14} speed={160} opacity={0.035} />
+          <CrypticBackground rows={14} speed={160} opacity={0.065} />
           <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
         </section>
 
@@ -211,7 +211,7 @@ export default function Index() {
 
         {/* Amphitheatre */}
         <section className="relative z-[1]">
-          <CrypticBackground rows={18} speed={145} opacity={0.05} />
+          <CrypticBackground rows={18} speed={145} opacity={0.07} />
           <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
         </section>
 
@@ -219,18 +219,18 @@ export default function Index() {
 
         {/* Glass Cube */}
         <section className="relative z-[1] flex items-center justify-center py-12">
-          <CrypticBackground rows={16} speed={150} opacity={0.05} />
+          <CrypticBackground rows={16} speed={150} opacity={0.07} />
           <GlassCube />
         </section>
 
         <div className="relative">
-          <CrypticBackground rows={18} speed={120} opacity={0.05} />
+          <CrypticBackground rows={18} speed={120} opacity={0.07} />
           <CrypticDivider lines={3} label="// end transmission" />
         </div>
 
         {/* S5: Connect — cryptic bg */}
         <div className="relative">
-          <CrypticBackground rows={20} speed={110} opacity={0.055} />
+          <CrypticBackground rows={20} speed={110} opacity={0.07} />
           <ScrollSection index={5} align="right">
             <RevealLine />
             <RevealTag>05 — Connect</RevealTag>
