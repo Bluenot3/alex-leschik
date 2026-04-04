@@ -36,21 +36,21 @@ interface WordStyle {
 }
 
 const HERO_STYLE: WordStyle = {
-  widthFill: 0.88,
-  heightFill: 0.84,
-  letterSpacing: 0.52,
+  widthFill: 0.93,
+  heightFill: 0.88,
+  letterSpacing: 0.55,
   lineHeight: 1.04,
-  minFontSize: 32,
-  maxFontSize: 164,
+  minFontSize: 48,
+  maxFontSize: 180,
   minStep: 3,
   maxStep: 4,
   stepDivisor: 34,
-  maxParticles: 4200,
-  pointSize: 2.3,
+  maxParticles: 5000,
+  pointSize: 2.4,
   accentStride: 9,
   accentScale: 1.44,
   introSpread: 24,
-  verticalBias: -0.08,
+  verticalBias: -0.04,
 };
 
 const DEFAULT_STYLE: WordStyle = {

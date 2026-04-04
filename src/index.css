@@ -132,8 +132,8 @@
   }
 
   .interactive-name-container--hero {
-    width: min(70vw, 960px);
-    height: clamp(260px, 36vw, 460px);
+    width: min(80vw, 1100px);
+    height: clamp(280px, 40vw, 500px);
   }
 
   .interactive-name-canvas {
@@ -1470,16 +1470,16 @@
     }
 
     .hero-name-layer {
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
       align-items: flex-start;
       padding-top: 3vh;
       justify-content: center;
     }
 
     .interactive-name-container--hero {
-      width: 96vw;
-      height: clamp(120px, 28vh, 200px);
+      width: 98vw;
+      height: clamp(160px, 34vh, 260px);
     }
   }
 }
