@@ -13,21 +13,21 @@ const ALL_PROJECTS: ProjectData[] = [
   // === FLAGSHIP / HIGH-PROFILE ===
   {
     title: "ZEN AI LITERACY",
-    url: "https://zenaicolab.lovable.app",
-    description: "The first youth AI literacy program in United States history. Teaching the next generation to understand, build with, and think critically about artificial intelligence.",
-    tag: "ai-literacy · historic",
+    url: "https://zenai.world",
+    description: "The first youth AI literacy program in United States history — founded by Alexander Leschik. Teaching the next generation to understand, build with, and think critically about artificial intelligence.",
+    tag: "ai-literacy · 1st in US history",
     stats: [{ num: "1st", label: "In US History" }, { num: "Youth", label: "Focused" }],
   },
   {
     title: "BOYS & GIRLS CLUBS × ZEN",
-    url: "https://zenaicolab.lovable.app",
-    description: "Official AI literacy partnership with Boys & Girls Clubs of America — the largest youth non-profit organization in the world. Bringing AI education to millions of young minds.",
+    url: "https://bgcgw-cot.lovable.app",
+    description: "Official AI literacy partnership with Boys & Girls Clubs of Greater Washington — bringing ZEN AI Co.'s curriculum to communities across the DMV. AI education for millions of young minds.",
     tag: "partnership · youth",
     stats: [{ num: "4.7M+", label: "Youth Served" }, { num: "5K+", label: "Clubs" }],
   },
   {
     title: "NEAR PROTOCOL × ZEN",
-    url: "https://zenaicolab.lovable.app",
+    url: "https://near.org",
     description: "Collaboration with NEAR Protocol — the largest AI blockchain in the world. Building decentralized AI literacy tools and Web3-native educational experiences.",
     tag: "blockchain · ai · web3",
     stats: [{ num: "#1", label: "AI Blockchain" }, { num: "Web3", label: "Native" }],
