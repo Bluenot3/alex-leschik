@@ -87,9 +87,9 @@ export default function Index() {
             </RevealBody>
             <RevealStats
               stats={[
-                { num: "20+", label: "Projects" },
-                { num: "1st", label: "AI Literacy" },
-                { num: "∞", label: "Impact" },
+                { num: "50+", label: "Projects" },
+                { num: "5", label: "Fortune 500" },
+                { num: "3.5M", label: "Lines of Code" },
               ]}
             />
             <RevealCTA onClick={() => scrollToSection(2)}>Explore</RevealCTA>
