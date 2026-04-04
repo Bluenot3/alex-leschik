@@ -51,6 +51,8 @@ export default function Index() {
         {/* S0: Hero — cryptic bg behind hero */}
         <div className="relative">
           <CrypticBackground rows={24} speed={130} opacity={0.06} />
+          {/* Layered cryptic rain for depth */}
+          <CrypticBackground rows={18} speed={180} opacity={0.04} />
           <ScrollSection index={0}>
             <RevealTag>Portfolio — Alex Leschik</RevealTag>
             <RevealBody>
@@ -67,6 +69,7 @@ export default function Index() {
         {/* S1: Projects — cryptic bg */}
         <div className="relative">
           <CrypticBackground rows={20} speed={110} opacity={0.055} />
+          <CrypticBackground rows={14} speed={160} opacity={0.04} />
           <ScrollSection index={1} align="right">
             <RevealLine />
             <RevealTag>01 — Projects</RevealTag>

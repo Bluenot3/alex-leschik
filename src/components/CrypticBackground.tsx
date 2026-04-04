@@ -45,8 +45,8 @@ export default function CrypticBackground({
   const visibleRef = useRef(false);
   const lastRef = useRef(0);
 
-  const effectiveOpacity = Math.min(0.55, opacity * 4.5);
-  const frameInterval = Math.max(speed, 200); // Never paint faster than 5fps for bg texture
+  const effectiveOpacity = Math.min(0.85, opacity * 6);
+  const frameInterval = Math.max(speed, 140);
 
   useEffect(() => {
     const container = containerRef.current;
