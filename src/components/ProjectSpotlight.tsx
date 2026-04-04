@@ -12,11 +12,11 @@ export interface ProjectData {
 const ALL_PROJECTS: ProjectData[] = [
   // === FLAGSHIP / HIGH-PROFILE ===
   {
-    title: "ZEN AI LITERACY",
+    title: "1ST YOUTH AI LITERACY PROGRAM IN US HISTORY",
     url: "https://zenai.world",
-    description: "The first youth AI literacy program in United States history — founded by Alexander Leschik. Teaching the next generation to understand, build with, and think critically about artificial intelligence.",
-    tag: "ai-literacy · 1st in US history",
-    stats: [{ num: "1st", label: "In US History" }, { num: "Youth", label: "Focused" }],
+    description: "Founded by Alexander Leschik — the first-ever youth AI literacy program in United States history. Teaching the next generation to understand, build with, and think critically about artificial intelligence.",
+    tag: "zen ai co. · historic · ai-literacy",
+    stats: [{ num: "1st", label: "In US History" }, { num: "Youth", label: "Focused" }, { num: "ZEN", label: "AI Co." }],
   },
   {
     title: "BOYS & GIRLS CLUBS × ZEN",
