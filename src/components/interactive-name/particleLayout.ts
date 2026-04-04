@@ -36,9 +36,9 @@ interface WordStyle {
 }
 
 const HERO_STYLE: WordStyle = {
-  widthFill: 0.92,
+  widthFill: 0.88,
   heightFill: 0.84,
-  letterSpacing: 0.54,
+  letterSpacing: 0.52,
   lineHeight: 1.04,
   minFontSize: 32,
   maxFontSize: 164,

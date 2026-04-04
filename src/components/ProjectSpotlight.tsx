@@ -386,7 +386,7 @@ export default function ProjectSpotlight({ editMode = false }: { editMode?: bool
   return (
     <section className="spotlight-section" ref={containerRef}>
       <div className="spotlight-header">
-        <span className="tag-label">Portfolio — {projects.length} Deployed Products</span>
+        <span className="tag-label">Portfolio — 50+ Projects · 5 Fortune 500 Partnerships</span>
         <h2 className="display-heading display-lg">MY WORK</h2>
         <p className="body-muted" style={{ maxWidth: "32rem", margin: "0.5rem auto 0" }}>
           From the first youth AI literacy program in US history to enterprise platforms — every project ships, every line serves a purpose.

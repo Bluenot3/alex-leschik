@@ -1452,7 +1452,8 @@
     .scroll-section {
       min-height: 100vh;
       align-items: center;
-      padding: 2rem 1.25rem 3rem;
+      padding: 2rem 1rem 3rem;
+      overflow-x: hidden;
     }
 
     .scroll-section.\!min-h-screen {
@@ -1463,20 +1464,22 @@
 
     .glass-card, .glass-card-right {
       max-width: 100%;
-      padding: 1.75rem 1.5rem;
+      padding: 1.5rem 1.25rem;
+      overflow: hidden;
+      word-break: break-word;
     }
 
     .hero-name-layer {
       padding-left: 1rem;
       padding-right: 1rem;
       align-items: flex-start;
-      padding-top: 4vh;
+      padding-top: 3vh;
       justify-content: center;
     }
 
     .interactive-name-container--hero {
-      width: 94vw;
-      height: clamp(140px, 36vh, 240px);
+      width: 96vw;
+      height: clamp(120px, 28vh, 200px);
     }
   }
 }
