@@ -14,7 +14,6 @@ export default function LazySection({
   rootMargin?: string;
   unmountOnLeave?: boolean;
   className?: string;
-  as?: keyof JSX.IntrinsicElements;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
