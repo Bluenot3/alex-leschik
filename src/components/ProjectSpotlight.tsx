@@ -214,27 +214,56 @@ function SpotlightCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [mountIframe, setMountIframe] = useState(false);
+  const [mountIframe, setMountIframe] = useState(index < 3); // Eagerly mount first 3
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [titleText, setTitleText] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-    const io = new IntersectionObserver(
+
+    // Preload zone: start loading iframes 800px before they enter viewport
+    const preloadObserver = new IntersectionObserver(
       ([entry]) => {
-        setVisible(entry.isIntersecting);
-        if (entry.isIntersecting) setMountIframe(true);
-        else {
-          setMountIframe(false);
-          setIframeLoaded(false);
+        if (entry.isIntersecting) {
+          setMountIframe(true);
+          hasLoadedOnce.current = true;
+        } else if (hasLoadedOnce.current) {
+          // Only unmount if far away (1200px) to avoid reload on small scrolls
         }
       },
-      { rootMargin: "200px 0px", threshold: 0.1 }
+      { rootMargin: "800px 0px", threshold: 0 }
     );
-    io.observe(el);
-    return () => io.disconnect();
+
+    // Visibility zone: for animations and active state
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { rootMargin: "50px 0px", threshold: 0.1 }
+    );
+
+    // Cleanup zone: unmount iframes that are very far away to save memory
+    const cleanupObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting && hasLoadedOnce.current) {
+          setMountIframe(false);
+          setIframeLoaded(false);
+          hasLoadedOnce.current = false;
+        }
+      },
+      { rootMargin: "1500px 0px", threshold: 0 }
+    );
+
+    preloadObserver.observe(el);
+    visibilityObserver.observe(el);
+    cleanupObserver.observe(el);
+
+    return () => {
+      preloadObserver.disconnect();
+      visibilityObserver.disconnect();
+      cleanupObserver.disconnect();
+    };
   }, []);
 
   // Scramble text
