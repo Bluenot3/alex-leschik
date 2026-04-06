@@ -46,7 +46,7 @@ export default function CrypticBackground({
   const lastRef = useRef(0);
 
   const effectiveOpacity = Math.min(0.85, opacity * 6);
-  const frameInterval = Math.max(speed, 140);
+  const frameInterval = Math.max(speed, 200); // throttle harder for smoothness
 
   useEffect(() => {
     const container = containerRef.current;
@@ -76,7 +76,7 @@ export default function CrypticBackground({
       for (let row = 0; row < lineCount; row++) {
         let col = Math.floor(Math.random() * 6);
         while (col < cols) {
-          if (Math.random() < 0.55) {
+          if (Math.random() < 0.4) { // fewer glyphs for perf
             const segLen = 3 + Math.floor(Math.random() * 14);
             const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
             const baseAlpha = 0.5 + Math.random() * 0.5;

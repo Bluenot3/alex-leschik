@@ -1,18 +1,12 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
-import GlassCube from "@/components/GlassCube";
-import CubeRain from "@/components/CubeRain";
-import AZ1Logo3D from "@/components/AZ1Logo3D";
-import Amphitheatre from "@/components/Amphitheatre";
-import HUD from "@/components/HUD";
-import ImageVortex from "@/components/ImageVortex";
 import InteractiveName from "@/components/InteractiveName";
-import GalleryShowcase from "@/components/GalleryShowcase";
-import ProjectSpotlight from "@/components/ProjectSpotlight";
+import HUD from "@/components/HUD";
 import CommandDashboard from "@/components/CommandDashboard";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
+import LazySection from "@/components/LazySection";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -21,6 +15,15 @@ import ScrollSection, {
   RevealStats,
   RevealCTA,
 } from "@/components/ScrollSection";
+
+/* Lazy-load heavy 3D/canvas components */
+const GlassCube = lazy(() => import("@/components/GlassCube"));
+const CubeRain = lazy(() => import("@/components/CubeRain"));
+const AZ1Logo3D = lazy(() => import("@/components/AZ1Logo3D"));
+const Amphitheatre = lazy(() => import("@/components/Amphitheatre"));
+const ImageVortex = lazy(() => import("@/components/ImageVortex"));
+const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
+const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
 
 const SECTION_COUNT = 6;
 
@@ -36,7 +39,9 @@ export default function Index() {
 
       <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
       <InteractiveName scrollProgress={smoothProgress} />
-      <ImageVortex progress={smoothProgress} />
+      <Suspense fallback={null}>
+        <ImageVortex progress={smoothProgress} />
+      </Suspense>
       <HUD
         progress={smoothProgress}
         currentSection={currentSection}
@@ -48,11 +53,9 @@ export default function Index() {
       <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       <div className="relative z-[1]">
-        {/* S0: Hero — cryptic bg behind hero */}
+        {/* S0: Hero — single cryptic bg */}
         <div className="relative">
           <CrypticBackground rows={24} speed={130} opacity={0.06} />
-          {/* Layered cryptic rain for depth */}
-          <CrypticBackground rows={18} speed={180} opacity={0.06} />
           <ScrollSection index={0}>
             <RevealTag>Portfolio — Alex Leschik</RevealTag>
             <RevealBody>
@@ -66,10 +69,9 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// initializing" />
 
-        {/* S1: Projects — cryptic bg */}
+        {/* S1: Projects */}
         <div className="relative">
           <CrypticBackground rows={20} speed={110} opacity={0.07} />
-          <CrypticBackground rows={14} speed={160} opacity={0.05} />
           <ScrollSection index={1} align="right">
             <RevealLine />
             <RevealTag>01 — Projects</RevealTag>
@@ -98,15 +100,17 @@ export default function Index() {
 
         <CrypticDivider lines={3} label="// deploying flagships" />
 
-        {/* Project Spotlight — cryptic bg behind all projects */}
-        <div className="relative">
+        {/* Project Spotlight */}
+        <LazySection className="relative" rootMargin="400px 0px">
           <CrypticBackground rows={40} speed={120} opacity={0.07} className="spotlight-bg" />
-          <ProjectSpotlight editMode={editMode} />
-        </div>
+          <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
+            <ProjectSpotlight editMode={editMode} />
+          </Suspense>
+        </LazySection>
 
         <CrypticDivider lines={5} label="// loading modules" />
 
-        {/* S2: Vision — cryptic bg */}
+        {/* S2: Vision */}
         <div className="relative">
           <CrypticBackground rows={18} speed={140} opacity={0.07} />
           <ScrollSection index={2}>
@@ -128,14 +132,10 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <div className="relative">
-          <CrypticBackground rows={15} speed={150} opacity={0.06} />
-          <CrypticDivider lines={6} label="// compiling assets" />
-        </div>
+        <CrypticDivider lines={6} label="// compiling assets" />
 
-        {/* S3: Craft — cryptic bg */}
+        {/* S3: Craft */}
         <div className="relative">
-          <CrypticBackground rows={22} speed={120} opacity={0.07} />
           <ScrollSection index={3} align="right">
             <RevealLine />
             <RevealTag>03 — Craft</RevealTag>
@@ -164,9 +164,8 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// rendering gallery" />
 
-        {/* S4: Gallery — cryptic bg */}
+        {/* S4: Gallery */}
         <div className="relative">
-          <CrypticBackground rows={16} speed={130} opacity={0.07} />
           <ScrollSection index={4}>
             <RevealLine />
             <RevealTag>04 — Gallery</RevealTag>
@@ -183,52 +182,51 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <section className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
-          <CrypticBackground rows={20} speed={140} opacity={0.065} />
-          <GalleryShowcase />
-        </section>
+        <LazySection className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
+          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+            <GalleryShowcase />
+          </Suspense>
+        </LazySection>
 
-        <div className="relative">
-          <CrypticBackground rows={25} speed={100} opacity={0.07} />
-          <CrypticDivider lines={5} label="// streaming data" />
-        </div>
+        <CrypticDivider lines={5} label="// streaming data" />
 
-        {/* Cube Rain */}
-        <section className="relative z-[1]">
-          <CrypticBackground rows={22} speed={125} opacity={0.08} />
-          <CubeRain />
-        </section>
+        {/* Cube Rain — lazy */}
+        <LazySection className="relative z-[1]">
+          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+            <CubeRain />
+          </Suspense>
+        </LazySection>
 
         <CrypticDivider lines={3} label="// building identity" />
 
-        {/* AZ1 3D Logo */}
-        <section className="relative z-[1] px-6 md:px-12 lg:px-20">
-          <CrypticBackground rows={14} speed={160} opacity={0.065} />
-          <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
-        </section>
+        {/* AZ1 3D Logo — lazy */}
+        <LazySection className="relative z-[1] px-6 md:px-12 lg:px-20">
+          <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+            <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
+          </Suspense>
+        </LazySection>
 
         <CrypticDivider lines={6} label="// entering theatre" />
 
-        {/* Amphitheatre */}
-        <section className="relative z-[1]">
-          <CrypticBackground rows={18} speed={145} opacity={0.07} />
-          <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
-        </section>
+        {/* Amphitheatre — lazy */}
+        <LazySection className="relative z-[1]">
+          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+            <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
+          </Suspense>
+        </LazySection>
 
         <CrypticDivider lines={5} label="// glass artifact" />
 
-        {/* Glass Cube */}
-        <section className="relative z-[1] flex items-center justify-center py-12">
-          <CrypticBackground rows={16} speed={150} opacity={0.07} />
-          <GlassCube />
-        </section>
+        {/* Glass Cube — lazy */}
+        <LazySection className="relative z-[1] flex items-center justify-center py-12">
+          <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+            <GlassCube />
+          </Suspense>
+        </LazySection>
 
-        <div className="relative">
-          <CrypticBackground rows={18} speed={120} opacity={0.07} />
-          <CrypticDivider lines={3} label="// end transmission" />
-        </div>
+        <CrypticDivider lines={3} label="// end transmission" />
 
-        {/* S5: Connect — cryptic bg */}
+        {/* S5: Connect */}
         <div className="relative">
           <CrypticBackground rows={20} speed={110} opacity={0.07} />
           <ScrollSection index={5} align="right">
