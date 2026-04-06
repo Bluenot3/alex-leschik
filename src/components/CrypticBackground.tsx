@@ -76,7 +76,7 @@ export default function CrypticBackground({
       for (let row = 0; row < lineCount; row++) {
         let col = Math.floor(Math.random() * 6);
         while (col < cols) {
-          if (Math.random() < 0.55) {
+          if (Math.random() < 0.4) { // fewer glyphs for perf
             const segLen = 3 + Math.floor(Math.random() * 14);
             const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
             const baseAlpha = 0.5 + Math.random() * 0.5;

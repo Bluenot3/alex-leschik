@@ -9,7 +9,6 @@ export default function LazySection({
   rootMargin = "600px 0px",
   unmountOnLeave = false,
   className = "",
-  as: Tag = "section",
 }: {
   children: ReactNode;
   rootMargin?: string;
