@@ -39,8 +39,8 @@ export default function LazySection({
   }, [rootMargin, unmountOnLeave]);
 
   return (
-    <Tag ref={ref as any} className={className} style={{ minHeight: mounted ? undefined : "200px" }}>
+    <div ref={ref} className={className} style={{ minHeight: mounted ? undefined : "200px" }}>
       {mounted ? children : null}
-    </Tag>
+    </div>
   );
 }
