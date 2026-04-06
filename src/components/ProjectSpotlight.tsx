@@ -214,7 +214,7 @@ function SpotlightCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [mountIframe, setMountIframe] = useState(false);
+  const [mountIframe, setMountIframe] = useState(index < 3); // Eagerly mount first 3
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [titleText, setTitleText] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
