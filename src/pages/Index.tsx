@@ -1,4 +1,5 @@
-import { useState, lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
+import SignalConstellation from "@/components/SignalConstellation";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import InteractiveName from "@/components/InteractiveName";
@@ -16,8 +17,8 @@ import ScrollSection, {
   RevealCTA,
 } from "@/components/ScrollSection";
 
-/* Lazy-load heavy 3D/canvas components */
 const GlassCube = lazy(() => import("@/components/GlassCube"));
+const GlassOrbit = lazy(() => import("@/components/GlassOrbit"));
 const CubeRain = lazy(() => import("@/components/CubeRain"));
 const AZ1Logo3D = lazy(() => import("@/components/AZ1Logo3D"));
 const Amphitheatre = lazy(() => import("@/components/Amphitheatre"));
@@ -27,6 +28,18 @@ const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
 
 const SECTION_COUNT = 6;
 
+const HERO_SIGNALS = [
+  { value: "1st", label: "Youth AI literacy program in US history" },
+  { value: "50+", label: "Products, prototypes, and systems shipped" },
+  { value: "5", label: "Fortune 500 relationships in orbit" },
+];
+
+const HERO_FEED = [
+  "Historic education infrastructure with real institutional surface area",
+  "Interfaces designed like posters, not templates",
+  "Products built to compound instead of decay",
+];
+
 export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
@@ -34,73 +47,165 @@ export default function Index() {
   const [cmdOpen, setCmdOpen] = useState(false);
 
   return (
-    <div className="relative">
-      <h1 className="sr-only">Alex Leschik — Developer & Creator</h1>
+    <div className="relative portfolio-shell">
+      <h1 className="sr-only">Alex Leschik - Developer, systems architect, and creative technologist</h1>
 
       <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
       <InteractiveName scrollProgress={smoothProgress} />
+
       <Suspense fallback={null}>
         <ImageVortex progress={smoothProgress} />
       </Suspense>
+
       <HUD
         progress={smoothProgress}
         currentSection={currentSection}
         onDotClick={scrollToSection}
         editMode={editMode}
-        onToggleEdit={() => setEditMode((v) => !v)}
+        onToggleEdit={() => setEditMode((value) => !value)}
         onOpenCmd={() => setCmdOpen(true)}
       />
+
       <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       <div className="relative z-[1]">
-        {/* S0: Hero — single cryptic bg */}
-        <div className="relative">
-          <CrypticBackground rows={24} speed={130} opacity={0.06} />
-          <ScrollSection index={0}>
-            <RevealTag>Portfolio — Alex Leschik</RevealTag>
-            <RevealBody>
-              Developer, creator, builder of things that matter.
-              Code projects, creative experiments, and everything in between.
-              Scroll to explore the work.
-            </RevealBody>
-            <RevealCTA onClick={() => scrollToSection(1)}>Enter</RevealCTA>
-          </ScrollSection>
-        </div>
+        <section id="s0" data-scroll-section className="hero-poster">
+          <CrypticBackground rows={26} speed={132} opacity={0.08} />
 
-        <CrypticDivider lines={4} label="// initializing" />
+          <div className="hero-poster__content">
+            <div className="hero-poster__eyebrow">Alex Leschik // systems, software, education, creative technology</div>
 
-        {/* S1: Projects */}
+            <div className="hero-poster__headline-block">
+              <p className="hero-poster__lead">Software architect. Founder. Builder of products that become infrastructure.</p>
+              <h2 className="hero-poster__title">
+                BUILDING
+                <br />
+                SYSTEMS
+                <br />
+                PEOPLE FEEL
+              </h2>
+            </div>
+
+            <p className="hero-poster__body">
+              I design interfaces with memory, ship software with real operational weight, and turn early ideas into systems
+              that institutions, teams, and communities can actually use.
+            </p>
+
+            <div className="hero-poster__actions">
+              <button type="button" className="cta-btn" onClick={() => scrollToSection(3)}>
+                See the work
+              </button>
+              <button type="button" className="cta-btn-muted" onClick={() => scrollToSection(2)}>
+                Open orbit map
+              </button>
+            </div>
+
+            <div className="hero-poster__signal-grid">
+              {HERO_SIGNALS.map((signal) => (
+                <div key={signal.label} className="hero-poster__signal">
+                  <span className="hero-poster__signal-value">{signal.value}</span>
+                  <span className="hero-poster__signal-label">{signal.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <aside className="hero-poster__transmission" aria-label="Current transmission">
+            <div className="hero-poster__transmission-head">
+              <span className="hero-poster__transmission-label">Transmission</span>
+              <span className="hero-poster__transmission-live">Live</span>
+            </div>
+
+            <div className="hero-poster__transmission-grid">
+              {HERO_FEED.map((item, index) => (
+                <div key={item} className="hero-poster__transmission-item">
+                  <span className="hero-poster__transmission-index">{String(index + 1).padStart(2, "0")}</span>
+                  <p>{item}</p>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </section>
+
+        <CrypticDivider lines={4} label="// origin locked" />
+
         <div className="relative">
-          <CrypticBackground rows={20} speed={110} opacity={0.07} />
+          <CrypticBackground rows={18} speed={112} opacity={0.06} />
           <ScrollSection index={1} align="right">
             <RevealLine />
-            <RevealTag>01 — Projects</RevealTag>
+            <RevealTag>01 - Signal</RevealTag>
             <RevealHeading>
-              CODE
+              NOT JUST
               <br />
-              THAT
+              MORE
               <br />
-              SHIPS
+              OUTPUT
             </RevealHeading>
             <RevealBody>
-              From the first youth AI literacy program in US history to
-              partnerships with Boys & Girls Clubs and NEAR Protocol —
-              every project starts with a problem worth solving.
+              The point is durable leverage. Historic AI literacy work, institutional partnerships, and product systems that
+              can survive real use, real teams, and real scale.
             </RevealBody>
             <RevealStats
               stats={[
-                { num: "50+", label: "Projects" },
-                { num: "5", label: "Fortune 500" },
-                { num: "3.5M", label: "Lines of Code" },
+                { num: "1st", label: "Historic education milestone" },
+                { num: "4.7M+", label: "Youth network reach" },
+                { num: "Multi", label: "Industries crossed" },
               ]}
             />
-            <RevealCTA onClick={() => scrollToSection(2)}>Explore</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(2)}>Trace the orbit</RevealCTA>
           </ScrollSection>
         </div>
 
-        <CrypticDivider lines={3} label="// deploying flagships" />
+        <CrypticDivider lines={3} label="// mapping vectors" />
 
-        {/* Project Spotlight */}
+        <section id="s2" data-scroll-section className="constellation-section">
+          <CrypticBackground rows={22} speed={138} opacity={0.07} />
+
+          <div className="constellation-section__header">
+            <span className="tag-label">02 - Constellation</span>
+            <h2 className="constellation-section__title">
+              A BETTER WAY
+              <br />
+              TO READ THE WORK
+            </h2>
+            <p className="constellation-section__body">
+              Hover the orbit map to see how the portfolio is actually structured: public impact, execution, interfaces, lab
+              work, and partnership reach feeding the same core system.
+            </p>
+          </div>
+
+          <SignalConstellation onExploreWork={() => scrollToSection(3)} />
+        </section>
+
+        <CrypticDivider lines={5} label="// deploying flagships" />
+
+        <div className="relative">
+          <CrypticBackground rows={20} speed={118} opacity={0.06} />
+          <ScrollSection index={3}>
+            <RevealLine />
+            <RevealTag>03 - Work</RevealTag>
+            <RevealHeading>
+              PRODUCTS
+              <br />
+              WITH
+              <br />
+              GRAVITY
+            </RevealHeading>
+            <RevealBody>
+              This is the proof layer: flagship builds, production systems, education infrastructure, experiments that turned
+              into products, and interfaces built to hold attention for the right reasons.
+            </RevealBody>
+            <RevealStats
+              stats={[
+                { num: "50+", label: "Projects shipped" },
+                { num: "5", label: "Fortune 500 ties" },
+                { num: "24/7", label: "Prototype cadence" },
+              ]}
+            />
+            <RevealCTA onClick={() => scrollToSection(4)}>Open the archive</RevealCTA>
+          </ScrollSection>
+        </div>
+
         <LazySection className="relative" rootMargin="400px 0px">
           <CrypticBackground rows={40} speed={120} opacity={0.07} className="spotlight-bg" />
           <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
@@ -108,77 +213,25 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={5} label="// loading modules" />
+        <CrypticDivider lines={5} label="// opening the lab" />
 
-        {/* S2: Vision */}
         <div className="relative">
-          <CrypticBackground rows={18} speed={140} opacity={0.07} />
-          <ScrollSection index={2}>
+          <CrypticBackground rows={20} speed={142} opacity={0.07} />
+          <ScrollSection index={4} align="right">
             <RevealLine />
-            <RevealTag>02 — Vision</RevealTag>
+            <RevealTag>04 - Lab</RevealTag>
             <RevealHeading>
-              BEYOND
+              ARTIFACTS,
               <br />
-              THE
+              ENGINES,
               <br />
-              SCREEN
+              SIGNAL
             </RevealHeading>
             <RevealBody>
-              Technology should feel invisible.
-              The best interfaces disappear into the experience.
-              Every pixel, every interaction — intentional.
+              Beyond client-facing builds, the lab captures motion studies, media systems, archives, and visual experiments
+              that keep the production work from ever looking interchangeable.
             </RevealBody>
-            <RevealCTA onClick={() => scrollToSection(3)}>Continue</RevealCTA>
-          </ScrollSection>
-        </div>
-
-        <CrypticDivider lines={6} label="// compiling assets" />
-
-        {/* S3: Craft */}
-        <div className="relative">
-          <ScrollSection index={3} align="right">
-            <RevealLine />
-            <RevealTag>03 — Craft</RevealTag>
-            <RevealHeading>
-              DETAIL
-              <br />
-              IS
-              <br />
-              EVERYTHING
-            </RevealHeading>
-            <RevealBody>
-              The difference between good and exceptional
-              lives in the details nobody notices until they're missing.
-              Performance, accessibility, polish — non-negotiable.
-            </RevealBody>
-            <RevealStats
-              stats={[
-                { num: "6", label: "Frameworks" },
-                { num: "360°", label: "Thinking" },
-                { num: "24/7", label: "Building" },
-              ]}
-            />
-            <RevealCTA onClick={() => scrollToSection(4)}>See more</RevealCTA>
-          </ScrollSection>
-        </div>
-
-        <CrypticDivider lines={4} label="// rendering gallery" />
-
-        {/* S4: Gallery */}
-        <div className="relative">
-          <ScrollSection index={4}>
-            <RevealLine />
-            <RevealTag>04 — Gallery</RevealTag>
-            <RevealHeading>
-              VISUAL
-              <br />
-              ARTIFACTS
-            </RevealHeading>
-            <RevealBody>
-              Screenshots, prototypes, design explorations.
-              The visual trail of building something from nothing.
-            </RevealBody>
-            <RevealCTA onClick={() => scrollToSection(5)}>Final turn</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(5)}>Start a conversation</RevealCTA>
           </ScrollSection>
         </div>
 
@@ -188,59 +241,73 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={5} label="// streaming data" />
+        <section className="artifact-lab">
+          <div className="artifact-lab__grid">
+            <div className="artifact-lab__item artifact-lab__item--wide">
+              <div className="artifact-lab__label">Glass system · orbital field</div>
+              <LazySection className="relative z-[1]">
+                <Suspense fallback={<div style={{ minHeight: "520px" }} />}>
+                  <GlassOrbit />
+                </Suspense>
+              </LazySection>
+            </div>
 
-        {/* Cube Rain — lazy */}
-        <LazySection className="relative z-[1]">
-          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
-            <CubeRain />
-          </Suspense>
-        </LazySection>
+            <div className="artifact-lab__item artifact-lab__item--narrow artifact-lab__item--centered">
+              <div className="artifact-lab__label">Glass artifact · v2</div>
+              <LazySection className="relative z-[1] flex items-center justify-center py-12">
+                <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+                  <GlassCube />
+                </Suspense>
+              </LazySection>
+            </div>
 
-        <CrypticDivider lines={3} label="// building identity" />
+            <div className="artifact-lab__item artifact-lab__item--narrow">
+              <div className="artifact-lab__label">Identity object</div>
+              <LazySection className="relative z-[1] px-6 md:px-12 lg:px-20">
+                <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+                  <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
+                </Suspense>
+              </LazySection>
+            </div>
 
-        {/* AZ1 3D Logo — lazy */}
-        <LazySection className="relative z-[1] px-6 md:px-12 lg:px-20">
-          <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-            <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
-          </Suspense>
-        </LazySection>
+            <div className="artifact-lab__item artifact-lab__item--wide">
+              <div className="artifact-lab__label">Generative field</div>
+              <LazySection className="relative z-[1]">
+                <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+                  <CubeRain />
+                </Suspense>
+              </LazySection>
+            </div>
 
-        <CrypticDivider lines={6} label="// entering theatre" />
+            <div className="artifact-lab__item artifact-lab__item--wide">
+              <div className="artifact-lab__label">Spatial archive</div>
+              <LazySection className="relative z-[1]">
+                <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+                  <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
+                </Suspense>
+              </LazySection>
+            </div>
+          </div>
+        </section>
 
-        {/* Amphitheatre — lazy */}
-        <LazySection className="relative z-[1]">
-          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
-            <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
-          </Suspense>
-        </LazySection>
+        <CrypticDivider lines={4} label="// opening channel" />
 
-        <CrypticDivider lines={5} label="// glass artifact" />
-
-        {/* Glass Cube — lazy */}
-        <LazySection className="relative z-[1] flex items-center justify-center py-12">
-          <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-            <GlassCube />
-          </Suspense>
-        </LazySection>
-
-        <CrypticDivider lines={3} label="// end transmission" />
-
-        {/* S5: Connect */}
         <div className="relative">
-          <CrypticBackground rows={20} speed={110} opacity={0.07} />
+          <CrypticBackground rows={20} speed={110} opacity={0.06} />
           <ScrollSection index={5} align="right">
             <RevealLine />
-            <RevealTag>05 — Connect</RevealTag>
+            <RevealTag>05 - Contact</RevealTag>
             <RevealHeading>
-              LET'S
+              BUILD THE
               <br />
-              BUILD
+              NEXT
+              <br />
+              IMPOSSIBLE THING
             </RevealHeading>
             <RevealBody>
-              Interested in collaborating, hiring, or just saying hello?
-              Every great project starts with a conversation.
+              If the problem matters, the interface matters, and the system has to hold up after launch, we should talk.
             </RevealBody>
+
             <div
               data-reveal
               className="mt-7 flex items-center gap-3 justify-end"
@@ -250,13 +317,19 @@ export default function Index() {
                 transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s",
               }}
             >
-              <a href="https://forms.gle/T4cMKd2TL4CkxGLD8" target="_blank" rel="noopener noreferrer" className="cta-btn">
-                Get in touch
+              <a
+                href="https://forms.gle/T4cMKd2TL4CkxGLD8"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cta-btn"
+              >
+                Start the conversation
                 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                   <path d="M1 6h10M6 1l5 5-5 5" />
                 </svg>
               </a>
             </div>
+
             <div
               data-reveal
               className="mt-4 flex items-center gap-3 justify-end"
@@ -270,7 +343,7 @@ export default function Index() {
                 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                   <path d="M11 6H1M6 11L1 6l5-5" />
                 </svg>
-                Back to top
+                Return to origin
               </button>
             </div>
           </ScrollSection>

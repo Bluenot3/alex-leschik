@@ -46,6 +46,7 @@
     --cryptic-cool: 205 88% 62%;
     --cryptic-warm: 25 95% 58%;
     --cryptic-violet: 255 72% 66%;
+    --card-border-accent: rgba(255, 255, 255, 0.8);
     --hairline: 0.5px;
     --ui-inset: 2rem;
     --cube-size: min(68vw, 68vh, 520px);
@@ -82,6 +83,11 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-image:
+      radial-gradient(circle at 20% 20%, hsl(var(--cryptic-cool) / 0.08), transparent 26%),
+      radial-gradient(circle at 78% 12%, hsl(var(--cryptic-violet) / 0.08), transparent 24%),
+      linear-gradient(180deg, #f8fafc 0%, #f3f6fb 42%, #f7f7f4 100%);
+    background-attachment: fixed;
   }
 
   ::selection {
@@ -122,6 +128,54 @@
     color: hsl(var(--muted-foreground) / 0.2);
   }
 
+  .glass-cube-label-pulse {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: hsl(var(--cryptic-cool));
+    animation: pulse-dot 2.2s ease infinite;
+    flex-shrink: 0;
+  }
+
+  /* ── Glass Orbit Section ── */
+  .glass-orbit-section {
+    width: 100%;
+    position: relative;
+  }
+
+  .glass-orbit-section canvas {
+    width: 100% !important;
+    height: 520px !important;
+    display: block;
+  }
+
+  .glass-orbit-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  .glass-orbit-label-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: hsl(var(--cryptic-violet));
+    animation: pulse-dot 2.6s ease infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.65); }
+  }
+
   /* ── Interactive Name ── */
   .interactive-name-container {
     cursor: default;
@@ -132,8 +186,187 @@
   }
 
   .interactive-name-container--hero {
-    width: min(80vw, 1100px);
-    height: clamp(280px, 40vw, 500px);
+    width: min(92vw, 1300px);
+    height: clamp(360px, 52vh, 640px);
+  }
+
+  .portfolio-shell {
+    min-height: 100vh;
+  }
+
+  .hero-poster {
+    position: relative;
+    min-height: 150vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    align-items: start;
+    gap: clamp(1.5rem, 3vw, 4rem);
+    padding: max(24rem, 60vh) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 8vh, 6rem);
+    overflow: hidden;
+  }
+
+  .hero-poster__content {
+    position: relative;
+    z-index: 1;
+    max-width: 44rem;
+    padding-bottom: 2rem;
+  }
+
+  .hero-poster__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.52);
+    margin-bottom: 1.35rem;
+  }
+
+  .hero-poster__headline-block {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .hero-poster__lead {
+    max-width: 18rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    line-height: 1.8;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.44);
+  }
+
+  .hero-poster__title {
+    font-family: var(--font-display);
+    font-size: clamp(4.25rem, 12vw, 9.75rem);
+    line-height: 0.88;
+    letter-spacing: 0.01em;
+    color: hsl(var(--foreground));
+    max-width: 8ch;
+    text-wrap: balance;
+  }
+
+  .hero-poster__body {
+    margin-top: 1.5rem;
+    max-width: 34rem;
+    font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+    line-height: 1.75;
+    color: hsl(var(--foreground) / 0.72);
+  }
+
+  .hero-poster__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  .hero-poster__signal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 2.1rem;
+    max-width: 50rem;
+  }
+
+  .hero-poster__signal {
+    padding: 1rem 1.1rem 1.1rem;
+    border-radius: 1.1rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.28));
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.06);
+    backdrop-filter: blur(20px);
+  }
+
+  .hero-poster__signal-value {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    line-height: 0.9;
+    color: hsl(var(--foreground));
+  }
+
+  .hero-poster__signal-label {
+    display: block;
+    margin-top: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    line-height: 1.8;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.48);
+  }
+
+  .hero-poster__transmission {
+    position: relative;
+    z-index: 1;
+    align-self: center;
+    justify-self: end;
+    width: min(100%, 30rem);
+    padding: clamp(1.25rem, 2.4vw, 1.85rem);
+    border-radius: 1.6rem;
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.72), rgba(248, 250, 252, 0.38)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    box-shadow: 0 22px 70px rgba(15, 23, 42, 0.09);
+    backdrop-filter: blur(26px);
+  }
+
+  .hero-poster__transmission-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero-poster__transmission-label,
+  .hero-poster__transmission-live,
+  .artifact-lab__label {
+    font-family: var(--font-mono);
+    font-size: 0.54rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .hero-poster__transmission-label {
+    color: hsl(var(--foreground) / 0.52);
+  }
+
+  .hero-poster__transmission-live {
+    color: hsl(var(--cryptic-cool));
+  }
+
+  .hero-poster__transmission-grid {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .hero-poster__transmission-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    align-items: start;
+    padding-top: 0.85rem;
+    border-top: 1px solid hsl(var(--foreground) / 0.08);
+  }
+
+  .hero-poster__transmission-item:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .hero-poster__transmission-index {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: hsl(var(--foreground) / 0.28);
+  }
+
+  .hero-poster__transmission-item p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: hsl(var(--foreground) / 0.68);
   }
 
   .interactive-name-canvas {
@@ -149,9 +382,10 @@
     inset: 0;
     z-index: 2;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
     padding-left: clamp(1.5rem, 4vw, 4rem);
+    padding-top: 4vh;
     pointer-events: none;
   }
 
@@ -316,6 +550,10 @@
     font-size: clamp(2.2rem, 5vw, 4rem);
   }
 
+  .display-hero {
+    font-size: clamp(3.5rem, 9vw, 7.5rem);
+  }
+
   /* Body text */
   .body-muted {
     font-family: var(--font-sans);
@@ -471,6 +709,362 @@
     padding-bottom: 8vh;
   }
 
+  .constellation-section {
+    position: relative;
+    min-height: 100vh;
+    padding: clamp(4.5rem, 8vw, 7rem) clamp(1.25rem, 4vw, 4rem) clamp(3rem, 6vw, 5rem);
+    display: grid;
+    gap: 2rem;
+  }
+
+  .constellation-section__header {
+    position: relative;
+    z-index: 1;
+    max-width: 40rem;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .constellation-section__title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 0.9;
+    color: hsl(var(--foreground));
+  }
+
+  .constellation-section__body {
+    max-width: 32rem;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: hsl(var(--foreground) / 0.68);
+  }
+
+  .signal-constellation {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 34rem);
+    gap: clamp(1.25rem, 4vw, 4rem);
+    align-items: center;
+  }
+
+  .signal-constellation__stage {
+    position: relative;
+    min-height: 38rem;
+    border-radius: 2rem;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.36) 38%, transparent 68%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08));
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 26px 80px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(22px);
+  }
+
+  .signal-constellation__rings,
+  .signal-constellation__core,
+  .signal-constellation__link,
+  .signal-constellation__node {
+    position: absolute;
+  }
+
+  .signal-constellation__rings {
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .signal-constellation__rings span {
+    position: absolute;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--foreground) / 0.08);
+    animation: orbit-pulse 8s ease-in-out infinite;
+  }
+
+  .signal-constellation__rings span:nth-child(1) {
+    width: 11rem;
+    height: 11rem;
+  }
+
+  .signal-constellation__rings span:nth-child(2) {
+    width: 20rem;
+    height: 20rem;
+    animation-delay: 1.25s;
+  }
+
+  .signal-constellation__rings span:nth-child(3) {
+    width: 30rem;
+    height: 30rem;
+    animation-delay: 2.5s;
+  }
+
+  .signal-constellation__link {
+    height: 1px;
+    transform-origin: left center;
+    background: linear-gradient(90deg, hsl(var(--foreground) / 0.14), hsl(var(--node-accent) / 0.35));
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  .signal-constellation__link--active {
+    background: linear-gradient(90deg, hsl(var(--foreground) / 0.2), hsl(var(--node-accent) / 0.75));
+    box-shadow: 0 0 20px hsl(var(--node-accent) / 0.35);
+  }
+
+  .signal-constellation__core {
+    left: 50%;
+    top: 50%;
+    width: 11rem;
+    height: 11rem;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    text-align: center;
+    gap: 0.45rem;
+    background:
+      radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.92), rgba(227, 238, 249, 0.78) 60%, rgba(221, 230, 239, 0.34));
+    border: 1px solid rgba(255, 255, 255, 0.86);
+    box-shadow:
+      0 0 0 14px rgba(255, 255, 255, 0.16),
+      0 18px 56px rgba(15, 23, 42, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  }
+
+  .signal-constellation__core-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    font-family: var(--font-mono);
+    font-size: 0.48rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.56);
+  }
+
+  .signal-constellation__core-title {
+    font-family: var(--font-display);
+    font-size: 2.15rem;
+    line-height: 0.92;
+    color: hsl(var(--foreground));
+  }
+
+  .signal-constellation__core-copy {
+    max-width: 8.2rem;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: hsl(var(--foreground) / 0.56);
+  }
+
+  .signal-constellation__node {
+    transform: translate(-50%, -50%);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .signal-constellation__node-shell {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    min-width: 8.4rem;
+    padding: 0.9rem 1rem 1rem;
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(16px);
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  }
+
+  .signal-constellation__node:hover .signal-constellation__node-shell,
+  .signal-constellation__node--active .signal-constellation__node-shell {
+    transform: translateY(-6px);
+    border-color: hsl(var(--node-accent) / 0.48);
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12), 0 0 0 1px hsl(var(--node-accent) / 0.1);
+  }
+
+  .signal-constellation__node-pulse {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 999px;
+    background: hsl(var(--node-accent));
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 0 hsl(var(--node-accent) / 0.25);
+    animation: node-pulse 3.4s ease-out infinite;
+  }
+
+  .signal-constellation__node-orbit {
+    font-family: var(--font-mono);
+    font-size: 0.45rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.4);
+  }
+
+  .signal-constellation__node-label {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    color: hsl(var(--foreground));
+  }
+
+  .signal-constellation__detail {
+    position: relative;
+    z-index: 1;
+    padding: clamp(1.25rem, 2vw, 1.85rem);
+    border-radius: 1.7rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.36));
+    border: 1px solid rgba(255, 255, 255, 0.84);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(24px);
+  }
+
+  .signal-constellation__detail-topline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.54rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.45);
+  }
+
+  .signal-constellation__detail-body {
+    margin-top: 1.1rem;
+    display: grid;
+    gap: 1.15rem;
+  }
+
+  .signal-constellation__detail-header {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .signal-constellation__detail-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.54rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .signal-constellation__detail-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 0.92;
+    color: hsl(var(--foreground));
+  }
+
+  .signal-constellation__detail-copy {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: hsl(var(--foreground) / 0.68);
+  }
+
+  .signal-constellation__metric-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .signal-constellation__metric {
+    padding: 0.9rem 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+  }
+
+  .signal-constellation__metric-value {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    line-height: 0.95;
+    color: hsl(var(--foreground));
+  }
+
+  .signal-constellation__metric-label {
+    display: block;
+    margin-top: 0.42rem;
+    font-family: var(--font-mono);
+    font-size: 0.48rem;
+    line-height: 1.7;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.44);
+  }
+
+  .signal-constellation__highlights {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .signal-constellation__highlight {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.65rem;
+    align-items: start;
+    padding-top: 0.75rem;
+    border-top: 1px solid hsl(var(--foreground) / 0.08);
+    color: hsl(var(--foreground) / 0.64);
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .signal-constellation__detail-actions {
+    padding-top: 0.25rem;
+  }
+
+  .artifact-lab {
+    position: relative;
+    z-index: 1;
+    padding: 0 clamp(1.25rem, 4vw, 4rem) clamp(4rem, 8vw, 6rem);
+  }
+
+  .artifact-lab__grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 960px) {
+    .artifact-lab__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .artifact-lab__item--wide {
+      grid-column: span 2;
+    }
+  }
+
+  .artifact-lab__item {
+    border-radius: 1.7rem;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.24));
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(22px);
+  }
+
+  .artifact-lab__label {
+    display: block;
+    padding: 1rem 1.1rem 0;
+    color: hsl(var(--foreground) / 0.48);
+  }
+
+  .artifact-lab__item--centered .glass-cube-section {
+    max-width: 360px;
+  }
+
   /* Face caption */
   .face-caption {
     position: fixed;
@@ -597,6 +1191,29 @@
   @keyframes panel-in {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes orbit-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1.04);
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes node-pulse {
+    0% {
+      box-shadow: 0 0 0 0 hsl(var(--node-accent) / 0.24);
+    }
+    70% {
+      box-shadow: 0 0 0 18px hsl(var(--node-accent) / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 hsl(var(--node-accent) / 0);
+    }
   }
 
   /* ── Gallery Showcase ── */
@@ -1069,23 +1686,100 @@
     transform: translateX(0);
   }
 
-  .spotlight-card__embed {
+  /* Browser chrome wrapper — takes the spot flex: 1.6 had */
+  .spotlight-card__embed-wrap {
     flex: 1.6;
-    aspect-ratio: 16 / 9.5;
+    display: flex;
+    flex-direction: column;
     border-radius: 1.25rem;
     overflow: hidden;
-    position: relative;
-    background: hsl(var(--foreground) / 0.03);
     border: 1px solid hsl(var(--border) / 0.6);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 240px;
     box-shadow: 0 4px 24px hsl(var(--foreground) / 0.04);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 260px;
+    background: hsl(var(--foreground) / 0.025);
   }
 
-  .spotlight-card:hover .spotlight-card__embed {
+  .spotlight-card:hover .spotlight-card__embed-wrap {
     border-color: hsl(var(--foreground) / 0.18);
     box-shadow: 0 24px 72px hsl(var(--foreground) / 0.12), 0 2px 8px hsl(var(--foreground) / 0.04);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+  }
+
+  .spotlight-card--flagship .spotlight-card__embed-wrap {
+    border-color: hsl(var(--cryptic-cool) / 0.2);
+    box-shadow: 0 4px 24px hsl(var(--foreground) / 0.04), 0 0 0 1px hsl(var(--cryptic-cool) / 0.08);
+  }
+
+  .spotlight-card--flagship:hover .spotlight-card__embed-wrap {
+    border-color: hsl(var(--cryptic-cool) / 0.35);
+    box-shadow: 0 24px 72px hsl(var(--foreground) / 0.12), 0 0 40px hsl(var(--cryptic-cool) / 0.08);
+  }
+
+  /* Mock browser chrome bar */
+  .spotlight-card__chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    background: hsl(var(--foreground) / 0.03);
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    flex-shrink: 0;
+  }
+
+  .spotlight-card__chrome-dots {
+    display: flex;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+
+  .chrome-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .chrome-dot--red    { background: #ff5f57; }
+  .chrome-dot--yellow { background: #febc2e; }
+  .chrome-dot--green  { background: #28c840; }
+
+  .spotlight-card__chrome-url {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 0.43rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground) / 0.55);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: hsl(var(--foreground) / 0.04);
+    border: 1px solid hsl(var(--border) / 0.4);
+    border-radius: 0.3rem;
+    padding: 0.18rem 0.5rem;
+  }
+
+  .spotlight-card__chrome-live {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .chrome-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #28c840;
+    animation: pulse-dot 2s ease infinite;
+  }
+
+  /* Embed (inner, no longer the flex root) */
+  .spotlight-card__embed {
+    flex: 1;
+    position: relative;
+    background: hsl(var(--foreground) / 0.025);
+    min-height: 220px;
+    overflow: hidden;
   }
 
   .spotlight-card__iframe {
@@ -1107,6 +1801,40 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+  }
+
+  .spotlight-card__meta-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .spotlight-card__index {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    color: hsl(var(--foreground) / 0.08);
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .proj-card__badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.38rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: hsl(var(--cryptic-cool) / 0.85);
+    background: hsl(var(--cryptic-cool) / 0.08);
+    border: 1px solid hsl(var(--cryptic-cool) / 0.18);
+    border-radius: 0.3rem;
+    padding: 0.1rem 0.4rem;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+    position: relative;
+    top: -0.05rem;
   }
 
   .spotlight-card__title {
@@ -1264,6 +1992,70 @@
       line-height: 1.75;
       letter-spacing: 0.12em;
       padding: 0.85rem 0.9rem;
+    }
+
+    .hero-poster {
+      grid-template-columns: 1fr;
+      align-items: start;
+      padding-top: max(20rem, 42vh);
+      min-height: auto;
+    }
+
+    .hero-poster__content {
+      padding-bottom: 0;
+    }
+
+    .hero-poster__title {
+      max-width: 6.2ch;
+      font-size: clamp(3.6rem, 18vw, 6rem);
+    }
+
+    .hero-poster__signal-grid,
+    .signal-constellation,
+    .signal-constellation__metric-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-poster__transmission {
+      width: 100%;
+      justify-self: stretch;
+    }
+
+    .signal-constellation__stage {
+      min-height: 30rem;
+    }
+
+    .signal-constellation__rings span:nth-child(1) {
+      width: 8rem;
+      height: 8rem;
+    }
+
+    .signal-constellation__rings span:nth-child(2) {
+      width: 14rem;
+      height: 14rem;
+    }
+
+    .signal-constellation__rings span:nth-child(3) {
+      width: 20rem;
+      height: 20rem;
+    }
+
+    .signal-constellation__core {
+      width: 8.6rem;
+      height: 8.6rem;
+    }
+
+    .signal-constellation__core-title {
+      font-size: 1.65rem;
+    }
+
+    .signal-constellation__node-shell {
+      min-width: 6.75rem;
+      padding: 0.7rem 0.8rem 0.8rem;
+    }
+
+    .signal-constellation__node-label {
+      font-size: 0.9rem;
     }
   }
 
@@ -1480,6 +2272,18 @@
     .interactive-name-container--hero {
       width: 98vw;
       height: clamp(160px, 34vh, 260px);
+    }
+
+    .hero-poster__body {
+      font-size: 0.92rem;
+    }
+
+    .constellation-section {
+      padding-inline: 1rem;
+    }
+
+    .artifact-lab {
+      padding-inline: 1rem;
     }
   }
 }

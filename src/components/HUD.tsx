@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Terminal, Lock } from "lucide-react";
 
-const SECTION_NAMES = ["ORIGIN", "PROJECTS", "VISION", "CRAFT", "GALLERY", "CONNECT"];
+const SECTION_NAMES = ["ORIGIN", "SIGNAL", "CONSTELLATION", "WORK", "LAB", "CONTACT"];
 const PIN_HASH = "31759";
 
 interface HUDProps {

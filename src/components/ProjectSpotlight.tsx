@@ -198,6 +198,10 @@ function EditModal({
   );
 }
 
+function getHostname(url: string): string {
+  try { return new URL(url).hostname; } catch { return url; }
+}
+
 /* ── Single Spotlight Card ── */
 function SpotlightCard({
   project,
@@ -219,6 +223,7 @@ function SpotlightCard({
   const [titleText, setTitleText] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
   const hasLoadedOnce = useRef(false);
+  const isFlagship = index < 3;
 
   useEffect(() => {
     const el = cardRef.current;
@@ -288,31 +293,52 @@ function SpotlightCard({
     <div
       ref={cardRef}
       id={`project-${index}`}
-      className={`spotlight-card spotlight-card--${side} ${visible ? "spotlight-card--visible" : ""}`}
+      className={`spotlight-card spotlight-card--${side} ${visible ? "spotlight-card--visible" : ""} ${isFlagship ? "spotlight-card--flagship" : ""}`}
     >
-      {/* Embed */}
-      <div className="spotlight-card__embed">
-        {!iframeLoaded && (
-          <div className="proj-card__fallback">
-            <div className="proj-card__fallback-text">{project.title}</div>
+      {/* Embed with browser chrome */}
+      <div className="spotlight-card__embed-wrap">
+        <div className="spotlight-card__chrome">
+          <div className="spotlight-card__chrome-dots">
+            <span className="chrome-dot chrome-dot--red" />
+            <span className="chrome-dot chrome-dot--yellow" />
+            <span className="chrome-dot chrome-dot--green" />
           </div>
-        )}
-        {mountIframe && (
-          <iframe
-            src={project.url}
-            title={project.title}
-            loading="lazy"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            className="spotlight-card__iframe"
-            onLoad={() => setIframeLoaded(true)}
-          />
-        )}
-        <div className="proj-card__scanlines" />
+          <div className="spotlight-card__chrome-url">
+            {getHostname(project.url)}
+          </div>
+          <div className="spotlight-card__chrome-live">
+            <span className="chrome-live-dot" />
+          </div>
+        </div>
+        <div className="spotlight-card__embed">
+          {!iframeLoaded && (
+            <div className="proj-card__fallback">
+              <div className="proj-card__fallback-text">{project.title}</div>
+            </div>
+          )}
+          {mountIframe && (
+            <iframe
+              src={project.url}
+              title={project.title}
+              loading="lazy"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              className="spotlight-card__iframe"
+              onLoad={() => setIframeLoaded(true)}
+            />
+          )}
+          <div className="proj-card__scanlines" />
+        </div>
       </div>
 
       {/* Meta */}
       <div className="spotlight-card__meta">
-        <span className="proj-card__tag">{project.tag}</span>
+        <div className="spotlight-card__meta-header">
+          <span className="spotlight-card__index">{String(index + 1).padStart(2, "0")}</span>
+          <span className="proj-card__tag">
+            {project.tag}
+            {isFlagship && <span className="proj-card__badge">Flagship</span>}
+          </span>
+        </div>
         <h3 className="spotlight-card__title">{titleText}</h3>
         <p className="spotlight-card__desc">{project.description}</p>
 

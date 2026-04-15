@@ -12,12 +12,12 @@ const RETURN_SPEED = 0.1;
 const FRICTION = 0.83;
 
 /* ── Color look-up tables (pre-computed for zero-alloc rendering) ── */
-const BASE_LUT = Array.from({ length: 101 }, (_, i) => `hsl(218 36% 20% / ${(i / 100).toFixed(2)})`);
-const ACCENT_LUT = Array.from({ length: 101 }, (_, i) => `hsl(210 88% 54% / ${(i / 100).toFixed(2)})`);
+const BASE_LUT = Array.from({ length: 101 }, (_, i) => `hsl(215 55% 8% / ${(i / 100).toFixed(2)})`);
+const ACCENT_LUT = Array.from({ length: 101 }, (_, i) => `hsl(210 90% 48% / ${(i / 100).toFixed(2)})`);
 
 /* ── Scroll-transition thresholds (in scrollProgress units 0-1) ── */
-const TRANSITION_START = 0.02;   // start shrinking
-const TRANSITION_END = 0.12;     // fully locked in header
+const TRANSITION_START = 0.004;  // start fading/shrinking (~30px scroll)
+const TRANSITION_END = 0.018;    // fully gone (~133px scroll, before content scrolls into name area)
 
 /* ── Particle state (Structure-of-Arrays) ── */
 interface Particles {
@@ -208,7 +208,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const ease = t * t * (3 - 2 * t); // smoothstep
   const scale = 1 - ease * 0.72;          // 1 → 0.28
   const yShift = ease * -100;             // 0 → -100 (percentage shift upward)
-  const opacity = 1;                       // stays visible throughout
+  const opacity = 1 - ease;                 // fades from 1→0 as name exits
 
   return (
     <div
