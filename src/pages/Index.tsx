@@ -131,7 +131,7 @@ export default function Index() {
 
         <div className="relative">
           <CrypticBackground rows={18} speed={112} opacity={0.06} />
-          <ScrollSection index={1} align="right">
+          <ScrollSection index={1} align="right" ghost="SIGNAL">
             <RevealLine />
             <RevealTag>01 - Signal</RevealTag>
             <RevealHeading>
@@ -181,7 +181,7 @@ export default function Index() {
 
         <div className="relative">
           <CrypticBackground rows={20} speed={118} opacity={0.06} />
-          <ScrollSection index={3}>
+          <ScrollSection index={3} ghost="WORK">
             <RevealLine />
             <RevealTag>03 - Work</RevealTag>
             <RevealHeading>
@@ -217,7 +217,7 @@ export default function Index() {
 
         <div className="relative">
           <CrypticBackground rows={20} speed={142} opacity={0.07} />
-          <ScrollSection index={4} align="right">
+          <ScrollSection index={4} align="right" ghost="LAB">
             <RevealLine />
             <RevealTag>04 - Lab</RevealTag>
             <RevealHeading>
@@ -294,7 +294,7 @@ export default function Index() {
 
         <div className="relative">
           <CrypticBackground rows={20} speed={110} opacity={0.06} />
-          <ScrollSection index={5} align="right">
+          <ScrollSection index={5} align="right" ghost="CONTACT">
             <RevealLine />
             <RevealTag>05 - Contact</RevealTag>
             <RevealHeading>

@@ -9,7 +9,7 @@ import {
 const MOUSE_RADIUS = 120;
 const DISPERSE_FORCE = 13;
 const RETURN_SPEED = 0.1;
-const FRICTION = 0.83;
+const FRICTION = 0.87;
 
 /* ── Color look-up tables (pre-computed for zero-alloc rendering) ── */
 const BASE_LUT = Array.from({ length: 101 }, (_, i) => `hsl(215 55% 8% / ${(i / 100).toFixed(2)})`);

@@ -87,7 +87,7 @@ export function useScrollEngine(sectionCount: number) {
       const dt = Math.min((now - lastNowRef.current) / 1000, 0.05);
       lastNowRef.current = now;
 
-      smoothRef.current += (tgtRef.current - smoothRef.current) * (1 - Math.exp(-dt * 8));
+      smoothRef.current += (tgtRef.current - smoothRef.current) * (1 - Math.exp(-dt * 14));
       smoothRef.current = Math.max(0, Math.min(1, smoothRef.current));
 
       const si = sectionIndexFromScroll(window.scrollY);

@@ -4,9 +4,10 @@ interface ScrollSectionProps {
   children: ReactNode;
   index: number;
   align?: "left" | "right" | "center";
+  ghost?: string;
 }
 
-export default function ScrollSection({ children, index, align = "left" }: ScrollSectionProps) {
+export default function ScrollSection({ children, index, align = "left", ghost }: ScrollSectionProps) {
   const ref = useRef<HTMLElement>(null);
   const childRefs = useRef<HTMLElement[]>([]);
 
@@ -31,6 +32,8 @@ export default function ScrollSection({ children, index, align = "left" }: Scrol
     return () => io.disconnect();
   }, []);
 
+  const ghostLabel = ghost ?? String(index).padStart(2, "0");
+
   return (
     <section
       ref={ref}
@@ -38,6 +41,14 @@ export default function ScrollSection({ children, index, align = "left" }: Scrol
       id={`s${index}`}
       className={`scroll-section ${index === 0 ? "!min-h-screen items-center" : ""}`}
     >
+      {/* Large translucent background word fills the opposite side */}
+      <span
+        aria-hidden="true"
+        className={`scroll-section__ghost ${align === "right" ? "" : "scroll-section__ghost--right"}`}
+      >
+        {ghostLabel}
+      </span>
+
       <div
         className={`glass-card ${align === "right" ? "glass-card-right" : ""} ${align === "center" ? "mx-auto text-center border-l-0 border-t border-t-[var(--card-border-accent)]" : ""}`}
       >

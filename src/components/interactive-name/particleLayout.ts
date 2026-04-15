@@ -45,7 +45,7 @@ const HERO_STYLE: WordStyle = {
   minStep: 3,
   maxStep: 5,
   stepDivisor: 34,
-  maxParticles: 9000,
+  maxParticles: 5500,
   pointSize: 3.5,
   accentStride: 7,
   accentScale: 1.6,
