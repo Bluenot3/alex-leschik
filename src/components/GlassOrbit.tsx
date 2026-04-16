@@ -43,7 +43,7 @@ function CentralSphere() {
     <group ref={ref}>
       <CenterLogo />
       <mesh>
-        <sphereGeometry args={[1.2, 64, 64]} />
+        <sphereGeometry args={[1.2, 32, 32]} />
         <MeshTransmissionMaterial
           transmission={1}
           roughness={0}
@@ -88,6 +88,8 @@ function Orbiter({
   opacity?: number;
 }) {
   const ref = useRef<THREE.Group>(null!);
+  // Pre-allocate to avoid GC pressure at 60fps
+  const _vec = useMemo(() => new THREE.Vector3(), []);
 
   const tiltQ = useMemo(() => {
     const q = new THREE.Quaternion();
@@ -97,9 +99,9 @@ function Orbiter({
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime() * speed + phase;
-    const localPos = new THREE.Vector3(Math.cos(t) * radius, 0, Math.sin(t) * radius);
-    localPos.applyQuaternion(tiltQ);
-    ref.current.position.copy(localPos);
+    _vec.set(Math.cos(t) * radius, 0, Math.sin(t) * radius);
+    _vec.applyQuaternion(tiltQ);
+    ref.current.position.copy(_vec);
     ref.current.rotation.x += 0.012;
     ref.current.rotation.y += 0.018;
     ref.current.rotation.z += 0.008;
@@ -126,18 +128,18 @@ function Orbiter({
     <group ref={ref}>
       {shape === "sphere" && (
         <mesh>
-          <sphereGeometry args={[size, 32, 32]} />
+          <sphereGeometry args={[size, 14, 14]} />
           {mat}
         </mesh>
       )}
       {shape === "box" && (
-        <RoundedBox args={[size * 1.7, size * 1.7, size * 0.85]} radius={size * 0.25} smoothness={16}>
+        <RoundedBox args={[size * 1.7, size * 1.7, size * 0.85]} radius={size * 0.25} smoothness={6}>
           {mat}
         </RoundedBox>
       )}
       {shape === "torus" && (
         <mesh>
-          <torusGeometry args={[size * 0.75, size * 0.28, 24, 48]} />
+          <torusGeometry args={[size * 0.75, size * 0.28, 12, 28]} />
           {mat}
         </mesh>
       )}
@@ -163,9 +165,11 @@ export default function GlassOrbit() {
     <div className="glass-orbit-section">
       <Canvas
         camera={{ position: [0, 0.5, 8], fov: 40 }}
+        dpr={[1, 1.5]}
         gl={{
-          antialias: true,
+          antialias: false,
           alpha: true,
+          powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.3,
         }}
