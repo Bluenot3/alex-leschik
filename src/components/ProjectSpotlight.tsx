@@ -7,6 +7,7 @@ export interface ProjectData {
   url: string;
   tag: string;
   stats?: { num: string; label: string }[];
+  publication?: boolean;
 }
 
 const ALL_PROJECTS: ProjectData[] = [
@@ -21,9 +22,9 @@ const ALL_PROJECTS: ProjectData[] = [
   {
     title: "BOYS & GIRLS CLUBS × ZEN",
     url: "https://bgcgw-cot.lovable.app",
-    description: "Official AI literacy partnership with Boys & Girls Clubs of Greater Washington — bringing ZEN AI Co.'s curriculum to communities across the DMV. AI education for millions of young minds.",
+    description: "Official AI literacy partnership with Boys & Girls Clubs of Greater Washington — bringing ZEN AI Co.'s curriculum to communities across the DMV. AI education delivered to 30,000 national members.",
     tag: "partnership · youth",
-    stats: [{ num: "4.7M+", label: "Youth Served" }, { num: "5K+", label: "Clubs" }],
+    stats: [{ num: "30,000", label: "National Members" }, { num: "5K+", label: "Clubs" }],
   },
   {
     title: "NEAR PROTOCOL × ZEN",
@@ -67,41 +68,42 @@ const ALL_PROJECTS: ProjectData[] = [
     tag: "healthcare · coding",
     stats: [{ num: "500+", label: "Codes" }, { num: "HIPAA", label: "Compliant" }],
   },
+  // === ZEN AI LITERACY TOOLS — used by Pioneers (ages 11–18) ===
   {
-    title: "CLINICALCIPHER",
-    url: "https://zenmedcode.lovable.app",
-    description: "Medical coding toolkit — encrypt, decode, and manage clinical workflows with precision.",
-    tag: "healthcare · automation",
+    title: "PROMPT PLAYGROUND",
+    url: "https://terminalz.lovable.app",
+    description: "One of the fleet of tools powering the first youth AI literacy program in US history. Pioneers aged 11–18 use this terminal-style environment in Module 1 to build their first mental model of how AI thinks and responds.",
+    tag: "zen ai · literacy · module-1",
+    stats: [{ num: "Module 1", label: "Pioneer Tool" }, { num: "Ages", label: "11–18" }],
   },
   {
-    title: "LEXLESCHIK",
-    url: "https://leschiks-law.lovable.app",
-    description: "Legal system analyzer with intelligent document processing and case research.",
-    tag: "legal · ai",
+    title: "PROMPT A PLANET",
+    url: "https://prompt-a-planet-forge.lovable.app",
+    description: "Pioneers generate entire worlds using natural language — rendered in stunning detail by DALL·E 3, GPT-Image-1.5, FLUX, nano-banana pro 2, and more. Built for the first module of the nation's first youth AI literacy program.",
+    tag: "zen ai · generative · image-ai",
+    stats: [{ num: "FLUX", label: "· DALL·E 3" }, { num: "Module 1", label: "Pioneer Tool" }],
+  },
+  {
+    title: "PROMPT A PROTOTYPE",
+    url: "https://protozen.lovable.app",
+    description: "Pioneers go from idea to working prototype in a single session — generating myriad hyper-detailed images and interactive concepts powered by nano-banana pro 2, GPT-Image-1.5, DALL·E 3, FLUX, and many more frontier models.",
+    tag: "zen ai · prototyping · image-ai",
+    stats: [{ num: "GPT-Image", label: "1.5 · FLUX" }, { num: "Module 1", label: "Pioneer Tool" }],
+  },
+  // === ZEN WEEKLY — Publication ===
+  {
+    title: "ZEN WEEKLY",
+    url: "https://www.zenai.world/zenweekly",
+    description: "One of the earliest ZEN platforms — launched in 2023, ZEN Weekly is the publication of record for AI literacy, youth innovation, and the ZEN AI Co. movement. Now reaching over 20,000 subscribers across all platforms and channels.",
+    tag: "publication · media · 2023",
+    stats: [{ num: "20,000+", label: "Subscribers" }, { num: "Since", label: "2023" }, { num: "ZEN", label: "Publication" }],
+    publication: true,
   },
   {
     title: "CANVASFORGE",
     url: "https://phengine.lovable.app",
     description: "P5.js creative engine for generative art and interactive visualizations.",
     tag: "creative · generative",
-  },
-  {
-    title: "TALENTFLOW",
-    url: "https://hractions.lovable.app",
-    description: "Seamless onboarding and talent pipeline management for modern teams.",
-    tag: "hr-tech · automation",
-  },
-  {
-    title: "WORLDFORGE AI",
-    url: "https://prompt-a-planet-forge.lovable.app",
-    description: "Build entire worlds with AI — from concept to environment in minutes.",
-    tag: "ai · world-building",
-  },
-  {
-    title: "ZENTYPE",
-    url: "https://terminalz.lovable.app",
-    description: "Terminal-style writing environment with zen-like simplicity and focus.",
-    tag: "productivity · minimalist",
   },
   {
     title: "INSPIRELENS",
@@ -224,6 +226,7 @@ function SpotlightCard({
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
   const hasLoadedOnce = useRef(false);
   const isFlagship = index < 3;
+  const isPublication = !!project.publication;
 
   useEffect(() => {
     const el = cardRef.current;
@@ -293,7 +296,7 @@ function SpotlightCard({
     <div
       ref={cardRef}
       id={`project-${index}`}
-      className={`spotlight-card spotlight-card--${side} ${visible ? "spotlight-card--visible" : ""} ${isFlagship ? "spotlight-card--flagship" : ""}`}
+      className={`spotlight-card spotlight-card--${side} ${visible ? "spotlight-card--visible" : ""} ${isFlagship ? "spotlight-card--flagship" : ""} ${isPublication ? "spotlight-card--publication" : ""}`}
     >
       {/* Embed with browser chrome */}
       <div className="spotlight-card__embed-wrap">
@@ -337,6 +340,7 @@ function SpotlightCard({
           <span className="proj-card__tag">
             {project.tag}
             {isFlagship && <span className="proj-card__badge">Flagship</span>}
+            {isPublication && <span className="proj-card__badge proj-card__badge--publication">Publication</span>}
           </span>
         </div>
         <h3 className="spotlight-card__title">{titleText}</h3>

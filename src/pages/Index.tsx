@@ -8,6 +8,8 @@ import CommandDashboard from "@/components/CommandDashboard";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
+import GlassWaterfall from "@/components/GlassWaterfall";
+import ContactForm from "@/components/ContactForm";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -24,6 +26,7 @@ const AZ1Logo3D = lazy(() => import("@/components/AZ1Logo3D"));
 const ImageVortex = lazy(() => import("@/components/ImageVortex"));
 const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
 const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
+const PressTV = lazy(() => import("@/components/PressTV"));
 
 const SECTION_COUNT = 6;
 
@@ -48,6 +51,8 @@ export default function Index() {
   return (
     <div className="relative portfolio-shell">
       <h1 className="sr-only">Alex Leschik - Developer, systems architect, and creative technologist</h1>
+
+      <GlassWaterfall />
 
       <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
       <InteractiveName scrollProgress={smoothProgress} />
@@ -212,6 +217,14 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
+        <CrypticDivider lines={3} label="// on air" />
+
+        <LazySection className="relative" rootMargin="300px 0px">
+          <Suspense fallback={<div style={{ minHeight: "60vh" }} />}>
+            <PressTV />
+          </Suspense>
+        </LazySection>
+
         <CrypticDivider lines={5} label="// opening the lab" />
 
         <div className="relative">
@@ -301,28 +314,6 @@ export default function Index() {
 
             <div
               data-reveal
-              className="mt-7 flex items-center gap-3 justify-end"
-              style={{
-                opacity: 0,
-                transform: "translateY(10px)",
-                transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s",
-              }}
-            >
-              <a
-                href="https://forms.gle/T4cMKd2TL4CkxGLD8"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cta-btn"
-              >
-                Start the conversation
-                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
-                  <path d="M1 6h10M6 1l5 5-5 5" />
-                </svg>
-              </a>
-            </div>
-
-            <div
-              data-reveal
               className="mt-4 flex items-center gap-3 justify-end"
               style={{
                 opacity: 0,
@@ -338,6 +329,14 @@ export default function Index() {
               </button>
             </div>
           </ScrollSection>
+        </div>
+
+        {/* Compact liquid glass contact form — tucked at the bottom */}
+        <div className="contact-form-outer">
+          <CrypticBackground rows={12} speed={95} opacity={0.05} />
+          <div className="contact-form-inner">
+            <ContactForm />
+          </div>
         </div>
       </div>
     </div>
