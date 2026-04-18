@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "mcp__061bf3ea-2f92-4284-9af5-3b341e177ff8__list_projects",
+      "mcp__061bf3ea-2f92-4284-9af5-3b341e177ff8__execute_sql",
+      "Bash(git -C \"C:\\\\Users\\\\AlexT\\\\OneDrive\\\\Desktop\\\\Alex\\\\alex-leschik.com\" log --oneline --since=\"3 days ago\")",
+      "Bash(git -C \"C:\\\\Users\\\\AlexT\\\\OneDrive\\\\Desktop\\\\Alex\\\\alex-leschik.com\" log --oneline --since=\"7 days ago\")",
+      "Bash(git -C \"C:\\\\Users\\\\AlexT\\\\OneDrive\\\\Desktop\\\\Alex\\\\alex-leschik.com\" log --oneline --since=\"30 days ago\")",
+      "Bash(git -C \"C:\\\\Users\\\\AlexT\\\\OneDrive\\\\Desktop\\\\Alex\\\\alex-leschik.com\" show f26e5cc --stat)",
+      "Bash(git -C \"C:\\\\Users\\\\AlexT\\\\OneDrive\\\\Desktop\\\\Alex\\\\alex-leschik.com\" show f26e5cc -- src/pages/Index.tsx)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

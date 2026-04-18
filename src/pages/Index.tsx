@@ -71,7 +71,7 @@ export default function Index() {
 
       <div className="relative z-[1]">
         <section id="s0" data-scroll-section className="hero-poster">
-          <CrypticBackground rows={26} speed={132} opacity={0.08} />
+          <CrypticBackground rows={12} speed={180} opacity={0.07} />
 
           <div className="hero-poster__content">
             <div className="hero-poster__eyebrow">Alex Leschik // systems, software, education, creative technology</div>
@@ -131,7 +131,7 @@ export default function Index() {
         <CrypticDivider lines={4} label="// origin locked" />
 
         <div className="relative">
-          <CrypticBackground rows={18} speed={112} opacity={0.06} />
+          <CrypticBackground rows={10} speed={112} opacity={0.05} />
           <ScrollSection index={1} align="right" ghost="SIGNAL">
             <RevealLine />
             <RevealTag>01 - Signal</RevealTag>
@@ -160,7 +160,7 @@ export default function Index() {
         <CrypticDivider lines={3} label="// mapping vectors" />
 
         <section id="s2" data-scroll-section className="constellation-section">
-          <CrypticBackground rows={22} speed={138} opacity={0.07} />
+          <CrypticBackground rows={12} speed={138} opacity={0.06} />
 
           <div className="constellation-section__header">
             <span className="tag-label">02 - Constellation</span>
@@ -183,7 +183,7 @@ export default function Index() {
         <CrypticDivider lines={5} label="// deploying flagships" />
 
         <div className="relative">
-          <CrypticBackground rows={20} speed={118} opacity={0.06} />
+          <CrypticBackground rows={10} speed={118} opacity={0.05} />
           <ScrollSection index={3} ghost="WORK">
             <RevealLine />
             <RevealTag>03 - Work</RevealTag>
@@ -210,7 +210,7 @@ export default function Index() {
         </div>
 
         <LazySection className="relative" rootMargin="400px 0px">
-          <CrypticBackground rows={40} speed={120} opacity={0.07} className="spotlight-bg" />
+          <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
           <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
             <ProjectSpotlight editMode={editMode} />
           </Suspense>
@@ -219,7 +219,7 @@ export default function Index() {
         <CrypticDivider lines={4} label="// as seen on" />
 
         <LazySection className="relative">
-          <CrypticBackground rows={16} speed={140} opacity={0.05} />
+          <CrypticBackground rows={8} speed={140} opacity={0.04} />
           <Suspense fallback={<div style={{ minHeight: "500px" }} />}>
             <MediaRoom />
           </Suspense>
@@ -228,7 +228,7 @@ export default function Index() {
         <CrypticDivider lines={5} label="// opening the lab" />
 
         <div className="relative">
-          <CrypticBackground rows={20} speed={142} opacity={0.07} />
+          <CrypticBackground rows={10} speed={142} opacity={0.05} />
           <ScrollSection index={4} align="right" ghost="LAB">
             <RevealLine />
             <RevealTag>04 - Lab</RevealTag>
@@ -306,7 +306,7 @@ export default function Index() {
         <CrypticDivider lines={4} label="// opening channel" />
 
         <div className="relative">
-          <CrypticBackground rows={20} speed={110} opacity={0.06} />
+          <CrypticBackground rows={10} speed={110} opacity={0.05} />
           <ScrollSection index={5} align="right" ghost="CONTACT">
             <RevealLine />
             <RevealTag>05 - Contact</RevealTag>
