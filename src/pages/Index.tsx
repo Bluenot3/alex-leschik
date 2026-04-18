@@ -1,5 +1,4 @@
 import { lazy, Suspense, useState } from "react";
-import SignalConstellation from "@/components/SignalConstellation";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import InteractiveName from "@/components/InteractiveName";
@@ -24,6 +23,7 @@ const AZ1Logo3D = lazy(() => import("@/components/AZ1Logo3D"));
 const ImageVortex = lazy(() => import("@/components/ImageVortex"));
 const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
 const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
+const SignalConstellation = lazy(() => import("@/components/SignalConstellation"));
 
 const SECTION_COUNT = 6;
 
@@ -173,7 +173,9 @@ export default function Index() {
             </p>
           </div>
 
-          <SignalConstellation onExploreWork={() => scrollToSection(3)} />
+          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+            <SignalConstellation onExploreWork={() => scrollToSection(3)} />
+          </Suspense>
         </section>
 
         <CrypticDivider lines={5} label="// deploying flagships" />

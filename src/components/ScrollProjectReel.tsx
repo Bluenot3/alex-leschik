@@ -21,13 +21,6 @@ const PROJECTS: Project[] = [
     stats: [{ num: "500+", label: "Codes" }, { num: "HIPAA", label: "Compliant" }],
   },
   {
-    title: "LEXLESCHIK",
-    url: "https://leschiks-law.lovable.app",
-    type: "iframe",
-    description: "Legal system analyzer with intelligent document processing.",
-    tag: "legal · ai",
-  },
-  {
     title: "CANVASFORGE",
     url: "https://phengine.lovable.app",
     type: "iframe",
@@ -211,7 +204,7 @@ function ReelCard({
           setIframeLoaded(false);
         }
       },
-      { rootMargin: "200px 0px 500px 0px", threshold: 0 }
+      { rootMargin: "600px 0px 600px 0px", threshold: 0 }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -315,7 +308,7 @@ export default function ScrollProjectReel({ editMode = false }: { editMode?: boo
   return (
     <div className="proj-reel">
       <div className="proj-reel__header">
-        <span className="tag-label">13 More Deployed Products</span>
+        <span className="tag-label">12 More Deployed Products</span>
         <h3 className="display-heading display-lg">ALL BUILDS</h3>
         {editMode && (
           <button onClick={handleReset} className="cta-btn-muted mt-2">

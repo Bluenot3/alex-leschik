@@ -74,12 +74,6 @@ const ALL_PROJECTS: ProjectData[] = [
     tag: "healthcare · automation",
   },
   {
-    title: "LEXLESCHIK",
-    url: "https://leschiks-law.lovable.app",
-    description: "Legal system analyzer with intelligent document processing and case research.",
-    tag: "legal · ai",
-  },
-  {
     title: "CANVASFORGE",
     url: "https://phengine.lovable.app",
     description: "P5.js creative engine for generative art and interactive visualizations.",
@@ -218,7 +212,7 @@ function SpotlightCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [mountIframe, setMountIframe] = useState(index < 3); // Eagerly mount first 3
+  const [mountIframe, setMountIframe] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [titleText, setTitleText] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
@@ -229,17 +223,15 @@ function SpotlightCard({
     const el = cardRef.current;
     if (!el) return;
 
-    // Preload zone: start loading iframes 800px before they enter viewport
+    // Preload zone: start loading iframes 400px before they enter viewport
     const preloadObserver = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setMountIframe(true);
           hasLoadedOnce.current = true;
-        } else if (hasLoadedOnce.current) {
-          // Only unmount if far away (1200px) to avoid reload on small scrolls
         }
       },
-      { rootMargin: "800px 0px", threshold: 0 }
+      { rootMargin: "400px 0px", threshold: 0 }
     );
 
     // Visibility zone: for animations and active state
@@ -248,7 +240,7 @@ function SpotlightCard({
       { rootMargin: "50px 0px", threshold: 0.1 }
     );
 
-    // Cleanup zone: unmount iframes that are very far away to save memory
+    // Cleanup zone: only unmount iframes very far away to prevent reload jank
     const cleanupObserver = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting && hasLoadedOnce.current) {
@@ -257,7 +249,7 @@ function SpotlightCard({
           hasLoadedOnce.current = false;
         }
       },
-      { rootMargin: "1500px 0px", threshold: 0 }
+      { rootMargin: "3000px 0px", threshold: 0 }
     );
 
     preloadObserver.observe(el);

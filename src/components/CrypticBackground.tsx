@@ -102,7 +102,13 @@ export default function CrypticBackground({
     };
 
     const io = new IntersectionObserver(
-      ([e]) => { visibleRef.current = e.isIntersecting; },
+      ([e]) => {
+        visibleRef.current = e.isIntersecting;
+        if (e.isIntersecting && rafRef.current === 0) {
+          lastRef.current = performance.now();
+          rafRef.current = requestAnimationFrame(paint);
+        }
+      },
       { threshold: 0.01, rootMargin: "200px 0px" }
     );
     io.observe(container);
@@ -113,9 +119,11 @@ export default function CrypticBackground({
     ro.observe(container);
 
     const paint = (now: number) => {
+      if (!visibleRef.current) {
+        rafRef.current = 0;
+        return;
+      }
       rafRef.current = requestAnimationFrame(paint);
-
-      if (!visibleRef.current) return;
       if (now - lastRef.current < frameInterval) return;
       lastRef.current = now;
 
