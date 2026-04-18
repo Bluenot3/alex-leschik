@@ -2665,184 +2665,329 @@
 
 /* ── Media Room ── */
 .media-room {
-  padding: 5rem 1.5rem 6rem;
+  padding: 5rem 2rem 7rem;
   text-align: center;
   position: relative;
   z-index: 1;
 }
 
 .media-room__header {
-  margin-bottom: 3.5rem;
+  margin-bottom: 4rem;
 }
 
 .media-room__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 3rem 2.5rem;
-  max-width: 860px;
+  gap: 3rem;
+  max-width: 980px;
   margin: 0 auto;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 700px) {
   .media-room__grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
 }
 
-/* ── Retro TV ── */
-.retro-tv {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.8rem;
+/* ── Holographic Panel ── */
+
+/* @property for animated border hue */
+@property --holo-hue {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }
 
-.retro-tv__cabinet {
+@keyframes holo-hue-spin {
+  to { --holo-hue: 360deg; }
+}
+
+@keyframes holo-shimmer-sweep {
+  0%   { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(250%) skewX(-12deg); opacity: 0; }
+}
+
+@keyframes holo-standby-pulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); box-shadow: 0 0 12px rgba(100,160,255,0.3); }
+  50%       { opacity: 1;   transform: scale(1.2); box-shadow: 0 0 28px rgba(130,180,255,0.8), 0 0 60px rgba(100,120,255,0.4); }
+}
+
+@keyframes holo-ring-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
+}
+
+@keyframes holo-panel-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.holo-panel-wrap {
   position: relative;
-  width: 100%;
-  background: linear-gradient(160deg, #26263a 0%, #18182a 45%, #101020 100%);
-  border: 1.5px solid rgba(255,255,255,0.07);
-  border-radius: 18px;
-  padding: 1.1rem 1.1rem 0.7rem;
+  border-radius: 16px;
+  padding: 1.5px;
+  /* animated prismatic border via hue rotation */
+  background: linear-gradient(
+    135deg,
+    hsl(calc(var(--holo-hue) + 220), 80%, 70%),
+    hsl(calc(var(--holo-hue) + 280), 70%, 65%),
+    hsl(calc(var(--holo-hue) + 160), 75%, 65%),
+    hsl(calc(var(--holo-hue) + 30),  65%, 60%)
+  );
+  --holo-hue: 0deg;
+  animation:
+    holo-hue-spin 8s linear infinite,
+    holo-panel-in 0.6s ease both;
   box-shadow:
-    0 0 0 1px rgba(0,0,0,0.7),
-    0 12px 40px rgba(0,0,0,0.7),
-    inset 0 1px 0 rgba(255,255,255,0.07),
-    0 0 50px rgba(90,110,220,0.07);
+    0 0 0 0.5px rgba(0,0,0,0.8),
+    0 24px 64px rgba(0,0,0,0.55),
+    0 0 60px rgba(100,140,255,0.08),
+    0 0 120px rgba(140,100,255,0.05);
 }
 
-.retro-tv__antenna--left,
-.retro-tv__antenna--right {
+.holo-border-ring {
+  /* extra ambient glow behind the panel */
   position: absolute;
-  top: -24px;
-  width: 2px;
-  height: 26px;
-  background: linear-gradient(to top, rgba(255,255,255,0.18), rgba(255,255,255,0.04));
-  border-radius: 1px;
+  inset: -8px;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgba(100,150,255,0.06) 0%,
+    rgba(160,100,255,0.04) 40%,
+    transparent 70%
+  );
+  animation: holo-ring-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
 }
-.retro-tv__antenna--left  { left: 28%;  transform: rotate(-18deg); transform-origin: bottom center; }
-.retro-tv__antenna--right { right: 28%; transform: rotate(18deg);  transform-origin: bottom center; }
 
-.retro-tv__screen-bezel {
-  background: #060610;
-  border-radius: 10px;
-  padding: 5px;
+.holo-panel {
+  position: relative;
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.05) 0%,
+      rgba(180,200,255,0.03) 30%,
+      rgba(140,100,255,0.03) 70%,
+      rgba(255,255,255,0.02) 100%
+    );
+  backdrop-filter: blur(32px) saturate(1.4);
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
+  border-radius: 15px;
+  overflow: hidden;
+  padding: 1.1rem 1.1rem 0.85rem;
+}
+
+/* holographic shimmer sweep across the panel */
+.holo-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 35%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    rgba(180,220,255,0.05) 30%,
+    rgba(220,180,255,0.08) 50%,
+    rgba(180,255,220,0.05) 70%,
+    transparent
+  );
+  animation: holo-shimmer-sweep 5s ease-in-out infinite;
+  animation-delay: inherit;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* top-edge highlight */
+.holo-panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.25) 30%,
+    rgba(200,180,255,0.35) 50%,
+    rgba(255,255,255,0.25) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Corner accents ── */
+.holo-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  z-index: 5;
+}
+.holo-corner--tl { top: 6px;    left: 6px;    border-top: 1.5px solid rgba(180,210,255,0.6); border-left:  1.5px solid rgba(180,210,255,0.6); border-radius: 3px 0 0 0; }
+.holo-corner--tr { top: 6px;    right: 6px;   border-top: 1.5px solid rgba(180,210,255,0.6); border-right: 1.5px solid rgba(180,210,255,0.6); border-radius: 0 3px 0 0; }
+.holo-corner--bl { bottom: 6px; left: 6px;    border-bottom: 1.5px solid rgba(180,210,255,0.4); border-left:  1.5px solid rgba(180,210,255,0.4); border-radius: 0 0 0 3px; }
+.holo-corner--br { bottom: 6px; right: 6px;   border-bottom: 1.5px solid rgba(180,210,255,0.4); border-right: 1.5px solid rgba(180,210,255,0.4); border-radius: 0 0 3px 0; }
+
+/* ── HUD bar ── */
+.holo-panel__hud {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  padding: 0 0.1rem;
+}
+
+.holo-panel__network {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(200,220,255,0.7);
+  text-shadow: 0 0 10px rgba(150,190,255,0.5);
+}
+
+.holo-panel__type {
+  font-family: var(--font-mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(180,200,255,0.35);
+  margin-left: auto;
+}
+
+.holo-panel__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(100,120,180,0.4);
+  flex-shrink: 0;
+}
+
+.holo-panel__dot--live {
+  background: rgba(100,220,140,0.8);
+  box-shadow: 0 0 8px rgba(80,200,120,0.6);
+  animation: holo-ring-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Screen ── */
+.holo-panel__screen-wrap {
+  border-radius: 8px;
+  overflow: hidden;
   box-shadow:
-    inset 0 2px 10px rgba(0,0,0,0.9),
-    0 0 16px rgba(70,90,200,0.12);
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 4px 20px rgba(0,0,0,0.5),
+    0 0 30px rgba(100,140,255,0.08);
 }
 
-.retro-tv__screen {
+.holo-panel__screen {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: #000;
-  border-radius: 6px;
+  background: #03030a;
   overflow: hidden;
 }
 
-.retro-tv__iframe {
+.holo-panel__iframe {
   width: 100%;
   height: 100%;
   border: none;
   display: block;
+  position: relative;
+  z-index: 1;
 }
 
-.retro-tv__standby {
-  width: 100%;
-  height: 100%;
+/* ── Standby state ── */
+.holo-panel__standby {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 50%, #0c0c1c 0%, #040408 100%);
+  flex-direction: column;
+  gap: 0.75rem;
+  background: radial-gradient(ellipse at 50% 50%,
+    #080816 0%,
+    #030308 60%,
+    #020205 100%
+  );
+  z-index: 2;
 }
 
-.retro-tv__standby-dot {
-  width: 7px;
-  height: 7px;
+.holo-panel__standby-ring {
+  position: absolute;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(90,110,210,0.5);
-  box-shadow: 0 0 14px rgba(90,110,210,0.7);
-  animation: tv-standby 2.2s ease-in-out infinite;
+  border: 1px solid rgba(100,150,255,0.15);
+  box-shadow: 0 0 24px rgba(100,140,255,0.1), inset 0 0 24px rgba(100,140,255,0.05);
+  animation: holo-standby-pulse 2.5s ease-in-out infinite;
 }
 
-@keyframes tv-standby {
-  0%, 100% { opacity: 0.25; transform: scale(0.9); }
-  50%       { opacity: 1;    transform: scale(1.4); }
+.holo-panel__standby-glyph {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: rgba(120,160,255,0.3);
+  text-shadow: 0 0 20px rgba(100,150,255,0.4);
+  animation: holo-standby-pulse 2.5s ease-in-out infinite;
+  z-index: 1;
 }
 
-.retro-tv__scanlines {
+/* ── Overlays on screen ── */
+.holo-panel__scanlines {
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 2px,
-    rgba(0,0,0,0.07) 2px,
-    rgba(0,0,0,0.07) 4px
+    transparent 3px,
+    rgba(0,0,0,0.06) 3px,
+    rgba(0,0,0,0.06) 4px
   );
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
 }
 
-.retro-tv__screen-glare {
+.holo-panel__shimmer {
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 35%;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.03), transparent);
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(180,210,255,0.025) 45%,
+    rgba(210,180,255,0.03) 55%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 3;
-  border-radius: 6px 6px 0 0;
 }
 
-.retro-tv__controls {
+.holo-panel__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%,
+    transparent 55%,
+    rgba(0,0,10,0.45) 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ── Footer label ── */
+.holo-panel__footer {
+  margin-top: 0.7rem;
+  padding: 0 0.1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 0.55rem;
-  padding: 0 0.2rem;
+  justify-content: center;
 }
 
-.retro-tv__network {
+.holo-panel__label {
   font-family: var(--font-mono);
-  font-size: 0.48rem;
-  letter-spacing: 0.18em;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-}
-
-.retro-tv__knobs {
-  display: flex;
-  gap: 0.35rem;
-}
-
-.retro-tv__knob {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #32324a, #16161e);
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
-}
-
-.retro-tv__stand {
-  width: 36%;
-  height: 7px;
-  background: linear-gradient(to bottom, #1c1c2c, #101018);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-top: none;
-  border-radius: 0 0 5px 5px;
-  margin: 0 auto;
-}
-
-.retro-tv__caption {
-  font-family: var(--font-mono);
-  font-size: 0.52rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.28);
+  color: rgba(200,215,255,0.4);
   text-align: center;
-  max-width: 90%;
   line-height: 1.5;
 }
