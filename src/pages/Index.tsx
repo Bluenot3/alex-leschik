@@ -20,6 +20,7 @@ const GlassCube = lazy(() => import("@/components/GlassCube"));
 const GlassOrbit = lazy(() => import("@/components/GlassOrbit"));
 const CubeRain = lazy(() => import("@/components/CubeRain"));
 const AZ1Logo3D = lazy(() => import("@/components/AZ1Logo3D"));
+const Amphitheatre = lazy(() => import("@/components/Amphitheatre"));
 const ImageVortex = lazy(() => import("@/components/ImageVortex"));
 const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
 const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
@@ -276,6 +277,15 @@ export default function Index() {
               <LazySection className="relative z-[1]">
                 <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
                   <CubeRain />
+                </Suspense>
+              </LazySection>
+            </div>
+
+            <div className="artifact-lab__item artifact-lab__item--wide">
+              <div className="artifact-lab__label">Spatial archive</div>
+              <LazySection className="relative z-[1]">
+                <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+                  <Amphitheatre progress={Math.max(0, (smoothProgress - 0.65) / 0.2)} />
                 </Suspense>
               </LazySection>
             </div>
