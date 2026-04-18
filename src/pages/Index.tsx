@@ -21,6 +21,7 @@ const GlassOrbit = lazy(() => import("@/components/GlassOrbit"));
 const CubeRain = lazy(() => import("@/components/CubeRain"));
 const AZ1Logo3D = lazy(() => import("@/components/AZ1Logo3D"));
 const Amphitheatre = lazy(() => import("@/components/Amphitheatre"));
+const MediaRoom = lazy(() => import("@/components/MediaRoom"));
 const ImageVortex = lazy(() => import("@/components/ImageVortex"));
 const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
 const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
@@ -148,7 +149,7 @@ export default function Index() {
             <RevealStats
               stats={[
                 { num: "1st", label: "Historic education milestone" },
-                { num: "4.7M+", label: "Youth network reach" },
+                { num: "30K", label: "National members" },
                 { num: "Multi", label: "Industries crossed" },
               ]}
             />
@@ -212,6 +213,15 @@ export default function Index() {
           <CrypticBackground rows={40} speed={120} opacity={0.07} className="spotlight-bg" />
           <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
             <ProjectSpotlight editMode={editMode} />
+          </Suspense>
+        </LazySection>
+
+        <CrypticDivider lines={4} label="// as seen on" />
+
+        <LazySection className="relative">
+          <CrypticBackground rows={16} speed={140} opacity={0.05} />
+          <Suspense fallback={<div style={{ minHeight: "500px" }} />}>
+            <MediaRoom />
           </Suspense>
         </LazySection>
 

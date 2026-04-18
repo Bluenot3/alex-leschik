@@ -56,7 +56,7 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
     icon: BookOpen,
     metrics: [
       { value: "1st", label: "Youth AI literacy program in US history" },
-      { value: "4.7M+", label: "Boys & Girls Clubs youth network" },
+      { value: "30K", label: "Boys & Girls Clubs national members" },
     ],
     highlights: [
       "Turns abstract technology into curriculum, interfaces, and trust.",

@@ -10,7 +10,7 @@ interface Project {
   stats?: { num: string; label: string }[];
 }
 
-// 13 remaining projects (4 featured ones removed)
+// 13 more deployed products
 const PROJECTS: Project[] = [
   {
     title: "CLINICALCIPHER",
@@ -21,32 +21,40 @@ const PROJECTS: Project[] = [
     stats: [{ num: "500+", label: "Codes" }, { num: "HIPAA", label: "Compliant" }],
   },
   {
+    title: "PROMPT PLAYGROUND",
+    url: "https://terminalz.lovable.app",
+    type: "iframe",
+    description: "ZEN AI Pioneer tool — students ages 11–18 explore AI prompting in Module 1 of the first Youth AI Literacy Program in US history.",
+    tag: "zen ai · education · module 1",
+  },
+  {
+    title: "PROMPT A PLANET",
+    url: "https://prompt-a-planet-forge.lovable.app",
+    type: "iframe",
+    description: "Generate entire worlds with AI — powered by DALL·E 3, FLUX, GPT-IMAGE-1.5 and more. Used in ZEN AI Pioneer curriculum.",
+    tag: "zen ai · world-building",
+  },
+  {
+    title: "PROMPT A PROTOTYPE",
+    url: "https://protozen.lovable.app",
+    type: "iframe",
+    description: "Rapid-prototype with AI — hyper-detailed images powered by nano-banana pro 2, DALL·E 3, FLUX, and more.",
+    tag: "zen ai · prototyping",
+  },
+  {
+    title: "ZEN WEEKLY",
+    url: "https://www.zenai.world/zenweekly",
+    type: "iframe",
+    description: "ZEN AI Co.'s flagship publication since 2023 — 20,000+ subscribers across all platforms. One of the earliest ZEN platforms.",
+    tag: "publication · since 2023",
+    stats: [{ num: "20K+", label: "Subscribers" }, { num: "2023", label: "Est." }],
+  },
+  {
     title: "CANVASFORGE",
     url: "https://phengine.lovable.app",
     type: "iframe",
     description: "P5.js creative engine for generative art and visualizations.",
     tag: "creative · generative",
-  },
-  {
-    title: "TALENTFLOW",
-    url: "https://hractions.lovable.app",
-    type: "iframe",
-    description: "Seamless onboarding and talent pipeline management.",
-    tag: "hr-tech · automation",
-  },
-  {
-    title: "WORLDFORGE AI",
-    url: "https://prompt-a-planet-forge.lovable.app",
-    type: "iframe",
-    description: "Build entire worlds with AI — concept to environment.",
-    tag: "ai · world-building",
-  },
-  {
-    title: "ZENTYPE",
-    url: "https://terminalz.lovable.app",
-    type: "iframe",
-    description: "Terminal-style writing with zen-like simplicity.",
-    tag: "productivity · minimalist",
   },
   {
     title: "INSPIRELENS",

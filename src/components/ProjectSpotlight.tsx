@@ -21,9 +21,9 @@ const ALL_PROJECTS: ProjectData[] = [
   {
     title: "BOYS & GIRLS CLUBS × ZEN",
     url: "https://bgcgw-cot.lovable.app",
-    description: "Official AI literacy partnership with Boys & Girls Clubs of Greater Washington — bringing ZEN AI Co.'s curriculum to communities across the DMV. AI education for millions of young minds.",
+    description: "Official AI literacy partnership with Boys & Girls Clubs of Greater Washington — bringing ZEN AI Co.'s curriculum to communities across the DMV. Building AI education for the next generation.",
     tag: "partnership · youth",
-    stats: [{ num: "4.7M+", label: "Youth Served" }, { num: "5K+", label: "Clubs" }],
+    stats: [{ num: "30K", label: "National Members" }, { num: "5K+", label: "Clubs" }],
   },
   {
     title: "NEAR PROTOCOL × ZEN",
@@ -73,29 +73,41 @@ const ALL_PROJECTS: ProjectData[] = [
     description: "Medical coding toolkit — encrypt, decode, and manage clinical workflows with precision.",
     tag: "healthcare · automation",
   },
+  // === ZEN AI LITERACY PROGRAM TOOLS ===
+  {
+    title: "PROMPT PLAYGROUND",
+    url: "https://terminalz.lovable.app",
+    description: "Terminal-style AI prompt exploration tool built for ZEN AI Co.'s curriculum — used by Pioneers (students ages 11–18) in the first Youth AI Literacy Program in US history to gain hands-on fluency with AI.",
+    tag: "zen ai · education · module 1",
+    stats: [{ num: "Ages", label: "11–18" }, { num: "Module", label: "1 Tool" }],
+  },
+  {
+    title: "PROMPT A PLANET",
+    url: "https://prompt-a-planet-forge.lovable.app",
+    description: "World-building AI tool from ZEN AI Co.'s Pioneer curriculum — students generate entire planets, ecosystems, and environments powered by nano-banana pro 2, DALL·E 3, GPT-IMAGE-1.5, FLUX, and more.",
+    tag: "zen ai · world-building · ai-literacy",
+    stats: [{ num: "Multi", label: "AI Models" }, { num: "Pioneer", label: "Curriculum" }],
+  },
+  {
+    title: "PROMPT A PROTOTYPE",
+    url: "https://protozen.lovable.app",
+    description: "Rapid-prototype AI tool for ZEN AI Pioneers — generates myriad hyper-detailed images and design concepts powered by nano-banana pro 2, DALL·E 3, GPT-IMAGE-1.5, FLUX, and more. Students build real AI intuition from day one.",
+    tag: "zen ai · prototyping · ai-literacy",
+    stats: [{ num: "DALL·E 3", label: "Powered" }, { num: "FLUX", label: "+ More" }],
+  },
+  // === PUBLICATIONS ===
+  {
+    title: "ZEN WEEKLY",
+    url: "https://www.zenai.world/zenweekly",
+    description: "One of the earliest ZEN AI Co. platforms — our flagship publication launched in 2023. The definitive weekly dispatch on AI literacy, youth tech, and the frontier of human-machine collaboration. 20,000+ subscribers across all platforms and channels.",
+    tag: "publication · zen ai · since 2023",
+    stats: [{ num: "20K+", label: "Subscribers" }, { num: "2023", label: "Est." }, { num: "Weekly", label: "Cadence" }],
+  },
   {
     title: "CANVASFORGE",
     url: "https://phengine.lovable.app",
     description: "P5.js creative engine for generative art and interactive visualizations.",
     tag: "creative · generative",
-  },
-  {
-    title: "TALENTFLOW",
-    url: "https://hractions.lovable.app",
-    description: "Seamless onboarding and talent pipeline management for modern teams.",
-    tag: "hr-tech · automation",
-  },
-  {
-    title: "WORLDFORGE AI",
-    url: "https://prompt-a-planet-forge.lovable.app",
-    description: "Build entire worlds with AI — from concept to environment in minutes.",
-    tag: "ai · world-building",
-  },
-  {
-    title: "ZENTYPE",
-    url: "https://terminalz.lovable.app",
-    description: "Terminal-style writing environment with zen-like simplicity and focus.",
-    tag: "productivity · minimalist",
   },
   {
     title: "INSPIRELENS",
