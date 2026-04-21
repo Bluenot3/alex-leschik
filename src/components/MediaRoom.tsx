@@ -65,8 +65,9 @@ function HoloPanel({
               <iframe
                 src={src}
                 title={label}
-                allow="autoplay; encrypted-media; picture-in-picture"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
                 className="holo-panel__iframe"
                 onLoad={() => setLoaded(true)}
               />

@@ -325,7 +325,8 @@ function SpotlightCard({
               src={project.url}
               title={project.title}
               loading="lazy"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+              referrerPolicy="no-referrer-when-downgrade"
               className="spotlight-card__iframe"
               onLoad={() => setIframeLoaded(true)}
             />
