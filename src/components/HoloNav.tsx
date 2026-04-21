@@ -9,12 +9,11 @@ const SECTIONS = [
   { label: "Contact",       glyph: "06" },
 ];
 
-// Update these hrefs with your actual social URLs
 const SOCIALS = [
-  { label: "LinkedIn",    icon: "in", href: "https://linkedin.com/in/alexanderleschik" },
-  { label: "X / Twitter", icon: "x",  href: "https://x.com/zenai_co" },
-  { label: "Instagram",   icon: "ig", href: "https://instagram.com/zenai.co" },
-  { label: "ZEN AI",      icon: "↗",  href: "https://zenai.world" },
+  { label: "LinkedIn",    icon: "in", href: "https://www.linkedin.com/in/alex-leschik/" },
+  { label: "X / Twitter", icon: "x",  href: "https://x.com/MillennialAGI" },
+  { label: "GitHub",      icon: "gh", href: "https://github.com/Bluenot3" },
+  { label: "ZEN AI",      icon: "↗",  href: "https://www.zenai.world/" },
 ];
 
 export default function HoloNav({ onNavigate }: { onNavigate: (index: number) => void }) {

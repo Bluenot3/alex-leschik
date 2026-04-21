@@ -8,6 +8,7 @@ import CommandDashboard from "@/components/CommandDashboard";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
+import SocialLinks from "@/components/SocialLinks";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -31,15 +32,15 @@ const SignalConstellation = lazy(() => import("@/components/SignalConstellation"
 const SECTION_COUNT = 6;
 
 const HERO_SIGNALS = [
-  { value: "1st", label: "Youth AI literacy program in US history" },
-  { value: "50+", label: "Products, prototypes, and systems shipped" },
-  { value: "5", label: "Fortune 500 relationships in orbit" },
+  { value: "1st", label: "Youth AI literacy program deployed at national scale" },
+  { value: "50+", label: "Systems, platforms, and operational builds shipped" },
+  { value: "5", label: "Fortune 500 and enterprise-level relationships engaged" },
 ];
 
 const HERO_FEED = [
-  "Historic education infrastructure with real institutional surface area",
-  "Interfaces designed like posters, not templates",
-  "Products built to compound instead of decay",
+  "Historic AI literacy infrastructure with real institutional surface area",
+  "Interfaces designed with memory, not templates",
+  "Products built to compound under real conditions and real scale",
 ];
 
 export default function Index() {
@@ -85,13 +86,15 @@ export default function Index() {
                 <br />
                 SYSTEMS
                 <br />
-                PEOPLE FEEL
+                PEOPLE
+                <br />
+                ACTUALLY USE
               </h2>
             </div>
 
             <p className="hero-poster__body">
-              I design interfaces with memory, ship software with real operational weight, and turn early ideas into systems
-              that institutions, teams, and communities can actually use.
+              I design systems with memory, deploy software that carries real operational weight, and turn early concepts into
+              infrastructure that organizations, teams, and communities can rely on under real conditions.
             </p>
 
             <div className="hero-poster__actions">
@@ -132,6 +135,12 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// origin locked" />
 
+        <LazySection rootMargin="800px 0px">
+          <SocialLinks />
+        </LazySection>
+
+        <CrypticDivider lines={3} label="// network mapped" />
+
         <div className="relative">
           <CrypticBackground rows={10} speed={112} opacity={0.05} />
           <ScrollSection index={1} align="right" ghost="SIGNAL">
@@ -142,17 +151,17 @@ export default function Index() {
               <br />
               MORE
               <br />
-              OUTPUT
+              ACTIVITY
             </RevealHeading>
             <RevealBody>
-              The point is durable leverage. Historic AI literacy work, institutional partnerships, and product systems that
-              can survive real use, real teams, and real scale.
+              The point is durable leverage. Historic AI literacy infrastructure, enterprise partnerships, and product systems
+              that hold up under real use, real teams, and real scale — not just demos.
             </RevealBody>
             <RevealStats
               stats={[
-                { num: "1st", label: "Historic education milestone" },
-                { num: "30K", label: "National members" },
-                { num: "Multi", label: "Industries crossed" },
+                { num: "1st", label: "Youth AI literacy program in US history" },
+                { num: "30K", label: "National members reached" },
+                { num: "Multi", label: "Industries and sectors crossed" },
               ]}
             />
             <RevealCTA onClick={() => scrollToSection(2)}>Trace the orbit</RevealCTA>
@@ -167,13 +176,13 @@ export default function Index() {
           <div className="constellation-section__header">
             <span className="tag-label">02 - Constellation</span>
             <h2 className="constellation-section__title">
-              A BETTER WAY
+              A CLEARER WAY
               <br />
               TO READ THE WORK
             </h2>
             <p className="constellation-section__body">
-              Hover the orbit map to see how the portfolio is actually structured: public impact, execution, interfaces, lab
-              work, and partnership reach feeding the same core system.
+              The orbit map shows how the portfolio is actually structured: public impact, institutional reach, interface
+              work, lab experiments, and execution threads all feeding the same core system.
             </p>
           </div>
 
