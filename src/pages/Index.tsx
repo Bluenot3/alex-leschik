@@ -86,9 +86,9 @@ export default function Index() {
                 <br />
                 SYSTEMS
                 <br />
-                PEOPLE
+                THAT
                 <br />
-                ACTUALLY USE
+                OUTLAST
               </h2>
             </div>
 
