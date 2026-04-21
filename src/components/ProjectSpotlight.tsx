@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ExternalLink, Pencil, X, ChevronRight } from "lucide-react";
+import { ExternalLink, Pencil, X } from "lucide-react";
 
 export interface ProjectData {
   title: string;
@@ -208,74 +208,57 @@ function getHostname(url: string): string {
   try { return new URL(url).hostname; } catch { return url; }
 }
 
+/* ── Static Preview Window (replaces live iframe) ── */
+function PreviewWindow({ url, title }: { url: string; title: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="spotlight-preview"
+    >
+      <div className="spotlight-preview__grid" />
+      <div className="spotlight-preview__glow" />
+      <div className="spotlight-preview__content">
+        <span className="spotlight-preview__glyph">◈</span>
+        <div className="spotlight-preview__name">{title}</div>
+        <div className="spotlight-preview__host">{getHostname(url)}</div>
+      </div>
+      <div className="spotlight-preview__cta">OPEN LIVE ↗</div>
+      <div className="spotlight-preview__scanlines" />
+    </a>
+  );
+}
+
 /* ── Single Spotlight Card ── */
 function SpotlightCard({
   project,
   index,
-  active,
   editMode,
   onEdit,
 }: {
   project: ProjectData;
   index: number;
-  active: boolean;
   editMode: boolean;
   onEdit: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [mountIframe, setMountIframe] = useState(false);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
   const [titleText, setTitleText] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
-  const hasLoadedOnce = useRef(false);
   const isFlagship = index < 3;
 
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-
-    // Preload zone: start loading iframes 400px before they enter viewport
-    const preloadObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setMountIframe(true);
-          hasLoadedOnce.current = true;
-        }
-      },
-      { rootMargin: "400px 0px", threshold: 0 }
-    );
-
-    // Visibility zone: for animations and active state
-    const visibilityObserver = new IntersectionObserver(
+    const io = new IntersectionObserver(
       ([entry]) => setVisible(entry.isIntersecting),
-      { rootMargin: "50px 0px", threshold: 0.1 }
+      { rootMargin: "60px 0px", threshold: 0.08 }
     );
-
-    // Cleanup zone: only unmount iframes very far away to prevent reload jank
-    const cleanupObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting && hasLoadedOnce.current) {
-          setMountIframe(false);
-          setIframeLoaded(false);
-          hasLoadedOnce.current = false;
-        }
-      },
-      { rootMargin: "3000px 0px", threshold: 0 }
-    );
-
-    preloadObserver.observe(el);
-    visibilityObserver.observe(el);
-    cleanupObserver.observe(el);
-
-    return () => {
-      preloadObserver.disconnect();
-      visibilityObserver.disconnect();
-      cleanupObserver.disconnect();
-    };
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
-  // Scramble text
   useEffect(() => {
     if (!visible) return;
     let frame = 0;
@@ -299,7 +282,7 @@ function SpotlightCard({
       id={`project-${index}`}
       className={`spotlight-card spotlight-card--${side} ${visible ? "spotlight-card--visible" : ""} ${isFlagship ? "spotlight-card--flagship" : ""}`}
     >
-      {/* Embed with browser chrome */}
+      {/* Preview window with browser chrome */}
       <div className="spotlight-card__embed-wrap">
         <div className="spotlight-card__chrome">
           <div className="spotlight-card__chrome-dots">
@@ -315,23 +298,7 @@ function SpotlightCard({
           </div>
         </div>
         <div className="spotlight-card__embed">
-          {!iframeLoaded && (
-            <div className="proj-card__fallback">
-              <div className="proj-card__fallback-text">{project.title}</div>
-            </div>
-          )}
-          {mountIframe && (
-            <iframe
-              src={project.url}
-              title={project.title}
-              loading="lazy"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="spotlight-card__iframe"
-              onLoad={() => setIframeLoaded(true)}
-            />
-          )}
-          <div className="proj-card__scanlines" />
+          <PreviewWindow url={project.url} title={project.title} />
         </div>
       </div>
 
@@ -461,7 +428,6 @@ export default function ProjectSpotlight({ editMode = false }: { editMode?: bool
             key={i}
             project={project}
             index={i}
-            active={i === activeIndex}
             editMode={editMode}
             onEdit={() => setEditingIndex(i)}
           />

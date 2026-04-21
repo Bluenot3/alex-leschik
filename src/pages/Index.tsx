@@ -3,6 +3,7 @@ import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import InteractiveName from "@/components/InteractiveName";
 import HUD from "@/components/HUD";
+import HoloNav from "@/components/HoloNav";
 import CommandDashboard from "@/components/CommandDashboard";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
@@ -68,6 +69,7 @@ export default function Index() {
       />
 
       <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
+      <HoloNav onNavigate={scrollToSection} />
 
       <div className="relative z-[1]">
         <section id="s0" data-scroll-section className="hero-poster">
@@ -209,18 +211,18 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <LazySection className="relative" rootMargin="400px 0px">
+        <LazySection className="relative" rootMargin="1200px 0px">
           <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
-          <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
+          <Suspense fallback={<div className="section-loading-fill" style={{ minHeight: "80vh" }} />}>
             <ProjectSpotlight editMode={editMode} />
           </Suspense>
         </LazySection>
 
         <CrypticDivider lines={4} label="// as seen on" />
 
-        <LazySection className="relative">
+        <LazySection className="relative" rootMargin="1000px 0px">
           <CrypticBackground rows={8} speed={140} opacity={0.04} />
-          <Suspense fallback={<div style={{ minHeight: "500px" }} />}>
+          <Suspense fallback={<div className="section-loading-fill" style={{ minHeight: "500px" }} />}>
             <MediaRoom />
           </Suspense>
         </LazySection>
@@ -247,8 +249,8 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <LazySection className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
-          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+        <LazySection className="relative z-[1] py-16 px-6 md:px-12 lg:px-20" rootMargin="800px 0px">
+          <Suspense fallback={<div className="section-loading-fill" style={{ minHeight: "400px" }} />}>
             <GalleryShowcase />
           </Suspense>
         </LazySection>

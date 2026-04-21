@@ -2714,6 +2714,333 @@
   }
 }
 
+/* ── Section loading fill (no blank gaps) ── */
+.section-loading-fill {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background)) 0%,
+    hsl(var(--muted) / 0.3) 50%,
+    hsl(var(--background)) 100%
+  );
+}
+
+/* ── Spotlight Preview Window (static, instant — no iframe overhead) ── */
+.spotlight-preview {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #07071a 0%, #0b0b1e 50%, #060610 100%);
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  transition: box-shadow 0.4s ease;
+}
+
+.spotlight-preview:hover {
+  box-shadow: inset 0 0 80px rgba(100, 150, 255, 0.07);
+}
+
+/* Subtle perspective grid */
+.spotlight-preview__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(100, 150, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 150, 255, 0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none;
+}
+
+/* Center radial glow — amplifies on hover */
+.spotlight-preview__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(110, 150, 255, 0.07) 0%, transparent 60%);
+  transition: background 0.5s ease;
+  pointer-events: none;
+}
+
+.spotlight-preview:hover .spotlight-preview__glow {
+  background: radial-gradient(ellipse at 50% 50%, rgba(110, 150, 255, 0.22) 0%, transparent 62%);
+}
+
+/* Project name + URL centered */
+.spotlight-preview__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 1.5rem;
+  z-index: 2;
+  transition: opacity 0.35s ease;
+}
+
+.spotlight-preview:hover .spotlight-preview__content {
+  opacity: 0.15;
+}
+
+.spotlight-preview__glyph {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  color: rgba(120, 160, 255, 0.3);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.spotlight-preview__name {
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 1.8vw, 1.35rem);
+  letter-spacing: 0.06em;
+  color: rgba(200, 220, 255, 0.72);
+  text-align: center;
+  line-height: 1.15;
+}
+
+.spotlight-preview__host {
+  font-family: var(--font-mono);
+  font-size: 0.44rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(140, 165, 255, 0.32);
+  margin-top: 0.15rem;
+}
+
+/* "OPEN LIVE ↗" revealed on hover */
+.spotlight-preview__cta {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+  letter-spacing: 0.14em;
+  color: rgba(210, 225, 255, 0.92);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  z-index: 3;
+  text-shadow: 0 0 32px rgba(120, 160, 255, 0.9), 0 0 60px rgba(100, 140, 255, 0.5);
+}
+
+.spotlight-preview:hover .spotlight-preview__cta {
+  opacity: 1;
+}
+
+/* Scanlines */
+.spotlight-preview__scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.04) 3px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ── Holo Nav (right-side floating navigation + socials) ── */
+.holo-nav {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.holo-nav--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Panel slides in from the right */
+.holo-nav__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 0;
+  max-height: 85vh;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0;
+  /* Holographic dark glass */
+  background: linear-gradient(135deg, rgba(8,8,22,0.96) 0%, rgba(12,12,30,0.94) 60%, rgba(7,7,18,0.97) 100%);
+  border: 1px solid rgba(120, 155, 255, 0.18);
+  border-right: none;
+  border-radius: 14px 0 0 14px;
+  /* Prismatic top edge */
+  box-shadow:
+    0 0 0 0.5px rgba(0,0,0,0.8),
+    -6px 0 40px rgba(80, 120, 255, 0.06),
+    inset 0 1px 0 rgba(180, 210, 255, 0.12);
+  transition:
+    width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    padding 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.holo-nav__panel::-webkit-scrollbar { display: none; }
+
+/* Prismatic top-edge shimmer */
+.holo-nav__panel::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  display: block;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(180, 210, 255, 0.4) 40%,
+    rgba(200, 160, 255, 0.35) 60%,
+    transparent 100%
+  );
+  flex-shrink: 0;
+}
+
+.holo-nav--open .holo-nav__panel {
+  width: 210px;
+  opacity: 1;
+  padding: 1rem 1rem 1.25rem 1rem;
+}
+
+.holo-nav__section-label {
+  font-family: var(--font-mono);
+  font-size: 0.37rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(140, 165, 255, 0.32);
+  padding: 0.25rem 0.25rem 0.4rem;
+  white-space: nowrap;
+}
+
+.holo-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.32rem 0.5rem;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.holo-nav__link:hover {
+  background: rgba(110, 150, 255, 0.1);
+}
+
+.holo-nav__link-glyph,
+.holo-nav__link-icon {
+  font-family: var(--font-mono);
+  font-size: 0.4rem;
+  letter-spacing: 0.12em;
+  color: rgba(120, 160, 255, 0.45);
+  flex-shrink: 0;
+  width: 1.6rem;
+  text-align: center;
+}
+
+.holo-nav__link-label {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(195, 212, 255, 0.58);
+  transition: color 0.2s ease;
+}
+
+.holo-nav__link:hover .holo-nav__link-glyph,
+.holo-nav__link:hover .holo-nav__link-icon {
+  color: rgba(160, 195, 255, 0.85);
+}
+
+.holo-nav__link:hover .holo-nav__link-label {
+  color: rgba(210, 225, 255, 0.95);
+}
+
+.holo-nav__divider {
+  height: 1px;
+  background: rgba(120, 155, 255, 0.1);
+  margin: 0.6rem 0.25rem;
+  flex-shrink: 0;
+}
+
+/* Trigger tab — always visible strip on the right edge */
+.holo-nav__trigger {
+  width: 18px;
+  height: 88px;
+  border-radius: 8px 0 0 8px;
+  background: linear-gradient(
+    160deg,
+    rgba(100, 140, 255, 0.12),
+    rgba(160, 100, 255, 0.08)
+  );
+  border: 1px solid rgba(140, 170, 255, 0.18);
+  border-right: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.35s ease;
+  box-shadow: -3px 0 20px rgba(100, 140, 255, 0.04);
+}
+
+.holo-nav:hover .holo-nav__trigger,
+.holo-nav--open .holo-nav__trigger {
+  background: linear-gradient(
+    160deg,
+    rgba(100, 140, 255, 0.28),
+    rgba(160, 100, 255, 0.22)
+  );
+  border-color: rgba(160, 190, 255, 0.45);
+  box-shadow: -4px 0 28px rgba(100, 140, 255, 0.18);
+  width: 22px;
+}
+
+.holo-nav__trigger-glyph {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: rgba(150, 185, 255, 0.5);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  transition: color 0.3s ease;
+  user-select: none;
+}
+
+.holo-nav:hover .holo-nav__trigger-glyph,
+.holo-nav--open .holo-nav__trigger-glyph {
+  color: rgba(190, 215, 255, 0.92);
+  text-shadow: 0 0 12px rgba(150, 200, 255, 0.6);
+}
+
+/* Hide on mobile — not enough room */
+@media (max-width: 767px) {
+  .holo-nav { display: none; }
+}
+
 /* ── Media Room ── */
 .media-room {
   padding: 5rem 2rem 7rem;
