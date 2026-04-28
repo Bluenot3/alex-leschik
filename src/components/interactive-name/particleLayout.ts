@@ -43,13 +43,13 @@ const HERO_STYLE: WordStyle = {
   lineHeight: 1.04,
   minFontSize: 48,
   maxFontSize: 220,
-  step: 2,            // 2px grid — ultra-fine, crisp sampling
-  maxParticles: 22000, // more particles = darker, denser letterforms
-  pointSize: 1.3,     // slightly thicker base — more solid, prominent name
-  gridPointSize: 2.5, // larger accent nodes — more visible sub-pattern
-  shimmerSize: 4.5,   // shimmer star core
-  gridSpacing: 8,     // accent node every 8 canvas px
-  shimmerSpacing: 24, // shimmer star every 24 canvas px
+  step: 2,
+  maxParticles: 11000, // tuned for consistent 60 fps headroom
+  pointSize: 1.5,      // bigger dot compensates for lower count — stays bold
+  gridPointSize: 2.8,  // accent nodes still very visible
+  shimmerSize: 4.5,
+  gridSpacing: 8,
+  shimmerSpacing: 24,
   introSpread: 24,
   verticalBias: -0.04,
 };
