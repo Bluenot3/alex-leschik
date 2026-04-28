@@ -9,10 +9,11 @@ export const WORD_SETS: string[][] = [
 export interface ParticleTemplate {
   homeX: Float32Array;
   homeY: Float32Array;
-  type: Uint8Array;       // 0 = base fill, 1 = grid accent node
+  type: Uint8Array;       // 0 = base fill, 1 = grid accent node, 2 = shimmer star
   count: number;
   pointSize: number;      // base particle diameter in CSS px
   gridPointSize: number;  // accent node diameter in CSS px
+  shimmerSize: number;    // shimmer star core diameter in CSS px
   introSpread: number;
   isHero: boolean;
 }
@@ -28,7 +29,9 @@ interface WordStyle {
   maxParticles: number;
   pointSize: number;
   gridPointSize: number;
+  shimmerSize: number;    // shimmer star core diameter in CSS px
   gridSpacing: number;    // accent grid spacing in canvas px
+  shimmerSpacing: number; // shimmer star grid spacing (sparser)
   introSpread: number;
   verticalBias: number;
 }
@@ -44,7 +47,9 @@ const HERO_STYLE: WordStyle = {
   maxParticles: 14000,
   pointSize: 1.0,     // 1px base particles — ultra-sharp
   gridPointSize: 2.2, // 2.2px accent nodes — visible sub-pattern
+  shimmerSize: 4.5,   // shimmer star core at 4.5px
   gridSpacing: 8,     // accent node every 8 canvas px
+  shimmerSpacing: 24, // shimmer star every 24 canvas px (sparser)
   introSpread: 24,
   verticalBias: -0.04,
 };
@@ -60,7 +65,9 @@ const DEFAULT_STYLE: WordStyle = {
   maxParticles: 2400,
   pointSize: 1.8,
   gridPointSize: 0,
+  shimmerSize: 0,
   gridSpacing: 0,
+  shimmerSpacing: 0,
   introSpread: 82,
   verticalBias: 0,
 };
@@ -175,7 +182,8 @@ export function getParticleTemplate(index: number, width: number, height: number
   const homeY = new Float32Array(count);
   const type = new Uint8Array(count);
 
-  const gs = style.gridSpacing;
+  const gs  = style.gridSpacing;
+  const gs2 = style.shimmerSpacing;
 
   for (let i = 0; i < count; i++) {
     homeX[i] = selected[i].hx;
@@ -185,8 +193,15 @@ export function getParticleTemplate(index: number, width: number, height: number
     if (gs > 0) {
       const rx = ((Math.round(selected[i].hx) % gs) + gs) % gs;
       const ry = ((Math.round(selected[i].hy) % gs) + gs) % gs;
-      // Catch positions 0,1 in each axis → ~(2/gs)² fraction of particles
       type[i] = (rx < 2 && ry < 2) ? 1 : 0;
+    }
+
+    // Upgrade to type=2 shimmer star at sparser gs2 grid intersections
+    // These override type=0 and type=1 — they're the rarest, brightest particles
+    if (gs2 > 0) {
+      const rx2 = ((Math.round(selected[i].hx) % gs2) + gs2) % gs2;
+      const ry2 = ((Math.round(selected[i].hy) % gs2) + gs2) % gs2;
+      if (rx2 < 2 && ry2 < 2) type[i] = 2;
     }
   }
 
@@ -197,6 +212,7 @@ export function getParticleTemplate(index: number, width: number, height: number
     count,
     pointSize: style.pointSize,
     gridPointSize: style.gridPointSize,
+    shimmerSize: style.shimmerSize,
     introSpread: style.introSpread,
     isHero: index === 0,
   };
