@@ -4,61 +4,51 @@ import { useRef, useEffect, useCallback } from "react";
    Cipher glyph vocabulary
 ───────────────────────────────────────────────────── */
 const GLYPHS = [
-  "0x", "SHA", "AES", "RSA", "ECC", "zk", "sig", "key", "tx",
-  "∞", "∇", "∂", "Σ", "Ω", "π", "λ", "⊕", "⊗", "∀", "∃",
-  "≡", "≈", "⌁", "⌬", "◈", "✦", "==", "!=", "<<", ">>",
-  "{}", "[]", "</>", "κ", "φ", "∮", "⊂", "⊃", "∈", "∉",
-  "0x1F", "ℵ", "ℏ", "⟨⟩", "‖", "∝", "√", "∛", "∬",
+  "0x","SHA","AES","RSA","ECC","zk","sig","key","tx",
+  "∞","∇","∂","Σ","Ω","π","λ","⊕","⊗","∀","∃",
+  "≡","≈","⌁","⌬","◈","✦","==","!=","<<",">>",
+  "{}","[]","</>","κ","φ","∮","⊂","ℵ","ℏ","∝",
 ];
 
 /* ─────────────────────────────────────────────────────
-   Pearl colour palette — deep violet/slate/blue on dark
+   Pearl palette — [h, s, l] — NO shadows, pure alpha+color
 ───────────────────────────────────────────────────── */
-// Each entry: [hue, saturation%, lightness%]
-const PEARL_PALETTE: [number, number, number][] = [
-  [220, 80, 72],   // soft electric blue
-  [240, 70, 76],   // periwinkle violet
-  [200, 90, 68],   // bright cyan-blue
-  [260, 72, 80],   // lavender
-  [210, 100, 78],  // pure sky
-  [230, 65, 84],   // ice blue
-  [250, 60, 82],   // blue-violet
+const PAL: [number, number, number][] = [
+  [220, 90, 74],
+  [240, 80, 78],
+  [200, 95, 70],
+  [258, 75, 80],
+  [210,100, 80],
+  [230, 70, 84],
 ];
 
-/* ─────────────────────────────────────────────────────
-   Particle type
-───────────────────────────────────────────────────── */
+const MAX_POOL = 120; // hard cap — never let the pool grow unbounded
+
 interface Smoke {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
+  x: number; y: number;
+  vx: number; vy: number;
   glyph: string;
+  /** font size in CSS px — bucketed to even integers for batching */
   size: number;
   rotation: number;
   rotSpeed: number;
   life: number;
   maxLife: number;
-  hue: number;
-  sat: number;
-  lit: number;
-  curlPhase: number; // for sinusoidal horizontal drift
+  h: number; s: number; l: number;
+  curlPhase: number;
   curlAmp: number;
 }
 
-/* ─────────────────────────────────────────────────────
-   Props
-───────────────────────────────────────────────────── */
 interface Props {
   variant?: "pearl";
   intensity?: "subtle" | "normal" | "cinematic";
   className?: string;
 }
 
-const INTENSITY_MAP = {
-  subtle:    { interval: 90,  burst: 1, maxLife: [70,  110] as [number, number] },
-  normal:    { interval: 55,  burst: 1, maxLife: [80,  130] as [number, number] },
-  cinematic: { interval: 38,  burst: 2, maxLife: [90,  150] as [number, number] },
+const CFG = {
+  subtle:    { ms: 90, burst: 1, lifeMin: 65,  lifeMax: 100 },
+  normal:    { ms: 55, burst: 1, lifeMin: 75,  lifeMax: 120 },
+  cinematic: { ms: 40, burst: 2, lifeMin: 80,  lifeMax: 130 },
 };
 
 export default function CipherSmokeCursor({
@@ -67,121 +57,123 @@ export default function CipherSmokeCursor({
 }: Props) {
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const pool       = useRef<Smoke[]>([]);
-  const mouse      = useRef({ x: -1, y: -1, active: false });
+  const mouse      = useRef({ x: -1, y: -1, on: false });
   const raf        = useRef(0);
   const dpr        = useRef(1);
   const lastEmit   = useRef(0);
-  const cfg        = INTENSITY_MAP[intensity];
+  const cfg        = CFG[intensity];
 
-  /* ── Resize canvas to full viewport ── */
+  /* ── Viewport resize ── */
   const resize = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const c = canvasRef.current;
+    if (!c) return;
     const d = Math.min(window.devicePixelRatio || 1, 2);
     dpr.current = d;
-    canvas.width  = window.innerWidth  * d;
-    canvas.height = window.innerHeight * d;
-    canvas.style.width  = `${window.innerWidth}px`;
-    canvas.style.height = `${window.innerHeight}px`;
+    c.width  = window.innerWidth  * d;
+    c.height = window.innerHeight * d;
+    c.style.width  = `${window.innerWidth}px`;
+    c.style.height = `${window.innerHeight}px`;
   }, []);
 
-  /* ── Spawn particles at cursor ── */
-  const emit = useCallback(() => {
-    const { x, y, active } = mouse.current;
-    if (!active || x < 0) return;
+  /* ── Spawn ── */
+  const emit = useCallback((now: number) => {
+    if (!mouse.current.on) return;
+    if (now - lastEmit.current < cfg.ms) return;
+    lastEmit.current = now;
 
-    for (let i = 0; i < cfg.burst; i++) {
-      const [hue, sat, lit] = PEARL_PALETTE[Math.floor(Math.random() * PEARL_PALETTE.length)];
-      const angle  = -Math.PI / 2 + (Math.random() - 0.5) * 1.4; // mostly upward
-      const speed  = 0.3 + Math.random() * 0.7;
-      const [minL, maxL] = cfg.maxLife;
-      const maxLife = minL + Math.random() * (maxL - minL);
+    const { x, y } = mouse.current;
+    const space = MAX_POOL - pool.current.length;
+    const n = Math.min(cfg.burst, space);
+    if (n <= 0) return;
+
+    for (let i = 0; i < n; i++) {
+      const angle  = -Math.PI / 2 + (Math.random() - 0.5) * 1.3;
+      const speed  = 0.35 + Math.random() * 0.65;
+      const [h, s, l] = PAL[Math.floor(Math.random() * PAL.length)];
+      // bucket size to even integer → minimises ctx.font state changes
+      const rawSize = 9 + Math.random() * 7;
+      const size = Math.round(rawSize / 2) * 2; // 8, 10, 12, 14, 16
 
       pool.current.push({
-        x:         x + (Math.random() - 0.5) * 12,
-        y:         y + (Math.random() - 0.5) * 12,
-        vx:        Math.cos(angle) * speed,
-        vy:        Math.sin(angle) * speed,
+        x: x + (Math.random() - 0.5) * 10,
+        y: y + (Math.random() - 0.5) * 10,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
         glyph:     GLYPHS[Math.floor(Math.random() * GLYPHS.length)],
-        size:      8 + Math.random() * 8,
+        size,
         rotation:  Math.random() * Math.PI * 2,
-        rotSpeed:  (Math.random() - 0.5) * 0.045,
+        rotSpeed:  (Math.random() - 0.5) * 0.04,
         life:      0,
-        maxLife,
-        hue, sat, lit,
+        maxLife:   cfg.lifeMin + Math.random() * (cfg.lifeMax - cfg.lifeMin),
+        h, s, l,
         curlPhase: Math.random() * Math.PI * 2,
-        curlAmp:   0.025 + Math.random() * 0.04,
+        curlAmp:   0.02 + Math.random() * 0.035,
       });
     }
   }, [cfg]);
 
-  /* ── Render loop ── */
+  /* ── Render ── */
   const render = useCallback((now: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) { raf.current = requestAnimationFrame(render); return; }
-    const ctx = canvas.getContext("2d")!;
+    const c = canvasRef.current;
+    if (!c) { raf.current = requestAnimationFrame(render); return; }
+    const ctx = c.getContext("2d")!;
     const d   = dpr.current;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, c.width, c.height);
+    emit(now);
 
-    /* Emit new smoke on interval */
-    if (now - lastEmit.current >= cfg.interval) {
-      emit();
-      lastEmit.current = now;
+    if (pool.current.length === 0) {
+      raf.current = requestAnimationFrame(render);
+      return;
     }
 
     ctx.save();
     ctx.scale(d, d);
 
+    /* Sort by size so we switch ctx.font as rarely as possible */
+    pool.current.sort((a, b) => a.size - b.size);
+
     const alive: Smoke[] = [];
+    let lastFont = "";
 
     for (const p of pool.current) {
       p.life++;
       if (p.life >= p.maxLife) continue;
 
-      const t       = p.life / p.maxLife;
-
-      /* Alpha envelope: quick fade-in, long float, gentle fade-out */
-      const fadeIn  = Math.min(1, p.life / 12);
-      const fadeOut = t > 0.55 ? 1 - (t - 0.55) / 0.45 : 1;
-      const alpha   = fadeIn * fadeOut * fadeOut; // ease-out fade
-
-      /* Sinusoidal horizontal curl (smoke turbulence) */
-      p.vx += Math.sin(p.life * p.curlAmp + p.curlPhase) * 0.012;
-
-      /* Very gentle deceleration */
-      p.vx *= 0.985;
-      p.vy *= 0.988;
-
-      p.x += p.vx;
-      p.y += p.vy;
+      /* Physics: sinusoidal curl + gentle decel */
+      p.vx += Math.sin(p.life * p.curlAmp + p.curlPhase) * 0.010;
+      p.vx *= 0.984;
+      p.vy *= 0.987;
+      p.x  += p.vx;
+      p.y  += p.vy;
       p.rotation += p.rotSpeed;
 
-      /* Size expands slightly as it rises (smoke bloom) */
-      const size = p.size * (1 + t * 0.35);
+      /* Alpha envelope: fast in, long hold, gentle out */
+      const t      = p.life / p.maxLife;
+      const fadeIn = Math.min(1, p.life / 10);
+      const fadeOut = t > 0.5 ? 1 - (t - 0.5) / 0.5 : 1;
+      const alpha  = fadeIn * fadeOut * fadeOut; // ease-out tail
+      if (alpha < 0.01) { alive.push(p); continue; } // skip draw but keep particle
+
+      /* Slight size bloom as it rises */
+      const size = p.size * (1 + t * 0.28);
+
+      /* Only update font string when size actually changes */
+      const fontKey = `${size.toFixed(1)}px`;
+      if (fontKey !== lastFont) {
+        ctx.font = `600 ${size.toFixed(1)}px "Courier New","SF Mono",monospace`;
+        lastFont = fontKey;
+      }
 
       ctx.save();
-      ctx.globalAlpha = alpha * 0.92;
+      ctx.globalAlpha = alpha;
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rotation);
-
-      /* Outer soft glow */
-      ctx.shadowColor = `hsla(${p.hue}, ${p.sat}%, ${p.lit}%, 0.55)`;
-      ctx.shadowBlur  = 12 + alpha * 8;
-
-      /* Glyph fill — lightness drifts slightly as alpha changes */
-      const dynamicLit = p.lit - (1 - alpha) * 10;
-      ctx.fillStyle = `hsl(${p.hue} ${p.sat}% ${dynamicLit}% / 1)`;
-      ctx.font      = `${size}px "Courier New", "SF Mono", monospace`;
       ctx.textAlign    = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(p.glyph, 0, 0);
 
-      /* Second pass: bright inner highlight for premium depth */
-      ctx.shadowBlur  = 4;
-      ctx.shadowColor = `hsla(${p.hue}, 100%, 90%, ${alpha * 0.4})`;
-      ctx.globalAlpha = alpha * 0.28;
-      ctx.fillStyle   = `hsl(${p.hue} 60% 96%)`;
+      /* Single draw — no shadow, just crisp colored glyph with alpha */
+      ctx.fillStyle = `hsl(${p.h} ${p.s}% ${p.l}%)`;
       ctx.fillText(p.glyph, 0, 0);
 
       ctx.restore();
@@ -191,7 +183,7 @@ export default function CipherSmokeCursor({
     ctx.restore();
     pool.current = alive;
     raf.current  = requestAnimationFrame(render);
-  }, [emit, cfg.interval]);
+  }, [emit]);
 
   /* ── Lifecycle ── */
   useEffect(() => {
@@ -199,26 +191,19 @@ export default function CipherSmokeCursor({
     raf.current = requestAnimationFrame(render);
 
     const onMove  = (e: MouseEvent) => {
-      mouse.current = { x: e.clientX, y: e.clientY, active: true };
+      mouse.current = { x: e.clientX, y: e.clientY, on: true };
     };
-    const onEnter = (e: MouseEvent) => {
-      mouse.current = { x: e.clientX, y: e.clientY, active: true };
-    };
-    const onLeave = () => {
-      mouse.current.active = false;
-    };
+    const onLeave = () => { mouse.current.on = false; };
 
-    window.addEventListener("mousemove",  onMove,  { passive: true });
-    window.addEventListener("mouseenter", onEnter, { passive: true });
-    document.addEventListener("mouseleave", onLeave);
-    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove",    onMove,  { passive: true });
+    document.addEventListener("mouseleave", onLeave, { passive: true });
+    window.addEventListener("resize",       resize,  { passive: true });
 
     return () => {
       cancelAnimationFrame(raf.current);
-      window.removeEventListener("mousemove",  onMove);
-      window.removeEventListener("mouseenter", onEnter);
+      window.removeEventListener("mousemove",    onMove);
       document.removeEventListener("mouseleave", onLeave);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize",       resize);
     };
   }, [resize, render]);
 
@@ -226,12 +211,7 @@ export default function CipherSmokeCursor({
     <canvas
       ref={canvasRef}
       className={className}
-      style={{
-        position:      "fixed",
-        inset:         0,
-        pointerEvents: "none",
-        zIndex:        9998,
-      }}
+      style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9998 }}
       aria-hidden="true"
     />
   );

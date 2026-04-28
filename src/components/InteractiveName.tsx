@@ -8,24 +8,24 @@ import {
 /* ─────────────────────────────────────────────────────
    Physics constants
 ───────────────────────────────────────────────────── */
-const MOUSE_RADIUS    = 140;   // px — inner repulsion zone radius
-const ATTRACT_RADIUS  = 320;   // px — outer attraction annulus radius
-const DISPERSE_FORCE  = 32;    // repulsion magnitude (softer push)
-const ATTRACT_FORCE   = 2.8;   // attraction magnitude (gentler pull)
-const RETURN_SPEED    = 0.048; // spring stiffness — lower = more liquid, less snappy
-const FRICTION        = 0.91;  // velocity damping — higher = smoother glide
+const MOUSE_RADIUS    = 145;   // px — inner repulsion zone radius
+const ATTRACT_RADIUS  = 310;   // px — outer attraction annulus radius
+const DISPERSE_FORCE  = 36;    // repulsion magnitude
+const ATTRACT_FORCE   = 3.2;   // attraction magnitude
+const RETURN_SPEED    = 0.072; // spring stiffness — responsive but smooth
+const FRICTION        = 0.875; // velocity damping — fast decay, no oscillation
 
 /* ─────────────────────────────────────────────────────
    Organic oscillation (slow breathing wave on home positions)
 ───────────────────────────────────────────────────── */
-const WAVE_AMP    = 1.1;      // px amplitude — slightly larger = more alive
-const WAVE_FREQ_X = 0.00072;  // rad/ms — slower horizontal drift = more fluid
-const WAVE_FREQ_Y = 0.00054;  // rad/ms — slower vertical drift = more fluid
+const WAVE_AMP    = 0.8;      // px amplitude
+const WAVE_FREQ_X = 0.00082;  // rad/ms
+const WAVE_FREQ_Y = 0.00060;  // rad/ms
 
 /* ─────────────────────────────────────────────────────
    Motion trail
 ───────────────────────────────────────────────────── */
-const TRAIL_FADE = 0.14; // lower = longer, silkier trails
+const TRAIL_FADE = 0.19; // clean decay without flicker
 
 /* ─────────────────────────────────────────────────────
    Speed thresholds (speed² units for branch-free compare)
