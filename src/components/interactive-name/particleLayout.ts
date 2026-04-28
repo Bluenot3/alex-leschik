@@ -44,12 +44,12 @@ const HERO_STYLE: WordStyle = {
   minFontSize: 48,
   maxFontSize: 220,
   step: 2,            // 2px grid — ultra-fine, crisp sampling
-  maxParticles: 14000,
-  pointSize: 1.0,     // 1px base particles — ultra-sharp
-  gridPointSize: 2.2, // 2.2px accent nodes — visible sub-pattern
-  shimmerSize: 4.5,   // shimmer star core at 4.5px
+  maxParticles: 22000, // more particles = darker, denser letterforms
+  pointSize: 1.3,     // slightly thicker base — more solid, prominent name
+  gridPointSize: 2.5, // larger accent nodes — more visible sub-pattern
+  shimmerSize: 4.5,   // shimmer star core
   gridSpacing: 8,     // accent node every 8 canvas px
-  shimmerSpacing: 24, // shimmer star every 24 canvas px (sparser)
+  shimmerSpacing: 24, // shimmer star every 24 canvas px
   introSpread: 24,
   verticalBias: -0.04,
 };
