@@ -9,10 +9,10 @@ export const WORD_SETS: string[][] = [
 export interface ParticleTemplate {
   homeX: Float32Array;
   homeY: Float32Array;
+  type: Uint8Array;       // 0 = base fill, 1 = grid accent node
   count: number;
-  pointSize: number;
-  accentStride: number;
-  accentScale: number;
+  pointSize: number;      // base particle diameter in CSS px
+  gridPointSize: number;  // accent node diameter in CSS px
   introSpread: number;
   isHero: boolean;
 }
@@ -24,13 +24,11 @@ interface WordStyle {
   lineHeight: number;
   minFontSize: number;
   maxFontSize: number;
-  minStep: number;
-  maxStep: number;
-  stepDivisor: number;
+  step: number;           // fixed sampling step in px (2 = ultra-fine)
   maxParticles: number;
   pointSize: number;
-  accentStride: number;
-  accentScale: number;
+  gridPointSize: number;
+  gridSpacing: number;    // accent grid spacing in canvas px
   introSpread: number;
   verticalBias: number;
 }
@@ -42,13 +40,11 @@ const HERO_STYLE: WordStyle = {
   lineHeight: 1.04,
   minFontSize: 48,
   maxFontSize: 220,
-  minStep: 3,
-  maxStep: 5,
-  stepDivisor: 34,
-  maxParticles: 5500,
-  pointSize: 3.5,
-  accentStride: 7,
-  accentScale: 1.6,
+  step: 2,            // 2px grid — ultra-fine, crisp sampling
+  maxParticles: 14000,
+  pointSize: 1.0,     // 1px base particles — ultra-sharp
+  gridPointSize: 2.2, // 2.2px accent nodes — visible sub-pattern
+  gridSpacing: 8,     // accent node every 8 canvas px
   introSpread: 24,
   verticalBias: -0.04,
 };
@@ -60,13 +56,11 @@ const DEFAULT_STYLE: WordStyle = {
   lineHeight: 1.08,
   minFontSize: 62,
   maxFontSize: 148,
-  minStep: 4,
-  maxStep: 6,
-  stepDivisor: 24,
+  step: 4,
   maxParticles: 2400,
-  pointSize: 1.9,
-  accentStride: 0,
-  accentScale: 1,
+  pointSize: 1.8,
+  gridPointSize: 0,
+  gridSpacing: 0,
   introSpread: 82,
   verticalBias: 0,
 };
@@ -107,7 +101,7 @@ function sampleGlyph(char: string, fontSize: number, step: number): { x: number;
 
   for (let py = 0; py < height; py += step) {
     for (let px = 0; px < width; px += step) {
-      if (imageData.data[(py * width + px) * 4 + 3] > 48) {
+      if (imageData.data[(py * width + px) * 4 + 3] > 40) {
         points.push({ x: px - width / 2, y: py - height / 2 });
       }
     }
@@ -147,10 +141,6 @@ export function getParticleTemplate(index: number, width: number, height: number
     (roundedHeight - totalTextHeight) / 2 +
     fontSize * 0.56 +
     roundedHeight * style.verticalBias;
-  const step = Math.min(
-    style.maxStep,
-    Math.max(style.minStep, Math.floor(fontSize / style.stepDivisor))
-  );
 
   const rawPoints: { hx: number; hy: number }[] = [];
 
@@ -162,39 +152,51 @@ export function getParticleTemplate(index: number, width: number, height: number
 
     chars.forEach((char, charIndex) => {
       const centerX = startX + charIndex * letterSpacing + letterSpacing * 0.5;
-      const glyphPoints = sampleGlyph(char, fontSize, step);
+      const glyphPoints = sampleGlyph(char, fontSize, style.step);
 
-      for (let pointIndex = 0; pointIndex < glyphPoints.length; pointIndex += 1) {
+      for (let pi = 0; pi < glyphPoints.length; pi++) {
         rawPoints.push({
-          hx: centerX + glyphPoints[pointIndex].x,
-          hy: lineY + glyphPoints[pointIndex].y,
+          hx: centerX + glyphPoints[pi].x,
+          hy: lineY + glyphPoints[pi].y,
         });
       }
     });
   });
 
+  // Downsample if over the cap
   let selected = rawPoints;
   if (selected.length > style.maxParticles) {
     const stride = Math.ceil(selected.length / style.maxParticles);
-    selected = selected.filter((_, pointIndex) => pointIndex % stride === 0);
+    selected = selected.filter((_, i) => i % stride === 0);
   }
 
   const count = selected.length;
   const homeX = new Float32Array(count);
   const homeY = new Float32Array(count);
+  const type = new Uint8Array(count);
 
-  for (let pointIndex = 0; pointIndex < count; pointIndex += 1) {
-    homeX[pointIndex] = selected[pointIndex].hx;
-    homeY[pointIndex] = selected[pointIndex].hy;
+  const gs = style.gridSpacing;
+
+  for (let i = 0; i < count; i++) {
+    homeX[i] = selected[i].hx;
+    homeY[i] = selected[i].hy;
+
+    // Mark particles near a gs×gs grid intersection as accent nodes (type=1)
+    if (gs > 0) {
+      const rx = ((Math.round(selected[i].hx) % gs) + gs) % gs;
+      const ry = ((Math.round(selected[i].hy) % gs) + gs) % gs;
+      // Catch positions 0,1 in each axis → ~(2/gs)² fraction of particles
+      type[i] = (rx < 2 && ry < 2) ? 1 : 0;
+    }
   }
 
   const template: ParticleTemplate = {
     homeX,
     homeY,
+    type,
     count,
     pointSize: style.pointSize,
-    accentStride: style.accentStride,
-    accentScale: style.accentScale,
+    gridPointSize: style.gridPointSize,
     introSpread: style.introSpread,
     isHero: index === 0,
   };

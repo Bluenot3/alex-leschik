@@ -19,8 +19,10 @@ export default function ScrollSection({ children, index, align = "left", ghost }
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            (e.target as HTMLElement).style.opacity = "1";
-            (e.target as HTMLElement).style.transform = "translateY(0) scaleX(1)";
+            const el = e.target as HTMLElement;
+            el.style.opacity = "1";
+            el.style.transform = "translateY(0) scaleX(1)";
+            el.style.filter = "blur(0px)";
             io.unobserve(e.target);
           }
         });
@@ -77,7 +79,7 @@ export function RevealHeading({ children, size = "lg" }: { children: ReactNode; 
     <h2
       data-reveal
       className={`display-heading ${cls}`}
-      style={{ opacity: 0, transform: "translateY(18px)", transition: "opacity 0.5s ease 0.08s, transform 0.5s ease 0.08s" }}
+      style={{ opacity: 0, transform: "translateY(18px)", filter: "blur(4px)", transition: "opacity 0.55s cubic-bezier(0.22,1,0.36,1) 0.08s, transform 0.55s cubic-bezier(0.22,1,0.36,1) 0.08s, filter 0.55s ease 0.08s" }}
     >
       {children}
     </h2>

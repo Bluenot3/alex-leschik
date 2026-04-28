@@ -167,7 +167,7 @@ export default function GlassOrbit() {
         camera={{ position: [0, 0.5, 8], fov: 40 }}
         dpr={[1, 1.5]}
         gl={{
-          antialias: false,
+          antialias: true,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,

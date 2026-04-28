@@ -3,10 +3,12 @@ import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import InteractiveName from "@/components/InteractiveName";
 import HUD from "@/components/HUD";
+import HoloNav from "@/components/HoloNav";
 import CommandDashboard from "@/components/CommandDashboard";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
+import SocialLinks from "@/components/SocialLinks";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -68,6 +70,7 @@ export default function Index() {
       />
 
       <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
+      <HoloNav onNavigate={scrollToSection} />
 
       <div className="relative z-[1]">
         <section id="s0" data-scroll-section className="hero-poster">
@@ -129,6 +132,12 @@ export default function Index() {
         </section>
 
         <CrypticDivider lines={4} label="// origin locked" />
+
+        <LazySection rootMargin="800px 0px">
+          <SocialLinks />
+        </LazySection>
+
+        <CrypticDivider lines={3} label="// network mapped" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={112} opacity={0.05} />
@@ -218,7 +227,7 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// as seen on" />
 
-        <LazySection className="relative">
+        <LazySection className="relative" rootMargin="1000px 0px">
           <CrypticBackground rows={8} speed={140} opacity={0.04} />
           <Suspense fallback={<div style={{ minHeight: "500px" }} />}>
             <MediaRoom />

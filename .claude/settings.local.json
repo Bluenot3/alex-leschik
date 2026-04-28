@@ -10,7 +10,10 @@
       "Bash(git -C \"C:\\\\Users\\\\AlexT\\\\OneDrive\\\\Desktop\\\\Alex\\\\alex-leschik.com\" show f26e5cc --stat)",
       "Bash(git -C \"C:\\\\Users\\\\AlexT\\\\OneDrive\\\\Desktop\\\\Alex\\\\alex-leschik.com\" show f26e5cc -- src/pages/Index.tsx)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(git add *)",
+      "Bash(git rebase *)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
     ]
   }
 }
