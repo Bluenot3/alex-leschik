@@ -8,24 +8,24 @@ import {
 /* ─────────────────────────────────────────────────────
    Physics constants
 ───────────────────────────────────────────────────── */
-const MOUSE_RADIUS    = 150;   // px — inner repulsion zone radius
-const ATTRACT_RADIUS  = 300;   // px — outer attraction annulus radius
-const DISPERSE_FORCE  = 38;    // repulsion magnitude
-const ATTRACT_FORCE   = 3.5;   // attraction magnitude (pulls from outer ring)
-const RETURN_SPEED    = 0.065; // spring stiffness back to home
-const FRICTION        = 0.87;  // velocity damping per frame
+const MOUSE_RADIUS    = 140;   // px — inner repulsion zone radius
+const ATTRACT_RADIUS  = 320;   // px — outer attraction annulus radius
+const DISPERSE_FORCE  = 32;    // repulsion magnitude (softer push)
+const ATTRACT_FORCE   = 2.8;   // attraction magnitude (gentler pull)
+const RETURN_SPEED    = 0.048; // spring stiffness — lower = more liquid, less snappy
+const FRICTION        = 0.91;  // velocity damping — higher = smoother glide
 
 /* ─────────────────────────────────────────────────────
    Organic oscillation (slow breathing wave on home positions)
 ───────────────────────────────────────────────────── */
-const WAVE_AMP    = 0.7;      // px amplitude of oscillation at rest
-const WAVE_FREQ_X = 0.00085;  // rad/ms — horizontal drift frequency
-const WAVE_FREQ_Y = 0.00062;  // rad/ms — vertical drift frequency (offset rhythm)
+const WAVE_AMP    = 1.1;      // px amplitude — slightly larger = more alive
+const WAVE_FREQ_X = 0.00072;  // rad/ms — slower horizontal drift = more fluid
+const WAVE_FREQ_Y = 0.00054;  // rad/ms — slower vertical drift = more fluid
 
 /* ─────────────────────────────────────────────────────
    Motion trail
 ───────────────────────────────────────────────────── */
-const TRAIL_FADE = 0.22; // opacity subtracted per frame via destination-out rect
+const TRAIL_FADE = 0.14; // lower = longer, silkier trails
 
 /* ─────────────────────────────────────────────────────
    Speed thresholds (speed² units for branch-free compare)
@@ -37,29 +37,29 @@ const SPEED_SCATTER = 36;   // speed² → full scatter/violet flash
    Color LUTs — pre-computed, zero-alloc in hot path
    Each LUT[i] = color at alpha i/100
 ───────────────────────────────────────────────────── */
-// Type-0 base fill: ultra-fine dark-slate
+// Type-0 base fill: deep blue-slate (slightly brighter for visibility)
 const BASE_LUT = Array.from({ length: 101 }, (_, i) =>
-  `hsl(222 45% 10% / ${(i / 100).toFixed(2)})`
+  `hsl(218 40% 16% / ${(i / 100).toFixed(2)})`
 );
-// Type-1 accent nodes: electric blue
+// Type-1 accent nodes: pure electric blue
 const ACCENT_LUT = Array.from({ length: 101 }, (_, i) =>
-  `hsl(208 100% 58% / ${(i / 100).toFixed(2)})`
+  `hsl(205 100% 62% / ${(i / 100).toFixed(2)})`
 );
-// Transitional glow: cyan-blue (shown when speed is between glow and scatter)
+// Transitional glow: bright cyan-blue (speed between glow and scatter)
 const GLOW_LUT = Array.from({ length: 101 }, (_, i) =>
-  `hsl(194 95% 58% / ${(i / 100).toFixed(2)})`
+  `hsl(192 98% 62% / ${(i / 100).toFixed(2)})`
 );
-// Scatter flash: violet (shown when moving fast)
+// Scatter flash: deep violet burst
 const SCATTER_LUT = Array.from({ length: 101 }, (_, i) =>
-  `hsl(276 88% 65% / ${(i / 100).toFixed(2)})`
+  `hsl(272 90% 68% / ${(i / 100).toFixed(2)})`
 );
-// Type-2 shimmer stars: near-white sparkle
+// Type-2 shimmer stars: ice-white sparkle
 const SHIMMER_LUT = Array.from({ length: 101 }, (_, i) =>
-  `hsl(220 60% 92% / ${(i / 100).toFixed(2)})`
+  `hsl(216 80% 96% / ${(i / 100).toFixed(2)})`
 );
-// Shimmer scatter: hot-white when moving
+// Shimmer scatter: warm gold-white when displaced
 const SHIMMER_SCATTER_LUT = Array.from({ length: 101 }, (_, i) =>
-  `hsl(60 100% 90% / ${(i / 100).toFixed(2)})`
+  `hsl(48 100% 92% / ${(i / 100).toFixed(2)})`
 );
 
 /* ─────────────────────────────────────────────────────

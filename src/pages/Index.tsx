@@ -9,6 +9,7 @@ import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
 import SocialLinks from "@/components/SocialLinks";
+import CipherSmokeCursor from "@/components/CipherSmokeCursor";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -53,6 +54,7 @@ export default function Index() {
     <div className="relative portfolio-shell">
       <h1 className="sr-only">Alex Leschik - Developer, systems architect, and creative technologist</h1>
 
+      <CipherSmokeCursor variant="pearl" intensity="cinematic" />
       <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
       <InteractiveName scrollProgress={smoothProgress} />
 
