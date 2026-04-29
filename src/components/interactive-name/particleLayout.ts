@@ -44,9 +44,9 @@ const HERO_STYLE: WordStyle = {
   minFontSize: 48,
   maxFontSize: 220,
   step: 2,
-  maxParticles: 11000, // tuned for consistent 60 fps headroom
-  pointSize: 1.5,      // bigger dot compensates for lower count — stays bold
-  gridPointSize: 2.8,  // accent nodes still very visible
+  maxParticles: 13000, // trails add perceived density — 13K stays fast
+  pointSize: 1.4,      // slightly thicker base
+  gridPointSize: 2.6,  // vivid accent nodes
   shimmerSize: 4.5,
   gridSpacing: 8,
   shimmerSpacing: 24,
