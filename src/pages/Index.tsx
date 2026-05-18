@@ -135,9 +135,7 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// origin locked" />
 
-        <LazySection rootMargin="800px 0px">
-          <SocialLinks />
-        </LazySection>
+        <SocialLinks />
 
         <CrypticDivider lines={3} label="// network mapped" />
 
@@ -229,7 +227,7 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// as seen on" />
 
-        <LazySection className="relative" rootMargin="1000px 0px">
+        <LazySection className="relative" rootMargin="2500px 0px">
           <CrypticBackground rows={8} speed={140} opacity={0.04} />
           <Suspense fallback={<div style={{ minHeight: "500px" }} />}>
             <MediaRoom />

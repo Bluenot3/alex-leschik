@@ -22,16 +22,22 @@ function HoloPanel({
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+
     const io = new IntersectionObserver(
-      ([entry]) => setActive(entry.isIntersecting),
-      { rootMargin: "100px 0px", threshold: 0.15 }
+      ([entry]) => { if (entry.isIntersecting) { setActive(true); io.disconnect(); } },
+      { rootMargin: "200px 0px", threshold: 0 }
     );
     io.observe(el);
-    return () => io.disconnect();
-  }, []);
 
+    // Fallback: mount iframe after staggered delay regardless of scroll position
+    const timer = setTimeout(() => setActive(true), 2000 + index * 300);
+
+    return () => { io.disconnect(); clearTimeout(timer); };
+  }, [index]);
+
+  // mute=1 required for autoplay to work in most browsers
   const src = active
-    ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1`
+    ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=0`
     : "";
 
   return (

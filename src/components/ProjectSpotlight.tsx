@@ -1,5 +1,58 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ExternalLink, Pencil, X, ChevronRight } from "lucide-react";
+import { ExternalLink, Pencil, X } from "lucide-react";
+
+/* ── Static Preview ── */
+function getPreviewStyle(tag: string): { bg: string; accent: string; glow: string } {
+  const t = tag.toLowerCase();
+  if (t.includes("ai") || t.includes("prompt") || t.includes("sparklab"))
+    return { bg: "linear-gradient(135deg,#04101f 0%,#072842 50%,#040e1c 100%)", accent: "#4fc3f7", glow: "rgba(79,195,247,0.15)" };
+  if (t.includes("blockchain") || t.includes("web3") || t.includes("near"))
+    return { bg: "linear-gradient(135deg,#06081e 0%,#0c1140 50%,#05071a 100%)", accent: "#818cf8", glow: "rgba(129,140,248,0.15)" };
+  if (t.includes("zen") || t.includes("literacy") || t.includes("education") || t.includes("pioneer"))
+    return { bg: "linear-gradient(135deg,#0e0520 0%,#1a0840 50%,#09031a 100%)", accent: "#c084fc", glow: "rgba(192,132,252,0.15)" };
+  if (t.includes("healthcare") || t.includes("medical") || t.includes("clinical") || t.includes("hipaa"))
+    return { bg: "linear-gradient(135deg,#021a10 0%,#053320 50%,#021410 100%)", accent: "#34d399", glow: "rgba(52,211,153,0.15)" };
+  if (t.includes("creative") || t.includes("generative") || t.includes("animation"))
+    return { bg: "linear-gradient(135deg,#1a0800 0%,#361500 50%,#150600 100%)", accent: "#fb923c", glow: "rgba(251,146,60,0.15)" };
+  if (t.includes("simulation") || t.includes("physics"))
+    return { bg: "linear-gradient(135deg,#020810 0%,#051628 50%,#03090e 100%)", accent: "#60a5fa", glow: "rgba(96,165,250,0.15)" };
+  if (t.includes("commerce") || t.includes("local") || t.includes("baker"))
+    return { bg: "linear-gradient(135deg,#1a0510 0%,#330a1e 50%,#150410 100%)", accent: "#f472b6", glow: "rgba(244,114,182,0.15)" };
+  if (t.includes("publication") || t.includes("weekly"))
+    return { bg: "linear-gradient(135deg,#100e06 0%,#231e08 50%,#0e0c05 100%)", accent: "#fbbf24", glow: "rgba(251,191,36,0.15)" };
+  if (t.includes("visual") || t.includes("media"))
+    return { bg: "linear-gradient(135deg,#080410 0%,#140820 50%,#06030e 100%)", accent: "#a78bfa", glow: "rgba(167,139,250,0.15)" };
+  return { bg: "linear-gradient(135deg,#080c14 0%,#0f1828 50%,#060a10 100%)", accent: "#94a3b8", glow: "rgba(148,163,184,0.1)" };
+}
+
+function StaticPreview({ project }: { project: ProjectData }) {
+  const { bg, accent, glow } = getPreviewStyle(project.tag);
+  let hostname = project.url;
+  try { hostname = new URL(project.url).hostname; } catch { /* noop */ }
+  return (
+    <div className="static-preview" style={{ background: bg }}>
+      <div className="static-preview__grid" style={{ "--sp-accent": accent } as React.CSSProperties} />
+      <div className="static-preview__glow" style={{ background: glow }} />
+      <div className="static-preview__content">
+        <div className="static-preview__domain" style={{ color: accent }}>{hostname}</div>
+        <div className="static-preview__title" style={{ color: accent }}>{project.title}</div>
+        <div className="static-preview__mock-ui" style={{ color: accent }}>
+          <div className="static-preview__mock-nav">
+            <span /><span /><span /><span />
+          </div>
+          <div className="static-preview__mock-hero" />
+          <div className="static-preview__mock-cards">
+            <div /><div /><div />
+          </div>
+        </div>
+      </div>
+      <div className="static-preview__live" style={{ color: accent }}>
+        <span className="static-preview__live-dot" style={{ background: accent }} />
+        LIVE
+      </div>
+    </div>
+  );
+}
 
 export interface ProjectData {
   title: string;
@@ -224,55 +277,19 @@ function SpotlightCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [mountIframe, setMountIframe] = useState(false);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
   const [titleText, setTitleText] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
-  const hasLoadedOnce = useRef(false);
   const isFlagship = index < 3;
 
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-
-    // Preload zone: start loading iframes 400px before they enter viewport
-    const preloadObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setMountIframe(true);
-          hasLoadedOnce.current = true;
-        }
-      },
-      { rootMargin: "400px 0px", threshold: 0 }
-    );
-
-    // Visibility zone: for animations and active state
-    const visibilityObserver = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       ([entry]) => setVisible(entry.isIntersecting),
       { rootMargin: "50px 0px", threshold: 0.1 }
     );
-
-    // Cleanup zone: only unmount iframes very far away to prevent reload jank
-    const cleanupObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting && hasLoadedOnce.current) {
-          setMountIframe(false);
-          setIframeLoaded(false);
-          hasLoadedOnce.current = false;
-        }
-      },
-      { rootMargin: "3000px 0px", threshold: 0 }
-    );
-
-    preloadObserver.observe(el);
-    visibilityObserver.observe(el);
-    cleanupObserver.observe(el);
-
-    return () => {
-      preloadObserver.disconnect();
-      visibilityObserver.disconnect();
-      cleanupObserver.disconnect();
-    };
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   // Scramble text
@@ -315,21 +332,7 @@ function SpotlightCard({
           </div>
         </div>
         <div className="spotlight-card__embed">
-          {!iframeLoaded && (
-            <div className="proj-card__fallback">
-              <div className="proj-card__fallback-text">{project.title}</div>
-            </div>
-          )}
-          {mountIframe && (
-            <iframe
-              src={project.url}
-              title={project.title}
-              loading="lazy"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              className="spotlight-card__iframe"
-              onLoad={() => setIframeLoaded(true)}
-            />
-          )}
+          <StaticPreview project={project} />
           <div className="proj-card__scanlines" />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 /* ── Platform icon SVGs ─────────────────────────────── */
 function IconX() {
@@ -124,36 +124,49 @@ const ALEX_SOCIALS = [
 /* ── Component ───────────────────────────────────────── */
 export default function SocialLinks() {
   const ref = useRef<HTMLElement>(null);
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const els = ref.current?.querySelectorAll("[data-reveal]");
-    if (!els) return;
+    const el = ref.current;
+    if (!el) return;
+
+    // Reveal when section enters viewport
     const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            (e.target as HTMLElement).style.opacity = "1";
-            (e.target as HTMLElement).style.transform = "translateY(0) scale(1)";
-            io.unobserve(e.target);
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRevealed(true);
+          io.disconnect();
+        }
       },
-      { threshold: 0.08 }
+      { threshold: 0, rootMargin: "0px 0px" }
     );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    io.observe(el);
+
+    // Hard fallback: always reveal after 1.2s regardless
+    const timer = setTimeout(() => setRevealed(true), 1200);
+
+    return () => { io.disconnect(); clearTimeout(timer); };
   }, []);
 
   const ease = "cubic-bezier(0.22, 1, 0.36, 1)";
 
+  // Helper: build transition style — starts hidden, transitions visible once revealed
+  const rv = (delay: number, dy = 10): React.CSSProperties => ({
+    opacity: revealed ? 1 : 0,
+    transform: revealed ? "translateY(0) scale(1)" : `translateY(${dy}px)`,
+    transition: revealed
+      ? `opacity 0.6s ${ease} ${delay}s, transform 0.6s ${ease} ${delay}s`
+      : "none",
+  });
+
   return (
     <section ref={ref} className="social-links-section" id="network">
       <div className="social-links-header">
-        <span className="tag-label" data-reveal style={{ opacity: 0, transform: "translateY(10px)", transition: `opacity 0.6s ${ease}, transform 0.6s ${ease}` }}>Network</span>
-        <h2 className="display-heading display-lg social-links-title" data-reveal style={{ opacity: 0, transform: "translateY(14px)", transition: `opacity 0.7s ${ease} 0.06s, transform 0.7s ${ease} 0.06s` }}>
+        <span className="tag-label" style={rv(0)}>Network</span>
+        <h2 className="display-heading display-lg social-links-title" style={rv(0.06, 14)}>
           FIND<br />THE<br />SIGNAL
         </h2>
-        <p className="body-muted social-links-desc" data-reveal style={{ opacity: 0, transform: "translateY(10px)", transition: `opacity 0.6s ${ease} 0.14s, transform 0.6s ${ease} 0.14s` }}>
+        <p className="body-muted social-links-desc" style={rv(0.14)}>
           ZEN AI is building in public — live on every channel, verified in the archive, and open to collaboration.
           Find the work, trace the history, start the conversation.
         </p>
@@ -167,8 +180,7 @@ export default function SocialLinks() {
             target="_blank"
             rel="noopener noreferrer"
             className="dossier-card"
-            data-reveal
-            style={{ opacity: 0, transform: "translateY(14px)", transition: `opacity 0.65s ${ease} ${0.22 + i * 0.07}s, transform 0.65s ${ease} ${0.22 + i * 0.07}s` }}
+            style={rv(0.22 + i * 0.07, 14)}
           >
             <div className="dossier-card__top">
               <span className="dossier-card__icon">{item.icon}</span>
@@ -187,14 +199,14 @@ export default function SocialLinks() {
 
       <div className="social-columns">
         <div className="social-column">
-          <div className="social-column__label" data-reveal style={{ opacity: 0, transform: "translateY(8px)", transition: `opacity 0.5s ${ease} 0.5s, transform 0.5s ${ease} 0.5s` }}>
+          <div className="social-column__label" style={rv(0.5, 8)}>
             <span className="social-column__dot" />
             ZEN AI — Channels
           </div>
           <div className="social-chip-grid">
             {ZEN_SOCIALS.map((s, i) => (
-              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="social-chip"
-                data-reveal style={{ opacity: 0, transform: "translateY(10px)", transition: `opacity 0.55s ${ease} ${0.55 + i * 0.055}s, transform 0.55s ${ease} ${0.55 + i * 0.055}s` }}>
+              <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer"
+                className="social-chip" style={rv(0.55 + i * 0.055)}>
                 <span className="social-chip__icon-wrap">{s.icon}</span>
                 <span className="social-chip__body">
                   <span className="social-chip__platform">{s.platform}</span>
@@ -209,14 +221,14 @@ export default function SocialLinks() {
         </div>
 
         <div className="social-column">
-          <div className="social-column__label" data-reveal style={{ opacity: 0, transform: "translateY(8px)", transition: `opacity 0.5s ${ease} 0.5s, transform 0.5s ${ease} 0.5s` }}>
+          <div className="social-column__label" style={rv(0.5, 8)}>
             <span className="social-column__dot social-column__dot--violet" />
             Alex Leschik — Personal
           </div>
           <div className="social-chip-grid">
             {ALEX_SOCIALS.map((s, i) => (
-              <a key={s.url + s.handle} href={s.url} target="_blank" rel="noopener noreferrer" className="social-chip social-chip--violet"
-                data-reveal style={{ opacity: 0, transform: "translateY(10px)", transition: `opacity 0.55s ${ease} ${0.55 + i * 0.07}s, transform 0.55s ${ease} ${0.55 + i * 0.07}s` }}>
+              <a key={s.url + s.handle} href={s.url} target="_blank" rel="noopener noreferrer"
+                className="social-chip social-chip--violet" style={rv(0.55 + i * 0.07)}>
                 <span className="social-chip__icon-wrap">{s.icon}</span>
                 <span className="social-chip__body">
                   <span className="social-chip__platform">{s.platform}</span>
@@ -229,7 +241,7 @@ export default function SocialLinks() {
             ))}
           </div>
 
-          <div className="archive-strip" data-reveal style={{ opacity: 0, transform: "translateY(8px)", transition: `opacity 0.6s ${ease} 0.8s, transform 0.6s ${ease} 0.8s` }}>
+          <div className="archive-strip" style={rv(0.8, 8)}>
             <div className="archive-strip__label">
               <IconArchive />
               Historical Proof — Wayback Machine
