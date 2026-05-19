@@ -29,6 +29,7 @@ const ImageVortex = lazy(() => import("@/components/ImageVortex"));
 const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
 const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
 const SignalConstellation = lazy(() => import("@/components/SignalConstellation"));
+const ImageTheater = lazy(() => import("@/components/ImageTheater"));
 
 const SECTION_COUNT = 6;
 
@@ -233,6 +234,15 @@ export default function Index() {
             <MediaRoom />
           </Suspense>
         </LazySection>
+
+        <CrypticDivider lines={4} label="// visual archive" />
+
+        <div className="relative">
+          <CrypticBackground rows={8} speed={130} opacity={0.04} />
+          <Suspense fallback={<div style={{ minHeight: "640px" }} />}>
+            <ImageTheater />
+          </Suspense>
+        </div>
 
         <CrypticDivider lines={5} label="// opening the lab" />
 

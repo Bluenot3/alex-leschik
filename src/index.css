@@ -2337,6 +2337,283 @@
     );
     pointer-events: none;
   }
+  /* ── Image Theater ─────────────────────────────────── */
+  .image-theater {
+    position: relative;
+    padding: 5rem 0 3rem;
+    overflow: hidden;
+  }
+
+  .image-theater__hdr {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    padding: 0 1.5rem 2.5rem;
+  }
+
+  .image-theater__count {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.45rem;
+    margin-top: 1.25rem;
+    font-family: var(--font-display);
+    line-height: 1;
+  }
+
+  .image-theater__count-n {
+    font-size: 3.8rem;
+    color: hsl(var(--foreground));
+    letter-spacing: 0.02em;
+    min-width: 3ch;
+    text-align: right;
+  }
+
+  .image-theater__count-sep {
+    font-size: 1.2rem;
+    color: hsl(var(--foreground) / 0.25);
+  }
+
+  .image-theater__count-total {
+    font-size: 1.1rem;
+    color: hsl(var(--foreground) / 0.35);
+    min-width: 3ch;
+  }
+
+  /* Stage — holds the wave canvas + coverflow */
+  .image-theater__stage {
+    position: relative;
+    height: clamp(360px, 55vw, 560px);
+    perspective: 1500px;
+    perspective-origin: 50% 48%;
+    overflow: visible;
+  }
+
+  /* 3D coverflow container */
+  .theater-coverflow {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+    pointer-events: none; /* children get individual pointer-events */
+  }
+
+  /* Individual card */
+  .theater-card {
+    position: absolute;
+    width: clamp(260px, 40vw, 500px);
+    aspect-ratio: 1 / 1;
+    transform-style: preserve-3d;
+    pointer-events: auto;
+  }
+
+  /* Card face */
+  .theater-card__face {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border-radius: 1.4rem;
+    overflow: hidden;
+    box-shadow:
+      0 40px 100px rgba(0,0,0,0.2),
+      0 12px 30px rgba(0,0,0,0.12),
+      inset 0 1px 0 rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+
+  .theater-card--active .theater-card__face {
+    box-shadow:
+      0 60px 140px rgba(0,0,0,0.28),
+      0 20px 50px rgba(0,0,0,0.18),
+      0 0 80px hsl(var(--cryptic-cool) / 0.10),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+    border-color: rgba(255,255,255,0.22);
+  }
+
+  .theater-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Holographic prismatic sweep */
+  .theater-card__holo {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      118deg,
+      transparent        0%,
+      rgba(255,255,255,0.03) 30%,
+      rgba(140,210,255,0.07) 45%,
+      rgba(255,200,255,0.05) 55%,
+      rgba(255,255,255,0.03) 70%,
+      transparent        100%
+    );
+    animation: holo-sweep 3.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes holo-sweep {
+    0%   { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateX(220%) skewX(-12deg); opacity: 0; }
+  }
+
+  /* Scanlines */
+  .theater-card__scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.035) 3px,
+      rgba(0,0,0,0.035) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* Corner brackets */
+  .tc-br {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-style: solid;
+    border-color: rgba(255,255,255,0.55);
+    border-width: 0;
+  }
+
+  .tc-br--tl { top: 10px; left: 10px; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .tc-br--tr { top: 10px; right: 10px; border-top-width: 1.5px; border-right-width: 1.5px; }
+  .tc-br--bl { bottom: 10px; left: 10px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+  .tc-br--br { bottom: 10px; right: 10px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+  /* Label strip at bottom of active card */
+  .theater-card__label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 2rem 1.25rem 1rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+  }
+
+  .theater-card__label-name {
+    font-family: var(--font-display);
+    font-size: clamp(0.9rem, 2vw, 1.25rem);
+    letter-spacing: 0.07em;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .theater-card__label-sub {
+    font-family: var(--font-mono);
+    font-size: 0.44rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* Reflection mirror below active card */
+  .theater-card__mirror {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    height: 32%;
+    overflow: hidden;
+    border-radius: 0 0 1.4rem 1.4rem;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.28), transparent 90%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.28), transparent 90%);
+    pointer-events: none;
+  }
+
+  .theater-card__mirror-img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    transform: scaleY(-1);
+    opacity: 0.38;
+  }
+
+  /* Navigation row */
+  .image-theater__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .theater-arrow {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid hsl(var(--foreground) / 0.14);
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .theater-arrow:hover {
+    border-color: hsl(var(--foreground) / 0.3);
+    background: rgba(255,255,255,0.85);
+    transform: scale(1.08);
+  }
+
+  .theater-arrow svg { width: 11px; height: 11px; color: hsl(var(--foreground) / 0.65); }
+
+  .theater-dots { display: flex; gap: 0.45rem; align-items: center; }
+
+  .theater-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: hsl(var(--foreground) / 0.18);
+    border: none; cursor: pointer;
+    padding: 0;
+    transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+    flex-shrink: 0;
+  }
+
+  .theater-dot--on {
+    width: 20px;
+    border-radius: 3px;
+    background: hsl(var(--foreground) / 0.75);
+  }
+
+  /* Tech-skill chip strip */
+  .image-theater__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 2rem 1.5rem 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .image-theater__stack-chip {
+    font-family: var(--font-mono);
+    font-size: 0.42rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground) / 0.7);
+    border: 1px solid hsl(var(--foreground) / 0.08);
+    border-radius: 100px;
+    padding: 0.3rem 0.65rem;
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(4px);
+  }
+
   /* ── Static Project Preview ── */
   .static-preview {
     position: absolute;
