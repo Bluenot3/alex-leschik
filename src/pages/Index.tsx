@@ -5,6 +5,7 @@ import InteractiveName from "@/components/InteractiveName";
 import HUD from "@/components/HUD";
 import HoloNav from "@/components/HoloNav";
 import CommandDashboard from "@/components/CommandDashboard";
+import ContactModal from "@/components/ContactModal";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
@@ -50,6 +51,7 @@ export default function Index() {
     useScrollEngine(SECTION_COUNT);
   const [editMode, setEditMode] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
 
   return (
     <div className="relative portfolio-shell">
@@ -73,6 +75,7 @@ export default function Index() {
       />
 
       <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
+      {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
       <HoloNav onNavigate={scrollToSection} />
 
       <div className="relative z-[1]">
@@ -349,17 +352,16 @@ export default function Index() {
                 transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s",
               }}
             >
-              <a
-                href="https://forms.gle/T4cMKd2TL4CkxGLD8"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
                 className="cta-btn"
+                onClick={() => setContactOpen(true)}
               >
                 Start the conversation
                 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                   <path d="M1 6h10M6 1l5 5-5 5" />
                 </svg>
-              </a>
+              </button>
             </div>
 
             <div
