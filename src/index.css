@@ -1345,6 +1345,19 @@
     min-width: 220px;
   }
 
+  /* HUD icon buttons — label hidden by default, visible on hover */
+  .hud-icon-btn .hud-icon-label {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.25s ease, opacity 0.2s ease;
+    white-space: nowrap;
+  }
+  .hud-icon-btn:hover .hud-icon-label {
+    max-width: 6rem;
+    opacity: 1;
+  }
+
   @keyframes panel-in {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }

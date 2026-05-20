@@ -185,27 +185,38 @@ export default function HUD({
       <div className="fixed bottom-[var(--ui-inset)] right-[var(--ui-inset)] z-20 flex items-center gap-2">
         <button
           onClick={onOpenCmd}
-          className="upload-panel flex items-center gap-2 cursor-pointer"
+          className="upload-panel hud-icon-btn flex items-center gap-2 cursor-pointer group"
           style={{ position: "relative", bottom: "auto", right: "auto" }}
+          title="Command"
+          aria-label="Open command dashboard"
         >
           <Terminal className="w-3 h-3 text-muted-foreground/60" />
-          <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground">
+          <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground hud-icon-label">
             Command
           </span>
         </button>
         <button
           onClick={handleEditClick}
-          className="upload-panel flex items-center gap-2 cursor-pointer"
+          className="upload-panel hud-icon-btn flex items-center gap-2 cursor-pointer group"
           style={{ position: "relative", bottom: "auto", right: "auto" }}
+          title={editMode ? "Exit edit mode" : "Edit cube"}
+          aria-label={editMode ? "Exit edit mode" : "Edit cube"}
         >
           <div
             className={`w-2 h-2 rounded-full transition-colors duration-300 ${
               editMode ? "bg-emerald-500" : "bg-muted-foreground/30"
             }`}
           />
-          <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground">
-            {editMode ? "Editing" : "Edit cube"}
-          </span>
+          {editMode && (
+            <span className="font-mono text-[0.55rem] tracking-widest uppercase text-emerald-500">
+              Editing
+            </span>
+          )}
+          {!editMode && (
+            <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground hud-icon-label">
+              Edit cube
+            </span>
+          )}
         </button>
       </div>
 
