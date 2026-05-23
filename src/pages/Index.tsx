@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import InteractiveName from "@/components/InteractiveName";
@@ -11,6 +11,8 @@ import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
 import SocialLinks from "@/components/SocialLinks";
 import CipherSmokeCursor from "@/components/CipherSmokeCursor";
+import BootSequence from "@/components/BootSequence";
+import LiveMetricsTicker from "@/components/LiveMetricsTicker";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -53,9 +55,50 @@ export default function Index() {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
+  /* ── Magnetic cursor + spotlight for CTA buttons ─────────── */
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const btns = document.querySelectorAll<HTMLElement>(".cta-btn, .cta-btn-muted");
+      btns.forEach(btn => {
+        const r  = btn.getBoundingClientRect();
+        // Spotlight
+        btn.style.setProperty("--cx", `${((e.clientX - r.left) / r.width  * 100).toFixed(1)}%`);
+        btn.style.setProperty("--cy", `${((e.clientY - r.top)  / r.height * 100).toFixed(1)}%`);
+        // Magnetic pull
+        const cx   = r.left + r.width  / 2;
+        const cy   = r.top  + r.height / 2;
+        const dx   = e.clientX - cx;
+        const dy   = e.clientY - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const radius = 100;
+        if (dist < radius) {
+          const t = (1 - dist / radius) * 0.28;
+          btn.style.setProperty("--mx", `${(dx * t).toFixed(2)}px`);
+          btn.style.setProperty("--my", `${(dy * t).toFixed(2)}px`);
+        } else {
+          btn.style.setProperty("--mx", "0px");
+          btn.style.setProperty("--my", "0px");
+        }
+      });
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
   return (
     <div className="relative portfolio-shell">
       <h1 className="sr-only">Alex Leschik - Developer, systems architect, and creative technologist</h1>
+
+      {/* Boot terminal overlay — first visit only */}
+      <BootSequence />
+
+      {/* Viewport corner indicators */}
+      <div className="viewport-corners" aria-hidden="true">
+        <div className="vc vc--tl" />
+        <div className="vc vc--tr" />
+        <div className="vc vc--bl" />
+        <div className="vc vc--br" />
+      </div>
 
       <CipherSmokeCursor variant="pearl" intensity="cinematic" />
       <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
@@ -87,7 +130,7 @@ export default function Index() {
 
             <div className="hero-poster__headline-block">
               <p className="hero-poster__lead">Software architect. Founder. Builder of products that become infrastructure.</p>
-              <h2 className="hero-poster__title">
+              <h2 className="hero-poster__title display-heading">
                 BUILDING
                 <br />
                 SYSTEMS
@@ -177,7 +220,7 @@ export default function Index() {
 
           <div className="constellation-section__header">
             <span className="tag-label">02 - Constellation</span>
-            <h2 className="constellation-section__title">
+            <h2 className="constellation-section__title display-heading">
               A BETTER WAY
               <br />
               TO READ THE WORK
@@ -383,6 +426,9 @@ export default function Index() {
           </ScrollSection>
         </div>
       </div>
+
+      {/* Live technical metrics strip — fixed bottom */}
+      <LiveMetricsTicker />
     </div>
   );
 }
