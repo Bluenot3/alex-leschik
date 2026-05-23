@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ExternalLink, Pencil, X } from "lucide-react";
 
-/* ── Static Preview ── */
+/* ──────────────────────────────────────────────────────────────────
+   Static Preview
+   ────────────────────────────────────────────────────────────────── */
+
 function getPreviewStyle(tag: string): { bg: string; accent: string; glow: string } {
   const t = tag.toLowerCase();
   if (t.includes("ai") || t.includes("prompt") || t.includes("sparklab"))
@@ -53,6 +56,10 @@ function StaticPreview({ project }: { project: ProjectData }) {
     </div>
   );
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   Data
+   ────────────────────────────────────────────────────────────────── */
 
 export interface ProjectData {
   title: string;
@@ -200,6 +207,23 @@ const ALL_PROJECTS: ProjectData[] = [
   },
 ];
 
+/* ──────────────────────────────────────────────────────────────────
+   Categories
+   ────────────────────────────────────────────────────────────────── */
+
+const CATEGORIES = [
+  { id: "flagship",    label: "Flagship Impact",   accent: "#00d4ff", icon: "◈", indices: [0, 1, 2] },
+  { id: "curriculum",  label: "AI Curriculum",      accent: "#c084fc", icon: "⬡", indices: [9, 10, 11] },
+  { id: "publication", label: "Publications",        accent: "#fbbf24", icon: "⊕", indices: [12] },
+  { id: "healthcare",  label: "Healthcare Tech",     accent: "#34d399", icon: "⊞", indices: [7, 8] },
+  { id: "creative",    label: "Creative Lab",        accent: "#fb923c", icon: "◎", indices: [13, 14, 15, 16] },
+  { id: "platforms",   label: "Platforms & Tools",  accent: "#60a5fa", icon: "▣", indices: [3, 4, 5, 6, 17, 18, 19] },
+] as const;
+
+/* ──────────────────────────────────────────────────────────────────
+   Helpers
+   ────────────────────────────────────────────────────────────────── */
+
 const GLYPHS = "01アイウエオカキクケコ∷∵∴⊕⊗※÷≈≡∞";
 const LS_KEY = "spotlight_projects_edits";
 
@@ -221,7 +245,14 @@ function saveEdits(edits: Record<number, Partial<ProjectData>>) {
   localStorage.setItem(LS_KEY, JSON.stringify(edits));
 }
 
-/* ── Edit Modal ── */
+function getHostname(url: string): string {
+  try { return new URL(url).hostname; } catch { return url; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Edit Modal
+   ────────────────────────────────────────────────────────────────── */
+
 function EditModal({
   project,
   onSave,
@@ -257,46 +288,34 @@ function EditModal({
   );
 }
 
-function getHostname(url: string): string {
-  try { return new URL(url).hostname; } catch { return url; }
-}
+/* ──────────────────────────────────────────────────────────────────
+   Project Tile  (hover-expand card)
+   ────────────────────────────────────────────────────────────────── */
 
-/* ── Single Spotlight Card ── */
-function SpotlightCard({
+function ProjectTile({
   project,
-  index,
-  active,
+  globalIndex,
+  accent,
+  isFlagship,
   editMode,
   onEdit,
 }: {
   project: ProjectData;
-  index: number;
-  active: boolean;
+  globalIndex: number;
+  accent: string;
+  isFlagship: boolean;
   editMode: boolean;
   onEdit: () => void;
 }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [open, setOpen] = useState(false);
   const [titleText, setTitleText] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
-  const isFlagship = index < 3;
 
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { rootMargin: "50px 0px", threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  // Scramble text
-  useEffect(() => {
-    if (!visible) return;
+  const handleEnter = () => {
+    setOpen(true);
     let frame = 0;
-    const total = 20;
+    const total = 18;
+    clearInterval(scrambleRef.current);
     scrambleRef.current = setInterval(() => {
       frame++;
       setTitleText(scrambleText(project.title, frame / total));
@@ -304,137 +323,152 @@ function SpotlightCard({
         setTitleText(project.title);
         clearInterval(scrambleRef.current);
       }
-    }, 35);
-    return () => { if (scrambleRef.current) clearInterval(scrambleRef.current); };
-  }, [visible, project.title]);
+    }, 28);
+  };
 
-  const side = index % 2 === 0 ? "left" : "right";
+  const handleLeave = () => {
+    setOpen(false);
+    clearInterval(scrambleRef.current);
+    setTitleText(project.title);
+  };
+
+  useEffect(() => () => clearInterval(scrambleRef.current), []);
+
+  const hostname = getHostname(project.url);
 
   return (
     <div
-      ref={cardRef}
-      id={`project-${index}`}
-      className={`spotlight-card spotlight-card--${side} ${visible ? "spotlight-card--visible" : ""} ${isFlagship ? "spotlight-card--flagship" : ""}`}
+      className={`project-tile${open ? " project-tile--open" : ""}${isFlagship ? " project-tile--flagship" : ""}`}
+      style={{ "--tile-accent": accent } as React.CSSProperties}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
     >
-      {/* Embed with browser chrome */}
-      <div className="spotlight-card__embed-wrap">
-        <div className="spotlight-card__chrome">
-          <div className="spotlight-card__chrome-dots">
-            <span className="chrome-dot chrome-dot--red" />
-            <span className="chrome-dot chrome-dot--yellow" />
-            <span className="chrome-dot chrome-dot--green" />
-          </div>
-          <div className="spotlight-card__chrome-url">
-            {getHostname(project.url)}
-          </div>
-          <div className="spotlight-card__chrome-live">
-            <span className="chrome-live-dot" />
-          </div>
-        </div>
-        <div className="spotlight-card__embed">
-          <StaticPreview project={project} />
-          <div className="proj-card__scanlines" />
-        </div>
+      {/* Corner brackets — visible on hover */}
+      <span className="project-tile__br project-tile__br--tl" />
+      <span className="project-tile__br project-tile__br--tr" />
+      <span className="project-tile__br project-tile__br--bl" />
+      <span className="project-tile__br project-tile__br--br" />
+
+      {/* Header row */}
+      <div className="project-tile__header">
+        <span className="project-tile__index">{String(globalIndex + 1).padStart(2, "0")}</span>
+        <span className="project-tile__tag">{project.tag}</span>
       </div>
 
-      {/* Meta */}
-      <div className="spotlight-card__meta">
-        <div className="spotlight-card__meta-header">
-          <span className="spotlight-card__index">{String(index + 1).padStart(2, "0")}</span>
-          <span className="proj-card__tag">
-            {project.tag}
-            {isFlagship && <span className="proj-card__badge">Flagship</span>}
-          </span>
-        </div>
-        <h3 className="spotlight-card__title">{titleText}</h3>
-        <p className="spotlight-card__desc">{project.description}</p>
+      {/* Title */}
+      <h3 className="project-tile__title">{titleText}</h3>
 
-        {project.stats && (
-          <div className="spotlight-card__stats">
-            {project.stats.map((s) => (
-              <div key={s.label} className="proj-card__stat">
-                <span className="proj-card__stat-num">{s.num}</span>
-                <span className="proj-card__stat-label">{s.label}</span>
-              </div>
-            ))}
+      {/* Expand: grid-template-rows trick for smooth animation */}
+      <div className="project-tile__expand-outer">
+        <div className="project-tile__expand-inner">
+          {/* Preview thumbnail */}
+          <div className="project-tile__preview-wrap">
+            <StaticPreview project={project} />
           </div>
-        )}
 
-        <div className="spotlight-card__actions">
-          <a href={project.url} target="_blank" rel="noopener noreferrer" className="cta-btn">
-            Open Live
-            <ExternalLink className="w-3 h-3" />
-          </a>
-          {editMode && (
-            <button onClick={onEdit} className="cta-btn-muted">
-              <Pencil className="w-3 h-3" />
-              Edit
-            </button>
+          {/* Domain */}
+          <div className="project-tile__domain">{hostname}</div>
+
+          {/* Description */}
+          <p className="project-tile__desc">{project.description}</p>
+
+          {/* Stats */}
+          {project.stats && (
+            <div className="project-tile__stats">
+              {project.stats.map((s) => (
+                <div key={s.label} className="project-tile__stat">
+                  <span className="project-tile__stat-num">{s.num}</span>
+                  <span className="project-tile__stat-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
           )}
+
+          {/* Actions */}
+          <div className="project-tile__actions">
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta-btn project-tile__cta"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Open Live
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            {editMode && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="cta-btn-muted"
+              >
+                <Pencil className="w-3 h-3" />
+                Edit
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/* ── Side Navigation ── */
-function SideNav({
+/* ──────────────────────────────────────────────────────────────────
+   Project Group
+   ────────────────────────────────────────────────────────────────── */
+
+function ProjectGroup({
+  category,
   projects,
-  activeIndex,
-  onNavigate,
+  editMode,
+  onEdit,
 }: {
+  category: typeof CATEGORIES[number];
   projects: ProjectData[];
-  activeIndex: number;
-  onNavigate: (index: number) => void;
+  editMode: boolean;
+  onEdit: (globalIndex: number) => void;
 }) {
+  const isFlagship = category.id === "flagship";
+
   return (
-    <div className="spotlight-nav">
-      {projects.map((p, i) => (
-        <button
-          key={i}
-          className={`spotlight-nav__dot ${i === activeIndex ? "spotlight-nav__dot--active" : ""}`}
-          onClick={() => onNavigate(i)}
-          title={p.title}
-        >
-          <span className="spotlight-nav__label">{p.title}</span>
-        </button>
-      ))}
+    <div
+      className="project-group"
+      style={{ "--group-accent": category.accent } as React.CSSProperties}
+    >
+      {/* Group header */}
+      <div className="project-group__header">
+        <div className="project-group__accent-bar" />
+        <span className="project-group__icon">{category.icon}</span>
+        <span className="project-group__label">{category.label}</span>
+        <span className="project-group__count">{category.indices.length}</span>
+      </div>
+
+      {/* Tile grid */}
+      <div className={`project-group__grid${isFlagship ? " project-group__grid--flagship" : ""}`}>
+        {category.indices.map((globalIdx) => (
+          <ProjectTile
+            key={globalIdx}
+            project={projects[globalIdx]}
+            globalIndex={globalIdx}
+            accent={category.accent}
+            isFlagship={isFlagship}
+            editMode={editMode}
+            onEdit={() => onEdit(globalIdx)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
-/* ── Main Component ── */
+/* ──────────────────────────────────────────────────────────────────
+   Main Component
+   ────────────────────────────────────────────────────────────────── */
+
 export default function ProjectSpotlight({ editMode = false }: { editMode?: boolean }) {
   const [edits, setEdits] = useState<Record<number, Partial<ProjectData>>>(loadEdits);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const projects = ALL_PROJECTS.map((p, i) => ({ ...p, ...(edits[i] || {}) }));
-
-  // Track which project is in view
-  useEffect(() => {
-    const cards = document.querySelectorAll(".spotlight-card");
-    if (!cards.length) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            const idx = Number((e.target as HTMLElement).id.replace("project-", ""));
-            if (!isNaN(idx)) setActiveIndex(idx);
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -40% 0px", threshold: 0 }
-    );
-    cards.forEach((c) => io.observe(c));
-    return () => io.disconnect();
-  }, [projects.length]);
-
-  const handleNavigate = useCallback((index: number) => {
-    const el = document.getElementById(`project-${index}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, []);
 
   const handleSave = useCallback(
     (index: number, data: Partial<ProjectData>) => {
@@ -446,7 +480,9 @@ export default function ProjectSpotlight({ editMode = false }: { editMode?: bool
   );
 
   return (
-    <section className="spotlight-section" ref={containerRef}>
+    <section className="spotlight-section">
+
+      {/* Header */}
       <div className="spotlight-header">
         <span className="tag-label">Portfolio — 50+ Projects · 5 Fortune 500 Partnerships</span>
         <h2 className="display-heading display-lg">MY WORK</h2>
@@ -455,21 +491,20 @@ export default function ProjectSpotlight({ editMode = false }: { editMode?: bool
         </p>
       </div>
 
-      <SideNav projects={projects} activeIndex={activeIndex} onNavigate={handleNavigate} />
-
-      <div className="spotlight-list">
-        {projects.map((project, i) => (
-          <SpotlightCard
-            key={i}
-            project={project}
-            index={i}
-            active={i === activeIndex}
+      {/* Category groups */}
+      <div className="project-grid">
+        {CATEGORIES.map((cat) => (
+          <ProjectGroup
+            key={cat.id}
+            category={cat}
+            projects={projects}
             editMode={editMode}
-            onEdit={() => setEditingIndex(i)}
+            onEdit={(idx) => setEditingIndex(idx)}
           />
         ))}
       </div>
 
+      {/* Edit modal */}
       {editingIndex !== null && (
         <EditModal
           project={projects[editingIndex]}
