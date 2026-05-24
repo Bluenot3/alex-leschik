@@ -2,6 +2,10 @@ import { useState, useEffect, useRef } from "react";
 
 const startTime = Date.now();
 
+type TickerStat = { kind: "stat"; key: string; val: string; warn?: boolean };
+type TickerLink = { kind: "link"; prefix: string; sep?: string; linkText: string; href: string };
+type TickerItem = TickerStat | TickerLink;
+
 export default function LiveMetricsTicker() {
   const [fps,    setFps]    = useState(60);
   const [uptime, setUptime] = useState(0);
@@ -39,32 +43,55 @@ export default function LiveMetricsTicker() {
   const mm = String(Math.floor(uptime / 60)).padStart(2, "0");
   const ss = String(uptime % 60).padStart(2, "0");
 
-  const stats: [string, string, boolean][] = [
-    ["FPS",               `${fps}`,                    fps < 50],
-    ["PARTICLES",         "11,000",                    false],
-    ["CANVAS CTX",        "3 ACTIVE",                  false],
-    ["FLOAT32 BUFFERS",   "4 × 11K",                   false],
-    ["SIN/COS PER FRAME", "4",                         false],
-    ["BUNDLE",            "< 200 KB GZIP",             false],
-    ["EXTERNAL REQUESTS", "0",                         false],
-    ["IFRAMES AT LOAD",   "0",                         false],
-    ["UPTIME",            `${mm}:${ss}`,               false],
-    ["STACK",             "REACT 18 · VITE 5 · TS",   false],
-    ["DEPLOY",            "VERCEL · MAIN",             false],
-    ["STATUS",            "NOMINAL",                   false],
+  const items: TickerItem[] = [
+    { kind: "stat", key: "FPS",               val: `${fps}`,                  warn: fps < 50 },
+    { kind: "stat", key: "PARTICLES",          val: "11,000"                                  },
+    { kind: "stat", key: "CANVAS CTX",         val: "3 ACTIVE"                                },
+    { kind: "stat", key: "FLOAT32 BUFFERS",    val: "4 × 11K"                                 },
+    { kind: "stat", key: "BUNDLE",             val: "< 200 KB GZIP"                           },
+    { kind: "stat", key: "EXTERNAL REQUESTS",  val: "0"                                       },
+    { kind: "link",
+      prefix:   "1ST YOUTH AI LITERACY PROGRAM IN UNITED STATES HISTORY",
+      sep:      "·",
+      linkText: "ZENAI.WORLD",
+      href:     "https://zenai.world"                                                          },
+    { kind: "stat", key: "STACK",              val: "REACT 18 · VITE 5 · TS"                  },
+    { kind: "stat", key: "DEPLOY",             val: "VERCEL · MAIN"                           },
+    { kind: "link",
+      prefix:   "COMMAND YOUR AGENTIC ARSENAL",
+      sep:      "|",
+      linkText: "ARSENAL.WORLD",
+      href:     "https://arsenal.world"                                                        },
+    { kind: "stat", key: "UPTIME",             val: `${mm}:${ss}`                             },
+    { kind: "stat", key: "STATUS",             val: "NOMINAL"                                 },
   ];
 
   return (
-    <div className="metrics-ticker" aria-hidden="true">
+    <div className="metrics-ticker">
       <div className="metrics-ticker__track">
-        {[...stats, ...stats].map(([k, v, warn], i) => (
-          <span key={i} className="metrics-ticker__item">
-            <span className="metrics-ticker__key">{k}</span>
-            <span className={`metrics-ticker__val${warn ? " metrics-ticker__val--warn" : ""}`}>
-              {v}
+        {[...items, ...items].map((item, i) =>
+          item.kind === "link" ? (
+            <span key={i} className="metrics-ticker__item metrics-ticker__item--link">
+              <span className="metrics-ticker__prefix">{item.prefix}</span>
+              {item.sep && <span className="metrics-ticker__sep">{item.sep}</span>}
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="metrics-ticker__link"
+              >
+                {item.linkText}
+              </a>
             </span>
-          </span>
-        ))}
+          ) : (
+            <span key={i} className="metrics-ticker__item">
+              <span className="metrics-ticker__key">{item.key}</span>
+              <span className={`metrics-ticker__val${item.warn ? " metrics-ticker__val--warn" : ""}`}>
+                {item.val}
+              </span>
+            </span>
+          )
+        )}
       </div>
     </div>
   );

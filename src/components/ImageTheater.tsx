@@ -29,10 +29,11 @@ const ALL_ITEMS = [...BUILT_IN, ...PUBLIC_GALLERY];
 
 /* ── Enhanced procedural wave-field canvas ──────────────────────── */
 function WaveField({ active }: { active: number }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef    = useRef<number>(0);
-  const tRef      = useRef(0);
-  const activeRef = useRef(active);
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const rafRef     = useRef<number>(0);
+  const tRef       = useRef(0);
+  const frameRef   = useRef(0);
+  const activeRef  = useRef(active);
   activeRef.current = active;
 
   useEffect(() => {
@@ -40,13 +41,17 @@ function WaveField({ active }: { active: number }) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
 
-    const COLS = 64;
-    const ROWS = 32;
+    const COLS = 48;   /* was 64 — 44% fewer dots */
+    const ROWS = 24;   /* was 32 */
 
     const tick = () => {
       if (document.hidden) { rafRef.current = requestAnimationFrame(tick); return; }
 
-      tRef.current += 0.012;
+      /* Skip every other frame → effective 30 fps for background canvas */
+      frameRef.current++;
+      if (frameRef.current % 2 !== 0) { rafRef.current = requestAnimationFrame(tick); return; }
+
+      tRef.current += 0.024;  /* doubled to compensate for frame-skip (maintains same visual speed) */
       const t   = tRef.current;
       const act = activeRef.current;
 
@@ -54,8 +59,8 @@ function WaveField({ active }: { active: number }) {
       const h = canvas.offsetHeight || 520;
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
 
-      /* Fade trail for motion blur effect */
-      ctx.fillStyle = "rgba(4, 8, 18, 0.22)";
+      /* Fade trail for motion blur effect (slightly stronger at 30fps cadence) */
+      ctx.fillStyle = "rgba(4, 8, 18, 0.30)";
       ctx.fillRect(0, 0, w, h);
 
       const cw = w / COLS;
