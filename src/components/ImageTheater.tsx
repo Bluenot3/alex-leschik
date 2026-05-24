@@ -273,7 +273,7 @@ export default function ImageTheater() {
         <span className="tag-label">Visual Archive · Built in Public</span>
         <h2 className="display-heading display-lg">VISUAL<br />ARSENAL</h2>
         <p className="body-muted" style={{ maxWidth: "28rem", margin: "0.5rem auto 0" }}>
-          Every image is a deployment. Generative, intentional, and built to hold attention.
+          A visual archive of the campaigns, interfaces, product worlds, and generative systems behind ZEN AI, Arsenal, and AI literacy.
         </p>
         <div className="image-theater__count">
           <span className="image-theater__count-n">{counterNum}</span>

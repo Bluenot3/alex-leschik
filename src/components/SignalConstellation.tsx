@@ -45,9 +45,9 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
     id: "education",
     orbit: "Public Impact",
     label: "Education",
-    title: "Historic work with real social surface area.",
+    title: "First-in-history AI literacy work with real deployment.",
     summary:
-      "Programs, partnerships, and tools built to make AI legible to young people before the rest of the system catches up.",
+      "Programs, partnerships, and tools that moved young people from AI awareness to real building, including bots, agents, apps, prompts, credentials, and deployed projects.",
     accent: "128 80% 56%",
     accentHex: "#3dd65c",
     accentHexFade: "#8ef5a3",
@@ -59,9 +59,9 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
       { value: "30K", label: "Boys & Girls Clubs national members" },
     ],
     highlights: [
-      "Turns abstract technology into curriculum, interfaces, and trust.",
-      "Designed for institutions, not just demos.",
-      "Built to scale through partnership rather than one-off launch energy.",
+      "Turns AI literacy into projects students can actually build and launch.",
+      "Built for schools, nonprofits, teams, and public-facing programs.",
+      "Scaled through partnerships, repeatable curriculum, and production systems.",
     ],
   },
   {
@@ -139,7 +139,7 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
     label: "Partnerships",
     title: "Built to operate across institutions, brands, and culture.",
     summary:
-      "The portfolio is strongest where software meets distribution: schools, clubs, protocols, creators, and organizations with actual reach.",
+      "The work lands where software meets real distribution: schools, clubs, protocols, Fortune 500 partners, and organizations with actual reach.",
     accent: "352 88% 64%",
     accentHex: "#f05070",
     accentHexFade: "#f9a0b0",
@@ -363,7 +363,7 @@ export default function SignalConstellation({ onExploreWork }: SignalConstellati
 
             <div className="signal-constellation__detail-actions">
               <button type="button" className="cta-btn" onClick={onExploreWork}>
-                Explore selected orbit
+                Explore this track
                 <ArrowUpRight className="h-3 w-3" />
               </button>
             </div>

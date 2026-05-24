@@ -43,9 +43,9 @@ const HERO_SIGNALS = [
 ];
 
 const HERO_FEED = [
-  "Historic education infrastructure with real institutional surface area",
-  "Interfaces designed like posters, not templates",
-  "Products built to compound instead of decay",
+  "First youth AI literacy program in U.S. history",
+  "50+ shipped products, prototypes, dashboards, and systems",
+  "AI, automation, and Web3 infrastructure built for real users",
 ];
 
 export default function Index() {
@@ -87,7 +87,7 @@ export default function Index() {
 
   return (
     <div className="relative portfolio-shell">
-      <h1 className="sr-only">Alex Leschik - Developer, systems architect, and creative technologist</h1>
+      <h1 className="sr-only">Alex Leschik — Founder of ZEN AI Co. Creator of the first youth AI literacy program in U.S. history.</h1>
 
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />
@@ -131,25 +131,25 @@ export default function Index() {
             <div className="hero-poster__headline-block">
               <p className="hero-poster__lead">Software architect. Founder. Builder of products that become infrastructure.</p>
               <h2 className="hero-poster__title display-heading">
-                BUILDING
+                BUILT THE FIRST
                 <br />
-                SYSTEMS
+                YOUTH AI LITERACY
                 <br />
-                PEOPLE FEEL
+                PROGRAM IN U.S. HISTORY
               </h2>
             </div>
 
             <p className="hero-poster__body">
-              I design interfaces with memory, ship software with real operational weight, and turn early ideas into systems
-              that institutions, teams, and communities can actually use.
+              I turn early ideas into deployed systems that students, institutions, teams, and communities can actually use,
+              from AI literacy programs to agentic apps, automation, dashboards, and credentials.
             </p>
 
             <div className="hero-poster__actions">
               <button type="button" className="cta-btn" onClick={() => scrollToSection(3)}>
-                See the work
+                Explore the work
               </button>
               <button type="button" className="cta-btn-muted" onClick={() => scrollToSection(2)}>
-                Open orbit map
+                Map the system
               </button>
             </div>
 
@@ -192,11 +192,11 @@ export default function Index() {
             <RevealLine />
             <RevealTag>01 - Signal</RevealTag>
             <RevealHeading>
-              NOT JUST
+              NOT CONTENT
               <br />
-              MORE
+              REAL
               <br />
-              OUTPUT
+              SYSTEMS
             </RevealHeading>
             <RevealBody>
               The point is durable leverage. Historic AI literacy work, institutional partnerships, and product systems that
@@ -221,13 +221,13 @@ export default function Index() {
           <div className="constellation-section__header">
             <span className="tag-label">02 - Constellation</span>
             <h2 className="constellation-section__title display-heading">
-              A BETTER WAY
+              THE WORK
               <br />
-              TO READ THE WORK
+              HAS A STRUCTURE
             </h2>
             <p className="constellation-section__body">
-              Hover the orbit map to see how the portfolio is actually structured: public impact, execution, interfaces, lab
-              work, and partnership reach feeding the same core system.
+              The portfolio is organized by what actually shipped: public impact, execution, interfaces, labs, partnerships,
+              and systems that connect education, automation, and AI deployment.
             </p>
           </div>
 
@@ -251,8 +251,8 @@ export default function Index() {
               GRAVITY
             </RevealHeading>
             <RevealBody>
-              This is the proof layer: flagship builds, production systems, education infrastructure, experiments that turned
-              into products, and interfaces built to hold attention for the right reasons.
+              This is the proof layer: 50+ shipped projects, AI literacy infrastructure, production dashboards, generative
+              tools, automation systems, and experiments that became real products.
             </RevealBody>
             <RevealStats
               stats={[

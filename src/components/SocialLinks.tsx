@@ -167,8 +167,8 @@ export default function SocialLinks() {
           FIND<br />THE<br />SIGNAL
         </h2>
         <p className="body-muted social-links-desc" style={rv(0.14)}>
-          ZEN AI is building in public — live on every channel, verified in the archive, and open to collaboration.
-          Find the work, trace the history, start the conversation.
+          ZEN AI is building in public across education, automation, agents, credentials, and applied AI infrastructure.
+          Explore the work, follow the archive, and connect where the next system is already being built.
         </p>
       </div>
 
