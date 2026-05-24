@@ -8,7 +8,7 @@ import zenPioneer       from "@/assets/zen-pioneer.jpg";
 
 interface GalleryItem { src: string; label: string; sub: string; eager?: boolean; }
 
-/* Built-in bundled assets — always available, load instantly */
+/* Built-in bundled assets — always available */
 const BUILT_IN: GalleryItem[] = [
   { src: zenInfrastructure, label: "ZEN INFRASTRUCTURE", sub: "Platform Architecture",  eager: true },
   { src: zenLedger,         label: "ZEN LEDGER",         sub: "Financial Systems",       eager: true },
@@ -17,19 +17,17 @@ const BUILT_IN: GalleryItem[] = [
   { src: zenPioneer,        label: "ZEN PIONEER",        sub: "Education Program",       eager: true },
 ];
 
-/* Public gallery — drop images in public/gallery/ to activate these slots */
 const PUBLIC_GALLERY: GalleryItem[] = [
-  { src: "/gallery/zen-weekly-fresco.jpg",  label: "ZEN WEEKLY",  sub: "Cultural Archive"     },
-  { src: "/gallery/zen-weekly-city.jpg",    label: "ZEN WEEKLY",  sub: "Digital Frontier"     },
-  { src: "/gallery/arsenal.jpg",            label: "ARSENAL",     sub: "Visual Archive"       },
-  { src: "/gallery/zenai-world-tunnel.jpg", label: "ZENAI.WORLD", sub: "Market Intelligence"  },
-  { src: "/gallery/zenai-world-sphere.jpg", label: "ZENAI.WORLD", sub: "Neural Systems"       },
+  { src: "/gallery/zen-weekly-fresco.jpg",  label: "ZEN WEEKLY",  sub: "Cultural Archive"    },
+  { src: "/gallery/zen-weekly-city.jpg",    label: "ZEN WEEKLY",  sub: "Digital Frontier"    },
+  { src: "/gallery/arsenal.jpg",            label: "ARSENAL",     sub: "Visual Archive"      },
+  { src: "/gallery/zenai-world-tunnel.jpg", label: "ZENAI.WORLD", sub: "Market Intelligence" },
+  { src: "/gallery/zenai-world-sphere.jpg", label: "ZENAI.WORLD", sub: "Neural Systems"      },
 ];
 
-/* Built-in items first so the coverflow is never empty */
 const ALL_ITEMS = [...BUILT_IN, ...PUBLIC_GALLERY];
 
-/* ── Procedural wave-field canvas ──────────────────────── */
+/* ── Enhanced procedural wave-field canvas ──────────────────────── */
 function WaveField({ active }: { active: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef    = useRef<number>(0);
@@ -42,22 +40,23 @@ function WaveField({ active }: { active: number }) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
 
-    const COLS = 48;
-    const ROWS = 24;
+    const COLS = 64;
+    const ROWS = 32;
 
     const tick = () => {
-      /* Pause when tab is hidden — save GPU/CPU */
       if (document.hidden) { rafRef.current = requestAnimationFrame(tick); return; }
 
-      tRef.current += 0.011;
+      tRef.current += 0.012;
       const t   = tRef.current;
       const act = activeRef.current;
 
-      const w = canvas.offsetWidth  || 800;
-      const h = canvas.offsetHeight || 400;
+      const w = canvas.offsetWidth  || 900;
+      const h = canvas.offsetHeight || 520;
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
 
-      ctx.clearRect(0, 0, w, h);
+      /* Fade trail for motion blur effect */
+      ctx.fillStyle = "rgba(4, 8, 18, 0.22)";
+      ctx.fillRect(0, 0, w, h);
 
       const cw = w / COLS;
       const ch = h / ROWS;
@@ -67,19 +66,38 @@ function WaveField({ active }: { active: number }) {
           const nx = c / COLS;
           const ny = r / ROWS;
           const d  = Math.sqrt((nx - 0.5) ** 2 + (ny - 0.5) ** 2);
-          const w1 = Math.sin(d * 20 - t * 2.8) * 0.5 + 0.5;
-          const w2 = Math.cos(nx * 14 + t * 1.6) * Math.sin(ny * 10 - t * 2.1) * 0.5 + 0.5;
-          const v  = w1 * 0.55 + w2 * 0.45;
-          if (v < 0.28) continue;
-          const size  = v * 2.5;
-          const alpha = (v - 0.28) * 0.2;
-          const hue   = 205 + act * 16 + v * 50;
+
+          /* Three layered waves */
+          const w1 = Math.sin(d * 22 - t * 3.2) * 0.5 + 0.5;
+          const w2 = Math.cos(nx * 16 + t * 1.8) * Math.sin(ny * 12 - t * 2.4) * 0.5 + 0.5;
+          const w3 = Math.sin((nx + ny) * 10 - t * 1.5) * 0.5 + 0.5;
+          const v  = w1 * 0.45 + w2 * 0.35 + w3 * 0.20;
+
+          if (v < 0.25) continue;
+
+          const size  = v * 3.2;
+          const alpha = (v - 0.25) * 0.32;
+
+          /* Rainbow hue shift based on wave value + active index */
+          const hue   = 190 + act * 18 + v * 80 + Math.sin(t * 0.5 + d * 6) * 30;
+          const sat   = 65 + v * 25;
+          const light = 55 + v * 30;
+
           ctx.beginPath();
           ctx.arc(c * cw + cw / 2, r * ch + ch / 2, size, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${hue},72%,65%,${alpha})`;
+          ctx.fillStyle = `hsla(${hue},${sat}%,${light}%,${alpha})`;
           ctx.fill();
+
+          /* Extra glow dot at center for bright nodes */
+          if (v > 0.72) {
+            ctx.beginPath();
+            ctx.arc(c * cw + cw / 2, r * ch + ch / 2, size * 0.35, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${hue},90%,90%,${alpha * 0.6})`;
+            ctx.fill();
+          }
         }
       }
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -108,16 +126,17 @@ function TheaterCard({
   onFail: (src: string) => void;
 }) {
   const abs = Math.abs(offset);
-  if (abs > 4) return null;
+  if (abs > 3) return null;
 
   const sign   = offset < 0 ? -1 : 1;
-  const rotY   = isActive ? (mouse.x - 0.5) * 22   : Math.max(-68, Math.min(68, offset * 52));
-  const rotX   = isActive ? (mouse.y - 0.5) * -14  : 0;
-  const transX = isActive ? 0 : sign * Math.min(560, abs * 130);
-  const transZ = isActive ? 60 : -Math.min(660, abs * 230);
-  const scale  = isActive ? 1  : Math.max(0.3,  1 - abs * 0.21);
-  const opac   = isActive ? 1  : Math.max(0.08, 1 - abs * 0.3);
-  const blur   = isActive ? 0  : Math.max(0, (abs - 1) * 2);
+  /* Adjusted spread values for 380px wide card */
+  const rotY   = isActive ? (mouse.x - 0.5) * 20   : Math.max(-72, Math.min(72, offset * 55));
+  const rotX   = isActive ? (mouse.y - 0.5) * -12  : 0;
+  const transX = isActive ? 0 : sign * Math.min(500, abs * 140);
+  const transZ = isActive ? 80 : -Math.min(580, abs * 200);
+  const scale  = isActive ? 1  : Math.max(0.32, 1 - abs * 0.23);
+  const opac   = isActive ? 1  : Math.max(0.06, 1 - abs * 0.38);
+  const blur   = isActive ? 0  : Math.max(0, (abs - 1) * 2.5);
 
   return (
     <div
@@ -129,7 +148,7 @@ function TheaterCard({
         zIndex:     100 - abs * 10,
         cursor:     isActive ? "default" : "pointer",
         willChange: "transform, opacity",
-        transition: "transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.65s ease, filter 0.45s ease",
+        transition: "transform 0.65s cubic-bezier(0.22,1,0.36,1), opacity 0.6s ease, filter 0.45s ease",
       }}
       onClick={onClick}
     >
@@ -142,17 +161,32 @@ function TheaterCard({
           decoding="async"
           onError={() => onFail(item.src)}
         />
+
+        {/* Holographic prismatic overlay */}
         {isActive && <div className="theater-card__holo" />}
+
+        {/* Scanlines */}
         <div className="theater-card__scanlines" aria-hidden />
-        <span className="tc-br tc-br--tl" /><span className="tc-br tc-br--tr" />
-        <span className="tc-br tc-br--bl" /><span className="tc-br tc-br--br" />
+
+        {/* Corner brackets */}
+        <span className="tc-br tc-br--tl" />
+        <span className="tc-br tc-br--tr" />
+        <span className="tc-br tc-br--bl" />
+        <span className="tc-br tc-br--br" />
+
+        {/* Active card label */}
         {isActive && (
           <div className="theater-card__label">
             <span className="theater-card__label-name">{item.label}</span>
             <span className="theater-card__label-sub">{item.sub}</span>
           </div>
         )}
+
+        {/* Active: top-edge pulse line */}
+        {isActive && <div className="theater-card__pulse-line" aria-hidden />}
       </div>
+
+      {/* Mirror reflection below active card */}
       {isActive && (
         <div className="theater-card__mirror" aria-hidden>
           <img src={item.src} alt="" className="theater-card__mirror-img" loading="eager" />
@@ -189,7 +223,6 @@ export default function ImageTheater() {
   const [active,    setActive]    = useState(0);
   const [mouse,     setMouse]     = useState({ x: 0.5, y: 0.5 });
   const [paused,    setPaused]    = useState(false);
-  /* Track which public gallery images failed — filter them out cleanly */
   const [failedSet, setFailedSet] = useState<Set<string>>(() => new Set());
   const autoRef = useRef<ReturnType<typeof setInterval>>();
 
@@ -197,11 +230,9 @@ export default function ImageTheater() {
     setFailedSet(prev => { const s = new Set(prev); s.add(src); return s; });
   }, []);
 
-  /* Only show items that loaded successfully */
   const items = ALL_ITEMS.filter(item => !failedSet.has(item.src));
   const n = items.length;
 
-  /* Clamp active index if an item disappears */
   useEffect(() => {
     setActive(a => (n > 0 ? Math.min(a, n - 1) : 0));
   }, [n]);

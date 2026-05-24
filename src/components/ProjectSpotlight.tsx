@@ -2,6 +2,17 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { ExternalLink, Pencil, X } from "lucide-react";
 
 /* ──────────────────────────────────────────────────────────────────
+   Helper: convert hex → "r, g, b" string for use in rgba()
+   ────────────────────────────────────────────────────────────────── */
+function hexToRgb(hex: string): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.slice(0, 2), 16);
+  const g = parseInt(c.slice(2, 4), 16);
+  const b = parseInt(c.slice(4, 6), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
+/* ──────────────────────────────────────────────────────────────────
    Static Preview
    ────────────────────────────────────────────────────────────────── */
 
@@ -29,24 +40,19 @@ function getPreviewStyle(tag: string): { bg: string; accent: string; glow: strin
 }
 
 function StaticPreview({ project }: { project: ProjectData }) {
-  const { bg, accent, glow } = getPreviewStyle(project.tag);
+  const { bg, accent } = getPreviewStyle(project.tag);
   let hostname = project.url;
   try { hostname = new URL(project.url).hostname; } catch { /* noop */ }
   return (
     <div className="static-preview" style={{ background: bg }}>
       <div className="static-preview__grid" style={{ "--sp-accent": accent } as React.CSSProperties} />
-      <div className="static-preview__glow" style={{ background: glow }} />
       <div className="static-preview__content">
         <div className="static-preview__domain" style={{ color: accent }}>{hostname}</div>
         <div className="static-preview__title" style={{ color: accent }}>{project.title}</div>
         <div className="static-preview__mock-ui" style={{ color: accent }}>
-          <div className="static-preview__mock-nav">
-            <span /><span /><span /><span />
-          </div>
+          <div className="static-preview__mock-nav"><span /><span /><span /><span /></div>
           <div className="static-preview__mock-hero" />
-          <div className="static-preview__mock-cards">
-            <div /><div /><div />
-          </div>
+          <div className="static-preview__mock-cards"><div /><div /><div /></div>
         </div>
       </div>
       <div className="static-preview__live" style={{ color: accent }}>
@@ -70,7 +76,6 @@ export interface ProjectData {
 }
 
 const ALL_PROJECTS: ProjectData[] = [
-  // === FLAGSHIP / HIGH-PROFILE ===
   {
     title: "1ST YOUTH AI LITERACY PROGRAM IN US HISTORY",
     url: "https://zenai.world",
@@ -81,7 +86,7 @@ const ALL_PROJECTS: ProjectData[] = [
   {
     title: "BOYS & GIRLS CLUBS × ZEN",
     url: "https://bgcgw-cot.lovable.app",
-    description: "Official AI literacy partnership with Boys & Girls Clubs of Greater Washington — bringing ZEN AI Co.'s curriculum to communities across the DMV. Building AI education for the next generation.",
+    description: "Official AI literacy partnership with Boys & Girls Clubs of Greater Washington — bringing ZEN AI Co.'s curriculum to communities across the DMV.",
     tag: "partnership · youth",
     stats: [{ num: "30K", label: "National Members" }, { num: "5K+", label: "Clubs" }],
   },
@@ -133,33 +138,31 @@ const ALL_PROJECTS: ProjectData[] = [
     description: "Medical coding toolkit — encrypt, decode, and manage clinical workflows with precision.",
     tag: "healthcare · automation",
   },
-  // === ZEN AI LITERACY PROGRAM TOOLS ===
   {
     title: "PROMPT PLAYGROUND",
     url: "https://terminalz.lovable.app",
-    description: "Terminal-style AI prompt exploration tool built for ZEN AI Co.'s curriculum — used by Pioneers (students ages 11–18) in the first Youth AI Literacy Program in US history to gain hands-on fluency with AI.",
+    description: "Terminal-style AI prompt exploration tool built for ZEN AI Co.'s curriculum — used by Pioneers ages 11–18 in the first Youth AI Literacy Program in US history.",
     tag: "zen ai · education · module 1",
     stats: [{ num: "Ages", label: "11–18" }, { num: "Module", label: "1 Tool" }],
   },
   {
     title: "PROMPT A PLANET",
     url: "https://prompt-a-planet-forge.lovable.app",
-    description: "World-building AI tool from ZEN AI Co.'s Pioneer curriculum — students generate entire planets, ecosystems, and environments powered by nano-banana pro 2, DALL·E 3, GPT-IMAGE-1.5, FLUX, and more.",
+    description: "World-building AI tool from ZEN AI Co.'s Pioneer curriculum — students generate entire planets and ecosystems powered by DALL·E 3, GPT-IMAGE-1.5, FLUX, and more.",
     tag: "zen ai · world-building · ai-literacy",
     stats: [{ num: "Multi", label: "AI Models" }, { num: "Pioneer", label: "Curriculum" }],
   },
   {
     title: "PROMPT A PROTOTYPE",
     url: "https://protozen.lovable.app",
-    description: "Rapid-prototype AI tool for ZEN AI Pioneers — generates myriad hyper-detailed images and design concepts powered by nano-banana pro 2, DALL·E 3, GPT-IMAGE-1.5, FLUX, and more. Students build real AI intuition from day one.",
+    description: "Rapid-prototype AI tool for ZEN AI Pioneers — generates hyper-detailed images and design concepts. Students build real AI intuition from day one.",
     tag: "zen ai · prototyping · ai-literacy",
     stats: [{ num: "DALL·E 3", label: "Powered" }, { num: "FLUX", label: "+ More" }],
   },
-  // === PUBLICATIONS ===
   {
     title: "ZEN WEEKLY",
     url: "https://www.zenai.world/zenweekly",
-    description: "One of the earliest ZEN AI Co. platforms — our flagship publication launched in 2023. The definitive weekly dispatch on AI literacy, youth tech, and the frontier of human-machine collaboration. 20,000+ subscribers across all platforms and channels.",
+    description: "Our flagship publication — the definitive weekly dispatch on AI literacy, youth tech, and the frontier of human-machine collaboration. 20,000+ subscribers.",
     tag: "publication · zen ai · since 2023",
     stats: [{ num: "20K+", label: "Subscribers" }, { num: "2023", label: "Est." }, { num: "Weekly", label: "Cadence" }],
   },
@@ -208,19 +211,6 @@ const ALL_PROJECTS: ProjectData[] = [
 ];
 
 /* ──────────────────────────────────────────────────────────────────
-   Categories
-   ────────────────────────────────────────────────────────────────── */
-
-const CATEGORIES = [
-  { id: "flagship",    label: "Flagship Impact",   accent: "#00d4ff", icon: "◈", indices: [0, 1, 2] },
-  { id: "curriculum",  label: "AI Curriculum",      accent: "#c084fc", icon: "⬡", indices: [9, 10, 11] },
-  { id: "publication", label: "Publications",        accent: "#fbbf24", icon: "⊕", indices: [12] },
-  { id: "healthcare",  label: "Healthcare Tech",     accent: "#34d399", icon: "⊞", indices: [7, 8] },
-  { id: "creative",    label: "Creative Lab",        accent: "#fb923c", icon: "◎", indices: [13, 14, 15, 16] },
-  { id: "platforms",   label: "Platforms & Tools",  accent: "#60a5fa", icon: "▣", indices: [3, 4, 5, 6, 17, 18, 19] },
-] as const;
-
-/* ──────────────────────────────────────────────────────────────────
    Helpers
    ────────────────────────────────────────────────────────────────── */
 
@@ -228,14 +218,10 @@ const GLYPHS = "01アイウエオカキクケコ∷∵∴⊕⊗※÷≈≡∞";
 const LS_KEY = "spotlight_projects_edits";
 
 function scrambleText(text: string, progress: number): string {
-  return text
-    .split("")
-    .map((ch, i) => {
-      if (ch === " ") return " ";
-      const threshold = (i / text.length) * 1.2;
-      return progress > threshold ? ch : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-    })
-    .join("");
+  return text.split("").map((ch, i) => {
+    if (ch === " ") return " ";
+    return progress > i / text.length ? ch : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+  }).join("");
 }
 
 function loadEdits(): Record<number, Partial<ProjectData>> {
@@ -244,7 +230,6 @@ function loadEdits(): Record<number, Partial<ProjectData>> {
 function saveEdits(edits: Record<number, Partial<ProjectData>>) {
   localStorage.setItem(LS_KEY, JSON.stringify(edits));
 }
-
 function getHostname(url: string): string {
   try { return new URL(url).hostname; } catch { return url; }
 }
@@ -254,19 +239,12 @@ function getHostname(url: string): string {
    ────────────────────────────────────────────────────────────────── */
 
 function EditModal({
-  project,
-  onSave,
-  onClose,
-}: {
-  project: ProjectData;
-  onSave: (data: Partial<ProjectData>) => void;
-  onClose: () => void;
-}) {
+  project, onSave, onClose,
+}: { project: ProjectData; onSave: (d: Partial<ProjectData>) => void; onClose: () => void }) {
   const [title, setTitle] = useState(project.title);
   const [description, setDescription] = useState(project.description);
   const [tag, setTag] = useState(project.tag);
   const [url, setUrl] = useState(project.url);
-
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={onClose}>
       <div className="glass-card w-[90vw] max-w-md p-6" onClick={(e) => e.stopPropagation()}>
@@ -279,9 +257,7 @@ function EditModal({
           <textarea className="cmd-textarea min-h-[60px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
           <input className="cmd-input" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Tag" />
           <input className="cmd-input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL" />
-          <button className="cmd-submit" onClick={() => { onSave({ title, description, tag, url }); onClose(); }}>
-            Save Changes
-          </button>
+          <button className="cmd-submit" onClick={() => { onSave({ title, description, tag, url }); onClose(); }}>Save Changes</button>
         </div>
       </div>
     </div>
@@ -289,108 +265,138 @@ function EditModal({
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   Project Tile  (hover-expand card)
+   Liquid Glass Card
    ────────────────────────────────────────────────────────────────── */
 
-function ProjectTile({
-  project,
-  globalIndex,
-  accent,
-  isFlagship,
-  editMode,
-  onEdit,
+function GlassCard({
+  project, index, editMode, onEdit,
 }: {
   project: ProjectData;
-  globalIndex: number;
-  accent: string;
-  isFlagship: boolean;
+  index: number;
   editMode: boolean;
   onEdit: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [titleText, setTitleText] = useState(project.title);
+  const [hovered, setHovered] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
+  const [displayTitle, setDisplayTitle] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
+  const wrapRef = useRef<HTMLDivElement>(null);
 
-  const handleEnter = () => {
-    setOpen(true);
+  const { accent } = getPreviewStyle(project.tag);
+  const accentRgb = hexToRgb(accent);
+  const hostname = getHostname(project.url);
+
+  const handleEnter = useCallback(() => {
+    setHovered(true);
     let frame = 0;
     const total = 18;
     clearInterval(scrambleRef.current);
     scrambleRef.current = setInterval(() => {
       frame++;
-      setTitleText(scrambleText(project.title, frame / total));
-      if (frame >= total) {
-        setTitleText(project.title);
-        clearInterval(scrambleRef.current);
-      }
+      setDisplayTitle(scrambleText(project.title, frame / total));
+      if (frame >= total) { setDisplayTitle(project.title); clearInterval(scrambleRef.current); }
     }, 28);
-  };
+  }, [project.title]);
 
-  const handleLeave = () => {
-    setOpen(false);
+  const handleLeave = useCallback(() => {
+    setHovered(false);
     clearInterval(scrambleRef.current);
-    setTitleText(project.title);
-  };
+    setDisplayTitle(project.title);
+  }, [project.title]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const r = wrapRef.current?.getBoundingClientRect();
+    if (r) setMousePos({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
+  }, []);
 
   useEffect(() => () => clearInterval(scrambleRef.current), []);
 
-  const hostname = getHostname(project.url);
+  const cssVars = {
+    "--gc-accent":     accent,
+    "--gc-accent-rgb": accentRgb,
+  } as React.CSSProperties;
 
   return (
     <div
-      className={`project-tile${open ? " project-tile--open" : ""}${isFlagship ? " project-tile--flagship" : ""}`}
-      style={{ "--tile-accent": accent } as React.CSSProperties}
+      ref={wrapRef}
+      className={`gc-wrap${hovered ? " gc-wrap--hovered" : ""}`}
+      style={cssVars}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
+      onMouseMove={handleMouseMove}
+      onClick={() => window.open(project.url, "_blank", "noopener,noreferrer")}
     >
-      {/* Corner brackets — visible on hover */}
-      <span className="project-tile__br project-tile__br--tl" />
-      <span className="project-tile__br project-tile__br--tr" />
-      <span className="project-tile__br project-tile__br--bl" />
-      <span className="project-tile__br project-tile__br--br" />
+      {/* ── Glass face (fixed height, always visible) ── */}
+      <div className="gc-face">
+        {/* Mouse-tracking prismatic light spot */}
+        <div
+          className="gc-face__light"
+          style={{
+            background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 40%, transparent 70%)`,
+          }}
+        />
 
-      {/* Header row */}
-      <div className="project-tile__header">
-        <span className="project-tile__index">{String(globalIndex + 1).padStart(2, "0")}</span>
-        <span className="project-tile__tag">{project.tag}</span>
+        {/* Holographic sweep on hover */}
+        <div className="gc-face__sweep" />
+
+        {/* Prismatic edge shimmer */}
+        <div className="gc-face__shimmer" />
+
+        {/* Index */}
+        <span className="gc-face__idx">{String(index + 1).padStart(2, "0")}</span>
+
+        {/* Tag */}
+        <span className="gc-face__tag">{project.tag}</span>
+
+        {/* Title */}
+        <h3 className="gc-face__title">{displayTitle}</h3>
+
+        {/* Corner brackets */}
+        <span className="gc-br gc-br--tl" />
+        <span className="gc-br gc-br--tr" />
+        <span className="gc-br gc-br--bl" />
+        <span className="gc-br gc-br--br" />
+
+        {/* External link icon hint */}
+        <ExternalLink className="gc-face__ext" />
       </div>
 
-      {/* Title */}
-      <h3 className="project-tile__title">{titleText}</h3>
+      {/* ── Expanded hologram panel (drops down absolutely) ── */}
+      <div className="gc-panel">
+        <div className="gc-panel__inner">
+          {/* Holographic grid overlay */}
+          <div className="gc-panel__holo-grid" />
 
-      {/* Expand: grid-template-rows trick for smooth animation */}
-      <div className="project-tile__expand-outer">
-        <div className="project-tile__expand-inner">
           {/* Preview thumbnail */}
-          <div className="project-tile__preview-wrap">
+          <div className="gc-panel__preview">
             <StaticPreview project={project} />
           </div>
 
           {/* Domain */}
-          <div className="project-tile__domain">{hostname}</div>
+          <div className="gc-panel__domain">{hostname}</div>
 
           {/* Description */}
-          <p className="project-tile__desc">{project.description}</p>
+          <p className="gc-panel__desc">{project.description}</p>
 
           {/* Stats */}
-          {project.stats && (
-            <div className="project-tile__stats">
+          {project.stats && project.stats.length > 0 && (
+            <div className="gc-panel__stats">
               {project.stats.map((s) => (
-                <div key={s.label} className="project-tile__stat">
-                  <span className="project-tile__stat-num">{s.num}</span>
-                  <span className="project-tile__stat-label">{s.label}</span>
+                <div key={s.label} className="gc-panel__stat">
+                  <span className="gc-panel__stat-num">{s.num}</span>
+                  <span className="gc-panel__stat-label">{s.label}</span>
                 </div>
               ))}
             </div>
           )}
 
           {/* Actions */}
-          <div className="project-tile__actions">
+          <div className="gc-panel__actions">
             <a
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="cta-btn project-tile__cta"
+              className="gc-panel__cta"
               onClick={(e) => e.stopPropagation()}
             >
               Open Live
@@ -398,63 +404,14 @@ function ProjectTile({
             </a>
             {editMode && (
               <button
+                className="gc-panel__edit"
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                className="cta-btn-muted"
               >
                 <Pencil className="w-3 h-3" />
-                Edit
               </button>
             )}
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   Project Group
-   ────────────────────────────────────────────────────────────────── */
-
-function ProjectGroup({
-  category,
-  projects,
-  editMode,
-  onEdit,
-}: {
-  category: typeof CATEGORIES[number];
-  projects: ProjectData[];
-  editMode: boolean;
-  onEdit: (globalIndex: number) => void;
-}) {
-  const isFlagship = category.id === "flagship";
-
-  return (
-    <div
-      className="project-group"
-      style={{ "--group-accent": category.accent } as React.CSSProperties}
-    >
-      {/* Group header */}
-      <div className="project-group__header">
-        <div className="project-group__accent-bar" />
-        <span className="project-group__icon">{category.icon}</span>
-        <span className="project-group__label">{category.label}</span>
-        <span className="project-group__count">{category.indices.length}</span>
-      </div>
-
-      {/* Tile grid */}
-      <div className={`project-group__grid${isFlagship ? " project-group__grid--flagship" : ""}`}>
-        {category.indices.map((globalIdx) => (
-          <ProjectTile
-            key={globalIdx}
-            project={projects[globalIdx]}
-            globalIndex={globalIdx}
-            accent={category.accent}
-            isFlagship={isFlagship}
-            editMode={editMode}
-            onEdit={() => onEdit(globalIdx)}
-          />
-        ))}
       </div>
     </div>
   );
@@ -481,7 +438,6 @@ export default function ProjectSpotlight({ editMode = false }: { editMode?: bool
 
   return (
     <section className="spotlight-section">
-
       {/* Header */}
       <div className="spotlight-header">
         <span className="tag-label">Portfolio — 50+ Projects · 5 Fortune 500 Partnerships</span>
@@ -491,15 +447,15 @@ export default function ProjectSpotlight({ editMode = false }: { editMode?: bool
         </p>
       </div>
 
-      {/* Category groups */}
-      <div className="project-grid">
-        {CATEGORIES.map((cat) => (
-          <ProjectGroup
-            key={cat.id}
-            category={cat}
-            projects={projects}
+      {/* Flat 4×5 liquid glass grid */}
+      <div className="gc-grid">
+        {projects.map((project, i) => (
+          <GlassCard
+            key={i}
+            project={project}
+            index={i}
             editMode={editMode}
-            onEdit={(idx) => setEditingIndex(idx)}
+            onEdit={() => setEditingIndex(i)}
           />
         ))}
       </div>
