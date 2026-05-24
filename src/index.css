@@ -4491,10 +4491,10 @@
 @media (max-width: 760px)  { .gc-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px)  { .gc-grid { grid-template-columns: 1fr; } }
 
-/* ── Card wrapper: fixed height so grid rows are uniform ── */
+/* ── Card wrapper: taller so desc + stats always show ── */
 .gc-wrap {
   position: relative;
-  height: 172px;
+  height: 230px;
   cursor: pointer;
   user-select: none;
 }
@@ -4508,7 +4508,7 @@
   inset: 0;
   overflow: hidden;
   border-radius: 12px;
-  padding: 1rem 1.1rem 0.9rem;
+  padding: 0.85rem 1rem 0.85rem;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -4545,17 +4545,15 @@
     0 0 40px rgba(var(--gc-accent-rgb), 0.12);
 }
 
-/* ── Mouse-tracking prismatic light spot ── */
-.gc-face__light {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.22s ease;
-  border-radius: inherit;
+/* ── Top row: index + ext icon ── */
+.gc-face__toprow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.2rem;
+  position: relative;
+  z-index: 4;
 }
-.gc-wrap--hovered .gc-face__light { opacity: 1; }
 
 /* ── Holographic prismatic sweep on hover ── */
 .gc-face__sweep {
@@ -4610,66 +4608,106 @@
 
 /* ── Card content ── */
 .gc-face__idx {
-  position: relative;
-  z-index: 4;
   font-family: "DM Mono", monospace;
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   letter-spacing: 0.14em;
-  color: rgba(255,255,255,0.22);
-  display: block;
-  margin-bottom: 0.2rem;
+  color: rgba(255,255,255,0.2);
 }
 
 .gc-face__tag {
   position: relative;
   z-index: 4;
   font-family: "DM Mono", monospace;
-  font-size: 0.5rem;
+  font-size: 0.46rem;
   letter-spacing: 0.1em;
   color: var(--gc-accent, #94a3b8);
   text-transform: uppercase;
-  opacity: 0.75;
+  opacity: 0.7;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.3rem;
 }
 
 .gc-face__title {
   position: relative;
   z-index: 4;
   font-family: "DM Mono", monospace;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  line-height: 1.28;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
   color: rgba(255,255,255,0.92);
   text-transform: uppercase;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin: 0;
-  flex: 1;
+  margin: 0 0 0.35rem;
   transition: color 0.22s ease;
 }
 .gc-wrap--hovered .gc-face__title { color: #fff; }
 
-/* External link icon hint */
-.gc-face__ext {
-  position: absolute;
-  bottom: 0.75rem;
-  right: 0.85rem;
-  width: 0.7rem;
-  height: 0.7rem;
-  color: var(--gc-accent, #94a3b8);
-  opacity: 0;
-  transform: translateY(4px) scale(0.8);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+/* Description — always visible, clamped */
+.gc-face__desc {
+  position: relative;
   z-index: 4;
+  font-family: "DM Mono", monospace;
+  font-size: 0.48rem;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.42);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0 0 0.4rem;
+  flex: 1;
+  transition: color 0.2s ease;
 }
-.gc-wrap--hovered .gc-face__ext { opacity: 0.7; transform: none; }
+.gc-wrap--hovered .gc-face__desc { color: rgba(255,255,255,0.6); }
+
+/* Stats row — always visible */
+.gc-face__stats {
+  display: flex;
+  gap: 0.6rem;
+  position: relative;
+  z-index: 4;
+  flex-shrink: 0;
+}
+.gc-face__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.gc-face__stat-num {
+  font-family: "DM Mono", monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--gc-accent, #94a3b8);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.gc-face__stat-label {
+  font-family: "DM Mono", monospace;
+  font-size: 0.38rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  line-height: 1;
+}
+
+/* External link icon — in toprow */
+.gc-face__ext {
+  width: 0.65rem;
+  height: 0.65rem;
+  color: var(--gc-accent, #94a3b8);
+  opacity: 0.3;
+  transition: opacity 0.22s ease;
+  flex-shrink: 0;
+}
+.gc-wrap--hovered .gc-face__ext { opacity: 0.75; }
 
 /* ── Corner brackets ── */
 .gc-br {
@@ -4704,31 +4742,28 @@
 .gc-br--br::after  { bottom: 0; right: 0; }
 .gc-wrap--hovered .gc-br { opacity: 0.72; }
 
-/* ── Expanded hologram panel ── */
+/* ── Hover panel: domain + CTA only (no backdrop-filter = no GPU hit) ── */
 .gc-panel {
   position: absolute;
-  top: 172px;
+  top: 230px;
   left: 0;
   right: 0;
   max-height: 0;
   overflow: hidden;
   z-index: 79;
 
-  backdrop-filter: blur(28px) saturate(1.8);
-  -webkit-backdrop-filter: blur(28px) saturate(1.8);
-  background: rgba(6, 11, 24, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  /* Solid background — no backdrop-filter */
+  background: rgba(8, 14, 30, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-top: none;
-  border-radius: 0 0 14px 14px;
-  box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.7),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7);
 
-  transition: max-height 0.48s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .gc-wrap--hovered .gc-panel {
-  max-height: 500px;
-  border-color: rgba(var(--gc-accent-rgb), 0.22);
+  max-height: 120px;
+  border-color: rgba(var(--gc-accent-rgb), 0.2);
 }
 
 /* Holographic background grid inside panel */
@@ -4747,66 +4782,20 @@
 .gc-panel__inner {
   position: relative;
   z-index: 1;
-  padding: 0.9rem 1.1rem 1.2rem;
-}
-
-/* Preview thumbnail */
-.gc-panel__preview {
-  height: 108px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 0.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  flex-shrink: 0;
+  padding: 0.65rem 1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 /* Domain */
 .gc-panel__domain {
   font-family: "DM Mono", monospace;
-  font-size: 0.56rem;
-  letter-spacing: 0.12em;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
   color: var(--gc-accent, #94a3b8);
   text-transform: uppercase;
-  opacity: 0.8;
-  margin-bottom: 0.35rem;
-}
-
-/* Description */
-.gc-panel__desc {
-  font-size: 0.68rem;
-  line-height: 1.58;
-  color: rgba(255,255,255,0.72);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin: 0 0 0.65rem;
-}
-
-/* Stats */
-.gc-panel__stats {
-  display: flex;
-  gap: 0.8rem;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-}
-.gc-panel__stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-.gc-panel__stat-num {
-  font-family: "DM Mono", monospace;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--gc-accent, #94a3b8);
-  letter-spacing: 0.02em;
-}
-.gc-panel__stat-label {
-  font-size: 0.52rem;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  opacity: 0.7;
 }
 
 /* Actions */

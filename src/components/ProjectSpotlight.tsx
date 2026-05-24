@@ -276,11 +276,10 @@ function GlassCard({
   editMode: boolean;
   onEdit: () => void;
 }) {
+  /* No mousePos state — eliminates per-mousemove re-renders on 20 cards */
   const [hovered, setHovered] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
   const [displayTitle, setDisplayTitle] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
-  const wrapRef = useRef<HTMLDivElement>(null);
 
   const { accent } = getPreviewStyle(project.tag);
   const accentRgb = hexToRgb(accent);
@@ -289,13 +288,13 @@ function GlassCard({
   const handleEnter = useCallback(() => {
     setHovered(true);
     let frame = 0;
-    const total = 18;
+    const total = 14;
     clearInterval(scrambleRef.current);
     scrambleRef.current = setInterval(() => {
       frame++;
       setDisplayTitle(scrambleText(project.title, frame / total));
       if (frame >= total) { setDisplayTitle(project.title); clearInterval(scrambleRef.current); }
-    }, 28);
+    }, 32);
   }, [project.title]);
 
   const handleLeave = useCallback(() => {
@@ -303,11 +302,6 @@ function GlassCard({
     clearInterval(scrambleRef.current);
     setDisplayTitle(project.title);
   }, [project.title]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const r = wrapRef.current?.getBoundingClientRect();
-    if (r) setMousePos({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
-  }, []);
 
   useEffect(() => () => clearInterval(scrambleRef.current), []);
 
@@ -318,32 +312,24 @@ function GlassCard({
 
   return (
     <div
-      ref={wrapRef}
       className={`gc-wrap${hovered ? " gc-wrap--hovered" : ""}`}
       style={cssVars}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
-      onMouseMove={handleMouseMove}
       onClick={() => window.open(project.url, "_blank", "noopener,noreferrer")}
     >
-      {/* ── Glass face (fixed height, always visible) ── */}
+      {/* ── Glass face — always visible ── */}
       <div className="gc-face">
-        {/* Mouse-tracking prismatic light spot */}
-        <div
-          className="gc-face__light"
-          style={{
-            background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 40%, transparent 70%)`,
-          }}
-        />
+        {/* Holographic sweep on hover (CSS-only, no JS) */}
+        <div className="gc-face__sweep" aria-hidden />
+        {/* Top-edge shimmer */}
+        <div className="gc-face__shimmer" aria-hidden />
 
-        {/* Holographic sweep on hover */}
-        <div className="gc-face__sweep" />
-
-        {/* Prismatic edge shimmer */}
-        <div className="gc-face__shimmer" />
-
-        {/* Index */}
-        <span className="gc-face__idx">{String(index + 1).padStart(2, "0")}</span>
+        {/* Top row: index + external link */}
+        <div className="gc-face__toprow">
+          <span className="gc-face__idx">{String(index + 1).padStart(2, "0")}</span>
+          <ExternalLink className="gc-face__ext" aria-hidden />
+        </div>
 
         {/* Tag */}
         <span className="gc-face__tag">{project.tag}</span>
@@ -351,46 +337,33 @@ function GlassCard({
         {/* Title */}
         <h3 className="gc-face__title">{displayTitle}</h3>
 
+        {/* Description — always visible, clamped to 2 lines */}
+        <p className="gc-face__desc">{project.description}</p>
+
+        {/* Stats row — always visible */}
+        {project.stats && project.stats.length > 0 && (
+          <div className="gc-face__stats">
+            {project.stats.slice(0, 3).map((s) => (
+              <div key={s.label} className="gc-face__stat">
+                <span className="gc-face__stat-num">{s.num}</span>
+                <span className="gc-face__stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Corner brackets */}
         <span className="gc-br gc-br--tl" />
         <span className="gc-br gc-br--tr" />
         <span className="gc-br gc-br--bl" />
         <span className="gc-br gc-br--br" />
-
-        {/* External link icon hint */}
-        <ExternalLink className="gc-face__ext" />
       </div>
 
-      {/* ── Expanded hologram panel (drops down absolutely) ── */}
+      {/* ── Hover panel: domain + live CTA ── */}
       <div className="gc-panel">
         <div className="gc-panel__inner">
-          {/* Holographic grid overlay */}
-          <div className="gc-panel__holo-grid" />
-
-          {/* Preview thumbnail */}
-          <div className="gc-panel__preview">
-            <StaticPreview project={project} />
-          </div>
-
-          {/* Domain */}
+          <div className="gc-panel__holo-grid" aria-hidden />
           <div className="gc-panel__domain">{hostname}</div>
-
-          {/* Description */}
-          <p className="gc-panel__desc">{project.description}</p>
-
-          {/* Stats */}
-          {project.stats && project.stats.length > 0 && (
-            <div className="gc-panel__stats">
-              {project.stats.map((s) => (
-                <div key={s.label} className="gc-panel__stat">
-                  <span className="gc-panel__stat-num">{s.num}</span>
-                  <span className="gc-panel__stat-label">{s.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Actions */}
           <div className="gc-panel__actions">
             <a
               href={project.url}

@@ -9,6 +9,7 @@ type TickerItem = TickerStat | TickerLink;
 export default function LiveMetricsTicker() {
   const [fps,    setFps]    = useState(60);
   const [uptime, setUptime] = useState(0);
+  const [loadMs, setLoadMs] = useState<number | null>(null);
   const frames  = useRef<number[]>([]);
   const rafRef  = useRef<number>(0);
 
@@ -40,30 +41,41 @@ export default function LiveMetricsTicker() {
     return () => clearInterval(id);
   }, []);
 
+  /* One-shot: real page load time from Navigation Timing API */
+  useEffect(() => {
+    const measure = () => {
+      const entries = performance.getEntriesByType("navigation");
+      if (entries.length > 0) {
+        const nav = entries[0] as PerformanceNavigationTiming;
+        const ms = Math.round(nav.loadEventEnd - nav.startTime);
+        if (ms > 0) setLoadMs(ms);
+      }
+    };
+    if (document.readyState === "complete") {
+      measure();
+    } else {
+      window.addEventListener("load", measure, { once: true });
+    }
+  }, []);
+
   const mm = String(Math.floor(uptime / 60)).padStart(2, "0");
   const ss = String(uptime % 60).padStart(2, "0");
 
   const items: TickerItem[] = [
-    { kind: "stat", key: "FPS",               val: `${fps}`,                  warn: fps < 50 },
-    { kind: "stat", key: "PARTICLES",          val: "11,000"                                  },
-    { kind: "stat", key: "CANVAS CTX",         val: "3 ACTIVE"                                },
-    { kind: "stat", key: "FLOAT32 BUFFERS",    val: "4 × 11K"                                 },
-    { kind: "stat", key: "BUNDLE",             val: "< 200 KB GZIP"                           },
-    { kind: "stat", key: "EXTERNAL REQUESTS",  val: "0"                                       },
+    { kind: "stat", key: "FPS",    val: `${fps}`,                                   warn: fps < 50 },
     { kind: "link",
       prefix:   "1ST YOUTH AI LITERACY PROGRAM IN UNITED STATES HISTORY",
       sep:      "·",
       linkText: "ZENAI.WORLD",
-      href:     "https://zenai.world"                                                          },
-    { kind: "stat", key: "STACK",              val: "REACT 18 · VITE 5 · TS"                  },
-    { kind: "stat", key: "DEPLOY",             val: "VERCEL · MAIN"                           },
+      href:     "https://zenai.world"                                                               },
+    { kind: "stat", key: "LOAD",   val: loadMs != null ? `${loadMs}ms` : "—"                      },
     { kind: "link",
       prefix:   "COMMAND YOUR AGENTIC ARSENAL",
       sep:      "|",
       linkText: "ARSENAL.WORLD",
-      href:     "https://arsenal.world"                                                        },
-    { kind: "stat", key: "UPTIME",             val: `${mm}:${ss}`                             },
-    { kind: "stat", key: "STATUS",             val: "NOMINAL"                                 },
+      href:     "https://arsenal.world"                                                             },
+    { kind: "stat", key: "UPTIME", val: `${mm}:${ss}`                                             },
+    { kind: "stat", key: "STATUS", val: "NOMINAL"                                                  },
   ];
 
   return (
