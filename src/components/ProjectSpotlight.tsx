@@ -318,73 +318,76 @@ function GlassCard({
       onMouseLeave={handleLeave}
       onClick={() => window.open(project.url, "_blank", "noopener,noreferrer")}
     >
-      {/* ── Glass face — always visible ── */}
       <div className="gc-face">
-        {/* Holographic sweep on hover (CSS-only, no JS) */}
+        {/* Accent top bar */}
+        <div className="gc-face__bar" aria-hidden />
+        {/* Holographic prismatic sweep */}
         <div className="gc-face__sweep" aria-hidden />
-        {/* Top-edge shimmer */}
+        {/* Top-edge shimmer line */}
         <div className="gc-face__shimmer" aria-hidden />
+        {/* Ambient accent glow halo */}
+        <div className="gc-face__glow" aria-hidden />
 
-        {/* Top row: index + external link */}
-        <div className="gc-face__toprow">
-          <span className="gc-face__idx">{String(index + 1).padStart(2, "0")}</span>
-          <ExternalLink className="gc-face__ext" aria-hidden />
+        {/* ── Main body ── */}
+        <div className="gc-face__body">
+          {/* Top row: index · tag · ext icon */}
+          <div className="gc-face__toprow">
+            <span className="gc-face__idx">{String(index + 1).padStart(2, "0")}</span>
+            <span className="gc-face__tag">{project.tag}</span>
+            <ExternalLink className="gc-face__ext" aria-hidden />
+          </div>
+
+          {/* Title */}
+          <h3 className="gc-face__title">{displayTitle}</h3>
+
+          {/* Description */}
+          <p className="gc-face__desc">{project.description}</p>
+
+          {/* Stats */}
+          {project.stats && project.stats.length > 0 && (
+            <div className="gc-face__stats">
+              {project.stats.slice(0, 3).map((s) => (
+                <div key={s.label} className="gc-face__stat">
+                  <span className="gc-face__stat-num">{s.num}</span>
+                  <span className="gc-face__stat-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Tag */}
-        <span className="gc-face__tag">{project.tag}</span>
-
-        {/* Title */}
-        <h3 className="gc-face__title">{displayTitle}</h3>
-
-        {/* Description — always visible, clamped to 2 lines */}
-        <p className="gc-face__desc">{project.description}</p>
-
-        {/* Stats row — always visible */}
-        {project.stats && project.stats.length > 0 && (
-          <div className="gc-face__stats">
-            {project.stats.slice(0, 3).map((s) => (
-              <div key={s.label} className="gc-face__stat">
-                <span className="gc-face__stat-num">{s.num}</span>
-                <span className="gc-face__stat-label">{s.label}</span>
-              </div>
-            ))}
+        {/* ── Hover reveal — slides up from bottom ── */}
+        <div className="gc-face__reveal">
+          <div className="gc-face__reveal-inner">
+            <span className="gc-face__domain">{hostname}</span>
+            <div className="gc-face__actions">
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="gc-face__cta"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Open Live
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              {editMode && (
+                <button
+                  className="gc-panel__edit"
+                  onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
-        )}
+        </div>
 
         {/* Corner brackets */}
         <span className="gc-br gc-br--tl" />
         <span className="gc-br gc-br--tr" />
         <span className="gc-br gc-br--bl" />
         <span className="gc-br gc-br--br" />
-      </div>
-
-      {/* ── Hover panel: domain + live CTA ── */}
-      <div className="gc-panel">
-        <div className="gc-panel__inner">
-          <div className="gc-panel__holo-grid" aria-hidden />
-          <div className="gc-panel__domain">{hostname}</div>
-          <div className="gc-panel__actions">
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="gc-panel__cta"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Open Live
-              <ExternalLink className="w-3 h-3" />
-            </a>
-            {editMode && (
-              <button
-                className="gc-panel__edit"
-                onClick={(e) => { e.stopPropagation(); onEdit(); }}
-              >
-                <Pencil className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
