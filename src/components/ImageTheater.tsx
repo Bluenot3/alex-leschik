@@ -201,6 +201,84 @@ function TheaterCard({
   );
 }
 
+/* ── Sigil cipher strip ─────────────────────────────────── */
+const SIGIL_POOL = "◈∷⊕≡∞ΣΩΔ⊗⊘⊙⊚≈◉◇✦⌘⌬⌾⟨⟩∂∇√π∫∑∏αβγδεφψλμξ∴∵≠≜⊞⊟";
+
+function RunningGlyphs({ count = 28 }: { count?: number }) {
+  const spanRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const slotRef = useRef(
+    Array.from({ length: count }, () => ({
+      idx:     Math.random() * SIGIL_POOL.length,
+      speed:   0.022 + Math.random() * 0.09,
+      locked:  false,
+      lockFor: 0,
+    }))
+  );
+
+  useEffect(() => {
+    let frame = 0;
+    let raf: number;
+    const tick = () => {
+      frame++;
+      const t = frame * 0.016;
+
+      slotRef.current.forEach((slot, i) => {
+        const el = spanRefs.current[i];
+        if (!el) return;
+
+        /* Sine-wave brightness sweeps left → right continuously */
+        const wave = Math.sin(t * 2.2 - i * 0.32) * 0.5 + 0.5;
+
+        if (slot.locked) {
+          slot.lockFor--;
+          if (slot.lockFor <= 0) {
+            slot.locked = false;
+            el.style.textShadow = "";
+          }
+          /* Locked glyph still pulses with wave */
+          const a = (0.72 + wave * 0.28).toFixed(3);
+          el.style.color = `rgba(0,212,255,${a})`;
+          return;
+        }
+
+        /* Advance index — update textContent every other frame */
+        slot.idx += slot.speed;
+        if (slot.idx >= SIGIL_POOL.length) slot.idx -= SIGIL_POOL.length;
+        if (frame % 2 === 0) el.textContent = SIGIL_POOL[Math.floor(slot.idx)];
+
+        /* Dim base + wave overlay */
+        const alpha = (0.14 + wave * 0.20).toFixed(3);
+        el.style.color = `rgba(160,200,255,${alpha})`;
+
+        /* Random lock: cyan glow flash */
+        if (Math.random() < 0.005) {
+          slot.locked  = true;
+          slot.lockFor = 30 + Math.floor(Math.random() * 50);
+          el.style.textShadow = "0 0 7px rgba(0,212,255,0.65), 0 0 18px rgba(0,212,255,0.22)";
+        }
+      });
+
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [count]);
+
+  return (
+    <div className="image-theater__sigils" aria-hidden>
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          ref={el => { spanRefs.current[i] = el; }}
+          className="image-theater__sigil"
+        >
+          {SIGIL_POOL[Math.floor(slotRef.current[i].idx)]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /* ── Glitch text scrambler ──────────────────────────────── */
 const GLYPHS = "0123456789アイウ∷≡⊕";
 function useScramble(value: string) {
@@ -327,11 +405,7 @@ export default function ImageTheater() {
         </button>
       </div>
 
-      <div className="image-theater__stack">
-        {["Canvas API", "CSS 3D Transforms", "requestAnimationFrame", "React Hooks", "Physics Simulation", "Procedural Generation"].map(t => (
-          <span key={t} className="image-theater__stack-chip">{t}</span>
-        ))}
-      </div>
+      <RunningGlyphs />
     </section>
   );
 }
