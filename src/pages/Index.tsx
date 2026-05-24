@@ -32,7 +32,8 @@ const ImageVortex = lazy(() => import("@/components/ImageVortex"));
 const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
 const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
 const SignalConstellation = lazy(() => import("@/components/SignalConstellation"));
-const ImageTheater = lazy(() => import("@/components/ImageTheater"));
+const ImageTheater        = lazy(() => import("@/components/ImageTheater"));
+const ArsenalShowcase     = lazy(() => import("@/components/ArsenalShowcase"));
 
 const SECTION_COUNT = 6;
 
@@ -289,6 +290,15 @@ export default function Index() {
             <ImageTheater />
           </Suspense>
         </div>
+
+        <CrypticDivider lines={3} label="// arsenal.world" />
+
+        <LazySection className="relative" rootMargin="400px 0px">
+          <CrypticBackground rows={10} speed={115} opacity={0.05} />
+          <Suspense fallback={<div style={{ minHeight: "680px" }} />}>
+            <ArsenalShowcase />
+          </Suspense>
+        </LazySection>
 
         <CrypticDivider lines={5} label="// opening the lab" />
 

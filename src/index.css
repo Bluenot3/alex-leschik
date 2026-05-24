@@ -5162,3 +5162,225 @@
   border-color: rgba(0, 212, 255, 0.2);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   ARSENAL SHOWCASE  — 3D parallax depth board
+   ═══════════════════════════════════════════════════════════════ */
+
+.arsenal-showcase {
+  position: relative;
+  padding: 5rem 1.5rem 4rem;
+  overflow: hidden;
+}
+
+/* Ambient radial glow */
+.arsenal-showcase::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 40%, rgba(0, 80, 200, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(0, 212, 255, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ── Header ── */
+.arsenal-showcase__hdr {
+  text-align: center;
+  margin-bottom: 3.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.arsenal-showcase__title {
+  margin: 0.35rem 0 0.5rem;
+  line-height: 1;
+}
+
+.arsenal-domain-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "DM Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: rgba(0, 212, 255, 0.85);
+  text-decoration: none;
+  text-shadow: 0 0 14px rgba(0, 212, 255, 0.5);
+  transition: color 0.22s ease, text-shadow 0.22s ease;
+}
+.arsenal-domain-link:hover {
+  color: #fff;
+  text-shadow: 0 0 24px rgba(0, 212, 255, 0.9), 0 0 48px rgba(0, 212, 255, 0.4);
+}
+
+/* ── Stage ── */
+.arsenal-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  height: 680px;
+}
+
+/* Scanlines */
+.arsenal-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.055) 3px,
+    rgba(0, 0, 0, 0.055) 4px
+  );
+}
+
+/* Floating watermark */
+.arsenal-stage__watermark {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  font-family: "DM Mono", monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  color: rgba(0, 212, 255, 0.08);
+  pointer-events: none;
+  z-index: 26;
+  user-select: none;
+}
+
+/* ── Cards ── */
+.arsenal-card {
+  display: block;
+  text-decoration: none;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  /* transform set via JS RAF — no CSS transition on transform by default */
+  transition: box-shadow 0.38s ease, filter 0.32s ease;
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.70),
+    0 2px 6px  rgba(0, 0, 0, 0.50);
+}
+
+.arsenal-card--active {
+  filter: brightness(1.14) saturate(1.08);
+  box-shadow:
+    0 0 0 2px hsl(var(--ac)),
+    0 0 28px hsla(var(--ac), 0.42),
+    0 0 60px hsla(var(--ac), 0.14),
+    0 28px 72px rgba(0, 0, 0, 0.85);
+}
+
+.arsenal-card__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+/* Corner brackets */
+.arb {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  z-index: 4;
+}
+.arsenal-card--active .arb { opacity: 1; }
+.arb--tl { top:  7px; left:  7px; border-top:  1.5px solid hsl(var(--ac)); border-left:  1.5px solid hsl(var(--ac)); }
+.arb--tr { top:  7px; right: 7px; border-top:  1.5px solid hsl(var(--ac)); border-right: 1.5px solid hsl(var(--ac)); }
+.arb--bl { bottom: 7px; left:  7px; border-bottom: 1.5px solid hsl(var(--ac)); border-left:  1.5px solid hsl(var(--ac)); }
+.arb--br { bottom: 7px; right: 7px; border-bottom: 1.5px solid hsl(var(--ac)); border-right: 1.5px solid hsl(var(--ac)); }
+
+/* Label strip — slides up on hover */
+.arsenal-card__meta {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 0.55rem 0.8rem 0.6rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 5;
+}
+.arsenal-card--active .arsenal-card__meta { transform: translateY(0); }
+
+.arsenal-card__lbl {
+  font-family: "DM Mono", monospace;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: hsl(var(--ac));
+  text-shadow: 0 0 8px hsla(var(--ac), 0.5);
+}
+.arsenal-card__sub {
+  font-family: "DM Mono", monospace;
+  font-size: 0.46rem;
+  letter-spacing: 0.11em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Top-edge pulse line (active card only) */
+.arsenal-card__pulse {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsla(var(--ac), 0.6) 20%,
+    hsl(var(--ac)) 50%,
+    hsla(var(--ac), 0.6) 80%,
+    transparent 100%
+  );
+  animation: arspulse 2.4s ease-in-out infinite;
+  z-index: 6;
+}
+@keyframes arspulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}
+
+/* ── Footer ── */
+.arsenal-showcase__foot {
+  text-align: center;
+  margin-top: 2.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Responsive ── */
+@media (max-width: 800px) {
+  .arsenal-stage {
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  /* Override inline absolute positioning on mobile */
+  .arsenal-card {
+    position: relative !important;
+    top:  auto !important;
+    left: auto !important;
+    width: auto !important;
+    transform: none !important;
+    transition: box-shadow 0.38s ease, filter 0.32s ease !important;
+  }
+  /* ARSENAL card spans full width */
+  .arsenal-card:first-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 480px) {
+  .arsenal-stage {
+    grid-template-columns: 1fr;
+  }
+  .arsenal-showcase { padding: 3.5rem 1rem 3rem; }
+}
+
