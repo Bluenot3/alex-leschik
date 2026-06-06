@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 
-const SESSION_KEY = "boot_v5";
-
 /**
  * Real-feel boot sequence:
  *  • Bayer 8×8 ordered dithering on a flowing field (no fake particles)
@@ -75,9 +73,7 @@ function tokClass(c?: Tok["c"]) {
 }
 
 export default function BootSequence() {
-  const [gone, setGone] = useState(() => {
-    try { return sessionStorage.getItem(SESSION_KEY) === "1"; } catch { return true; }
-  });
+  const [gone, setGone] = useState(false);
   const [exiting, setExiting] = useState(false);
   // Per-line revealed character count
   const [revealed, setRevealed] = useState<number[]>(() => SCRIPT.map(() => 0));
@@ -151,8 +147,6 @@ export default function BootSequence() {
   /* ── Type-on engine ── */
   useEffect(() => {
     if (gone) return;
-    try { sessionStorage.setItem(SESSION_KEY, "1"); } catch {}
-
     let cancelled = false;
     let i = 0;
 
