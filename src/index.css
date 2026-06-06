@@ -4165,6 +4165,60 @@
   animation: crt-flicker 9s ease-in-out infinite;
 }
 
+/* ── BOOT v5: dither + syntax tokens ── */
+.boot-seq__panel {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(0,212,255,0.06), transparent 60%),
+    #06090e;
+}
+.boot-seq__grain {
+  position: absolute; inset: 0; z-index: 4;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+}
+.boot-seq__body {
+  position: relative;
+  z-index: 8;
+  padding: 16px 22px 20px;
+  min-height: 320px;
+}
+.boot-seq__row {
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: rgba(220,235,245,0.88);
+  letter-spacing: 0.01em;
+  white-space: pre-wrap;
+  display: block;
+}
+.boot-seq__prompt {
+  display: inline-block;
+  width: 1.1em;
+  margin-right: 0.5em;
+  user-select: none;
+}
+.boot-seq__prompt.is-cmd { color: #00d4ff; text-shadow: 0 0 8px rgba(0,212,255,0.6); }
+.boot-seq__prompt.is-out { color: rgba(120,180,210,0.5); }
+.boot-seq__cursor {
+  display: inline-block;
+  width: 0.55em;
+  margin-left: 1px;
+  color: #00d4ff;
+  text-shadow: 0 0 8px rgba(0,212,255,0.8);
+  animation: boot-blink 0.85s steps(1) infinite;
+}
+.boot-tok          { color: rgba(220,235,245,0.85); }
+.boot-tok--kw      { color: #c792ea; }            /* keyword */
+.boot-tok--fn      { color: #82aaff; }            /* function */
+.boot-tok--str     { color: #c3e88d; }            /* string */
+.boot-tok--num     { color: #f78c6c; }            /* number */
+.boot-tok--com     { color: rgba(140,170,190,0.55); font-style: italic; }
+.boot-tok--op      { color: #89ddff; }
+.boot-tok--ty      { color: #ffcb6b; }
+.boot-tok--var     { color: #eeffff; }
+
 /* ═══════════════════════════════════════════════════════════════
    PROJECT GRID — GROUPED HOVER-EXPAND TILES
    ═══════════════════════════════════════════════════════════════ */
