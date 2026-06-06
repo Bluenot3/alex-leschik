@@ -245,7 +245,7 @@ export default function SignalConstellation({ onExploreWork }: SignalConstellati
             <button
               key={node.id}
               type="button"
-              ref={(el) => { nodeRefs.current[i] = el as HTMLDivElement | null; }}
+              ref={(el) => { nodeRefs.current[i] = el as unknown as HTMLDivElement | null; }}
               className={`sc-node ${isActive ? "sc-node--active" : ""}`}
               style={
                 {
