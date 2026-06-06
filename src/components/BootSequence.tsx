@@ -245,8 +245,34 @@ export default function BootSequence() {
           })}
         </div>
 
-        <div className="boot-seq__progress">
-          <div className="boot-seq__progress-fill" style={{ width: `${pct}%` }} />
+        <div className="boot-seq__loader">
+          <div className="boot-seq__loader-row">
+            <span className="boot-seq__loader-label">
+              {pct < 100 ? "COMPILING" : "READY"}
+              <span className="boot-seq__loader-task">
+                {pct < 100 ? (SCRIPT[activeIdx]?.toks.map(t => t.t).join("").slice(0, 38) || "…") : "all systems nominal"}
+              </span>
+            </span>
+            <span className="boot-seq__loader-pct">{String(pct).padStart(3, "0")}<span>%</span></span>
+          </div>
+          <div className="boot-seq__loader-bar">
+            {Array.from({ length: 40 }).map((_, i) => {
+              const filled = (pct / 100) * 40;
+              const isOn = i < Math.floor(filled);
+              const isEdge = i === Math.floor(filled);
+              return (
+                <span
+                  key={i}
+                  className={`boot-seq__loader-cell${isOn ? " is-on" : ""}${isEdge ? " is-edge" : ""}`}
+                />
+              );
+            })}
+          </div>
+          <div className="boot-seq__loader-meta">
+            <span>{Math.round((pct / 100) * 198)} / 198 kB</span>
+            <span>chunks {Math.min(8, Math.ceil((pct / 100) * 8))} / 8</span>
+            <span>{pct < 100 ? `eta ${(((100 - pct) * 18) / 1000).toFixed(1)}s` : "eta 0.0s"}</span>
+          </div>
         </div>
       </div>
     </div>
