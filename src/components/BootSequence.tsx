@@ -154,7 +154,7 @@ export default function BootSequence() {
       while (!cancelled && i < SCRIPT.length) {
         const line = SCRIPT[i];
         const total = line.toks.reduce((sum, tk) => sum + tk.t.length, 0);
-        const cps = (line.cps ?? 230) * 2.2;
+        const cps = (line.cps ?? 230) * 3.4;
         const stepMs = Math.max(8, 1000 / cps);
         setActiveIdx(i);
         for (let r = 1; r <= total; r++) {
@@ -171,8 +171,10 @@ export default function BootSequence() {
           const jitter = 1 + (Math.random() - 0.5) * 0.4;
           await new Promise(res => setTimeout(res, stepMs * jitter));
         }
-        await new Promise(res => setTimeout(res, (line.pause ?? 80) * 0.4));
+        await new Promise(res => setTimeout(res, (line.pause ?? 80) * 0.18));
         i++;
+        // Exit early once we're most of the way through — feels snappy
+        if (i >= Math.ceil(SCRIPT.length * 0.6)) break;
       }
       if (!cancelled) {
         setTimeout(() => setExiting(true), 160);
