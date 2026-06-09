@@ -78,10 +78,50 @@ export default function BootSequence() {
   // Per-line revealed character count
   const [revealed, setRevealed] = useState<number[]>(() => SCRIPT.map(() => 0));
   const [activeIdx, setActiveIdx] = useState(0);
+  const [appReady, setAppReady] = useState(false);
+  const [minElapsed, setMinElapsed] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const panelRef  = useRef<HTMLDivElement>(null);
   const rafRef    = useRef<number>(0);
+
+  /* ── Track real app readiness ── */
+  useEffect(() => {
+    let cancelled = false;
+    // Minimum on-screen time so the boot doesn't flash
+    const minTimer = setTimeout(() => !cancelled && setMinElapsed(true), 900);
+
+    const markReady = () => !cancelled && setAppReady(true);
+    if (document.readyState === "complete") {
+      // give one frame + idle so first paints land
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if ("requestIdleCallback" in window) {
+          (window as any).requestIdleCallback(markReady, { timeout: 600 });
+        } else {
+          setTimeout(markReady, 120);
+        }
+      }));
+    } else {
+      window.addEventListener("load", () => {
+        requestAnimationFrame(() => requestAnimationFrame(markReady));
+      }, { once: true });
+    }
+    // Hard ceiling so it never hangs
+    const hardCap = setTimeout(markReady, 4500);
+    return () => {
+      cancelled = true;
+      clearTimeout(minTimer);
+      clearTimeout(hardCap);
+    };
+  }, []);
+
+  /* ── Exit when both: app ready AND min display time elapsed ── */
+  useEffect(() => {
+    if (!appReady || !minElapsed || exiting) return;
+    setExiting(true);
+    const t = setTimeout(() => setGone(true), 520);
+    return () => clearTimeout(t);
+  }, [appReady, minElapsed, exiting]);
 
   /* ── Dither background ── */
   useEffect(() => {
@@ -92,7 +132,7 @@ export default function BootSequence() {
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const CELL = 4; // pixel size per dither cell
+    const CELL = 3; // finer grain
     let W = 0, H = 0, cw = 0, ch = 0;
 
     const resize = () => {
@@ -111,25 +151,45 @@ export default function BootSequence() {
     const draw = (now: number) => {
       const t = (now - t0) * 0.001;
       ctx.clearRect(0, 0, W, H);
-      // Two ink colors — deep cyan + soft teal — sampled by dither
+      // Multi-source interference field — two drifting "emitters" + flow band
+      // Yields plasma-like ripples that morph continuously.
+      const ax = 0.5 + 0.32 * Math.sin(t * 0.31);
+      const ay = 0.5 + 0.28 * Math.cos(t * 0.27);
+      const bx = 0.5 + 0.36 * Math.cos(t * 0.19 + 1.7);
+      const by = 0.5 + 0.30 * Math.sin(t * 0.23 + 0.9);
+      const flow = t * 0.55;
+
       for (let y = 0; y < ch; y++) {
         for (let x = 0; x < cw; x++) {
-          // Smooth radial+wave field, 0..1
-          const nx = x / cw - 0.5;
-          const ny = y / ch - 0.5;
-          const r  = Math.sqrt(nx * nx + ny * ny);
-          const wave =
+          const nx = x / cw;
+          const ny = y / ch;
+          const dx1 = nx - ax, dy1 = ny - ay;
+          const dx2 = nx - bx, dy2 = ny - by;
+          const r1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+          const r2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+          // interference of two radial waves + diagonal flow band
+          const w =
             0.5 +
-            0.5 * Math.sin(r * 14 - t * 1.4) *
-            Math.cos(nx * 10 + t * 0.6) *
-            (1 - r * 1.2);
-          const v = Math.max(0, Math.min(1, wave * (1 - r * 0.9)));
+            0.25 * Math.sin(r1 * 38 - t * 2.4) +
+            0.25 * Math.sin(r2 * 32 + t * 1.9) +
+            0.18 * Math.sin((nx + ny) * 14 - flow);
+          // vignette pull-in
+          const cx = nx - 0.5, cy = ny - 0.5;
+          const vign = 1 - Math.min(1, (cx * cx + cy * cy) * 1.6);
+          const v = Math.max(0, Math.min(1, w * vign));
           const threshold = BAYER8[(y & 7) * 8 + (x & 7)] / 64;
           if (v > threshold) {
-            // intensity bands
             const i = v - threshold;
-            const a = i > 0.35 ? 0.55 : i > 0.18 ? 0.32 : 0.16;
-            ctx.fillStyle = `rgba(0,212,255,${a})`;
+            // two-tone: bright cyan core, soft teal halo
+            if (i > 0.42) {
+              ctx.fillStyle = `rgba(120,235,255,0.62)`;
+            } else if (i > 0.22) {
+              ctx.fillStyle = `rgba(0,212,255,0.38)`;
+            } else if (i > 0.08) {
+              ctx.fillStyle = `rgba(40,160,200,0.22)`;
+            } else {
+              ctx.fillStyle = `rgba(30,120,170,0.12)`;
+            }
             ctx.fillRect(x * CELL, y * CELL, CELL - 1, CELL - 1);
           }
         }
@@ -154,7 +214,7 @@ export default function BootSequence() {
       while (!cancelled && i < SCRIPT.length) {
         const line = SCRIPT[i];
         const total = line.toks.reduce((sum, tk) => sum + tk.t.length, 0);
-        const cps = (line.cps ?? 230) * 3.4;
+        const cps = (line.cps ?? 230) * 4.2;
         const stepMs = Math.max(8, 1000 / cps);
         setActiveIdx(i);
         for (let r = 1; r <= total; r++) {
@@ -171,15 +231,10 @@ export default function BootSequence() {
           const jitter = 1 + (Math.random() - 0.5) * 0.4;
           await new Promise(res => setTimeout(res, stepMs * jitter));
         }
-        await new Promise(res => setTimeout(res, (line.pause ?? 80) * 0.18));
+        await new Promise(res => setTimeout(res, (line.pause ?? 80) * 0.12));
         i++;
-        // Exit early once we're most of the way through — feels snappy
-        if (i >= Math.ceil(SCRIPT.length * 0.6)) break;
       }
-      if (!cancelled) {
-        setTimeout(() => setExiting(true), 160);
-        setTimeout(() => setGone(true), 560);
-      }
+      // No forced exit here — exit is driven by app readiness effect above.
     };
     runLine();
 
