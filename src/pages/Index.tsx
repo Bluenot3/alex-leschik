@@ -22,18 +22,48 @@ import ScrollSection, {
   RevealCTA,
 } from "@/components/ScrollSection";
 
-const GlassCube = lazy(() => import("@/components/GlassCube"));
-const GlassOrbit = lazy(() => import("@/components/GlassOrbit"));
-const CubeRain = lazy(() => import("@/components/CubeRain"));
-const AZ1Logo3D = lazy(() => import("@/components/AZ1Logo3D"));
-const ScrollGallery = lazy(() => import("@/components/ScrollGallery"));
-const MediaRoom = lazy(() => import("@/components/MediaRoom"));
-const ImageVortex = lazy(() => import("@/components/ImageVortex"));
-const GalleryShowcase = lazy(() => import("@/components/GalleryShowcase"));
-const ProjectSpotlight = lazy(() => import("@/components/ProjectSpotlight"));
-const SignalConstellation = lazy(() => import("@/components/SignalConstellation"));
-const ImageTheater        = lazy(() => import("@/components/ImageTheater"));
-const ArsenalShowcase     = lazy(() => import("@/components/ArsenalShowcase"));
+const loadGlassCube = () => import("@/components/GlassCube");
+const loadGlassOrbit = () => import("@/components/GlassOrbit");
+const loadCubeRain = () => import("@/components/CubeRain");
+const loadAZ1Logo3D = () => import("@/components/AZ1Logo3D");
+const loadScrollGallery = () => import("@/components/ScrollGallery");
+const loadMediaRoom = () => import("@/components/MediaRoom");
+const loadImageVortex = () => import("@/components/ImageVortex");
+const loadGalleryShowcase = () => import("@/components/GalleryShowcase");
+const loadProjectSpotlight = () => import("@/components/ProjectSpotlight");
+const loadSignalConstellation = () => import("@/components/SignalConstellation");
+const loadImageTheater = () => import("@/components/ImageTheater");
+const loadArsenalShowcase = () => import("@/components/ArsenalShowcase");
+
+const GlassCube = lazy(loadGlassCube);
+const GlassOrbit = lazy(loadGlassOrbit);
+const CubeRain = lazy(loadCubeRain);
+const AZ1Logo3D = lazy(loadAZ1Logo3D);
+const ScrollGallery = lazy(loadScrollGallery);
+const MediaRoom = lazy(loadMediaRoom);
+const ImageVortex = lazy(loadImageVortex);
+const GalleryShowcase = lazy(loadGalleryShowcase);
+const ProjectSpotlight = lazy(loadProjectSpotlight);
+const SignalConstellation = lazy(loadSignalConstellation);
+const ImageTheater = lazy(loadImageTheater);
+const ArsenalShowcase = lazy(loadArsenalShowcase);
+
+/* Ordered roughly by scroll position — prefetched during idle time after
+   first paint so scrolling never hits a chunk-loading gap. */
+const CHUNK_PRELOADERS = [
+  loadImageVortex,
+  loadSignalConstellation,
+  loadProjectSpotlight,
+  loadMediaRoom,
+  loadImageTheater,
+  loadArsenalShowcase,
+  loadGalleryShowcase,
+  loadGlassOrbit,
+  loadGlassCube,
+  loadAZ1Logo3D,
+  loadCubeRain,
+  loadScrollGallery,
+];
 
 const SECTION_COUNT = 6;
 
@@ -55,6 +85,41 @@ export default function Index() {
   const [editMode, setEditMode] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+
+  /* ── Idle prefetch: warm every lazy chunk after first paint ── */
+  useEffect(() => {
+    let cancelled = false;
+    let idleId: number | undefined;
+    const ric: typeof requestIdleCallback =
+      typeof requestIdleCallback === "function"
+        ? requestIdleCallback
+        : ((cb: IdleRequestCallback) =>
+            window.setTimeout(() => cb({ didTimeout: true, timeRemaining: () => 0 } as IdleDeadline), 250)) as typeof requestIdleCallback;
+
+    const queue = [...CHUNK_PRELOADERS];
+    const pump = () => {
+      if (cancelled || queue.length === 0) return;
+      const next = queue.shift()!;
+      next()
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) idleId = ric(pump, { timeout: 1500 }) as unknown as number;
+        });
+    };
+
+    const start = () => {
+      idleId = ric(pump, { timeout: 2000 }) as unknown as number;
+    };
+
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", start);
+      if (idleId !== undefined && typeof cancelIdleCallback === "function") cancelIdleCallback(idleId);
+    };
+  }, []);
 
   /* ── Magnetic cursor + spotlight for CTA buttons ─────────── */
   useEffect(() => {
@@ -266,7 +331,7 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <LazySection className="relative" rootMargin="400px 0px">
+        <LazySection className="relative" rootMargin="1400px 0px">
           <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
           <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
             <ProjectSpotlight editMode={editMode} />
@@ -293,7 +358,7 @@ export default function Index() {
 
         <CrypticDivider lines={3} label="// arsenal.world" />
 
-        <LazySection className="relative" rootMargin="400px 0px">
+        <LazySection className="relative" rootMargin="1400px 0px">
           <CrypticBackground rows={10} speed={115} opacity={0.05} />
           <Suspense fallback={<div style={{ minHeight: "680px" }} />}>
             <ArsenalShowcase />
