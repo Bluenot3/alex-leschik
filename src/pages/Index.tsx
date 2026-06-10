@@ -331,7 +331,7 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <LazySection className="relative" rootMargin="400px 0px">
+        <LazySection className="relative" rootMargin="1400px 0px">
           <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
           <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
             <ProjectSpotlight editMode={editMode} />
@@ -358,7 +358,7 @@ export default function Index() {
 
         <CrypticDivider lines={3} label="// arsenal.world" />
 
-        <LazySection className="relative" rootMargin="400px 0px">
+        <LazySection className="relative" rootMargin="1400px 0px">
           <CrypticBackground rows={10} speed={115} opacity={0.05} />
           <Suspense fallback={<div style={{ minHeight: "680px" }} />}>
             <ArsenalShowcase />

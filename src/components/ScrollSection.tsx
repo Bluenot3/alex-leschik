@@ -27,7 +27,7 @@ export default function ScrollSection({ children, index, align = "left", ghost }
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0, rootMargin: "0px 0px 140px 0px" }
     );
 
     els.forEach((el) => io.observe(el));

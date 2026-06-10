@@ -6,7 +6,7 @@ import { useRef, useState, useEffect, type ReactNode } from "react";
  */
 export default function LazySection({
   children,
-  rootMargin = "600px 0px",
+  rootMargin = "1000px 0px",
   unmountOnLeave = false,
   className = "",
 }: {
