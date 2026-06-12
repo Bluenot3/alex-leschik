@@ -22,7 +22,10 @@ interface CommandDashboardProps {
   onClose: () => void;
 }
 
+type Tab = "gallery" | "leads";
+
 export default function CommandDashboard({ open, onClose }: CommandDashboardProps) {
+  const [tab, setTab] = useState<Tab>("gallery");
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [adding, setAdding] = useState<ItemType | null>(null);
   const [uploading, setUploading] = useState(false);
