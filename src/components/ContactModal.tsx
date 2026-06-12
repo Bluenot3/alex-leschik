@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import CrypticBackground from "@/components/CrypticBackground";
+import ContactForm from "@/components/ContactForm";
 
 interface ContactModalProps {
   onClose: () => void;
