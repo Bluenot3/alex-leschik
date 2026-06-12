@@ -1,4 +1,6 @@
 import { useRef, useEffect, useState } from "react";
+import NewsletterSignup from "@/components/NewsletterSignup";
+
 
 /* ── Platform icon SVGs ─────────────────────────────── */
 function IconX() {
