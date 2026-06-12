@@ -268,6 +268,7 @@ export default function SocialLinks() {
           </div>
         </div>
       </div>
+      <NewsletterSignup />
     </section>
   );
 }
