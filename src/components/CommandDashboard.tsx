@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, Image, Video, Code, GripVertical, X, Upload, Check } from "lucide-react";
+import { Plus, Trash2, Image, Video, Code, GripVertical, X, Upload, Check, Inbox, LayoutGrid } from "lucide-react";
+import LeadInbox from "@/components/LeadInbox";
 
 type ItemType = "image" | "video" | "code";
 
