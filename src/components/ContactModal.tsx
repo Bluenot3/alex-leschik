@@ -45,13 +45,9 @@ export default function ContactModal({ onClose }: ContactModalProps) {
           </p>
         </div>
 
-        {/* Notion embed */}
-        <div className="contact-modal__frame">
-          <iframe
-            src="https://daily-clownfish-446.notion.site/ebd//b4cd5826803a4806811f9f2abbf05783"
-            title="Contact Alexander Leschik"
-            allowFullScreen
-          />
+        {/* Contact form */}
+        <div className="contact-modal__frame contact-modal__frame--form">
+          <ContactForm onSuccess={() => setTimeout(onClose, 2500)} />
         </div>
 
         {/* Close */}
