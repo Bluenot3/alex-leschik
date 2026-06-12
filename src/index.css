@@ -2186,6 +2186,95 @@
     color: hsl(var(--cryptic-cool) / 0.8);
   }
 
+  /* ── Newsletter Signup ── */
+  .newsletter-signup {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 0.65rem;
+    background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.44));
+    border: 1px solid rgba(255,255,255,0.78);
+    box-shadow: 0 8px 28px rgba(15,23,42,0.07);
+    max-width: 420px;
+    margin: 1.5rem auto 0;
+  }
+
+  .newsletter-signup__label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.55);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .newsletter-signup__input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    color: hsl(var(--foreground) / 0.85);
+    padding: 0.2rem 0;
+  }
+
+  .newsletter-signup__input::placeholder {
+    color: hsl(var(--muted-foreground) / 0.4);
+  }
+
+  .newsletter-signup__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.45rem;
+    background: hsl(var(--foreground) / 0.85);
+    border: none;
+    color: hsl(var(--background));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .newsletter-signup__btn:hover {
+    background: hsl(var(--foreground));
+    transform: scale(1.05);
+  }
+
+  .newsletter-signup__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .newsletter-signup__error {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: hsl(var(--destructive));
+    position: absolute;
+    bottom: -1.1rem;
+    left: 0;
+  }
+
+  .newsletter-signup--success {
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .newsletter-signup__success-text {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--foreground) / 0.7);
+  }
+
   .lead-inbox__message {
     margin-top: 0.5rem;
     font-size: 0.78rem;
