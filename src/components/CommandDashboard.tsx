@@ -305,6 +305,10 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
             </div>
           ))}
         </div>
+          </>
+        )}
+
+        {tab === "leads" && <LeadInbox />}
       </div>
     </div>
   );
