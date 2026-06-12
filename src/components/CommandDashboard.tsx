@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, Image, Video, Code, GripVertical, X, Upload, Check } from "lucide-react";
+import { Plus, Trash2, Image, Video, Code, GripVertical, X, Upload, Check, Inbox, LayoutGrid } from "lucide-react";
+import LeadInbox from "@/components/LeadInbox";
 
 type ItemType = "image" | "video" | "code";
 
@@ -21,7 +22,10 @@ interface CommandDashboardProps {
   onClose: () => void;
 }
 
+type Tab = "gallery" | "leads";
+
 export default function CommandDashboard({ open, onClose }: CommandDashboardProps) {
+  const [tab, setTab] = useState<Tab>("gallery");
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [adding, setAdding] = useState<ItemType | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -114,31 +118,51 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
       <div className="cmd-panel" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="cmd-header">
-          <h2 className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-foreground/80">
-            Command Dashboard
-          </h2>
+          <div className="cmd-header__left">
+            <h2 className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-foreground/80">
+              Command Dashboard
+            </h2>
+            <div className="cmd-tabs">
+              <button
+                onClick={() => setTab("gallery")}
+                className={`cmd-tab ${tab === "gallery" ? "cmd-tab--active" : ""}`}
+              >
+                <LayoutGrid className="w-3 h-3" />
+                Gallery
+              </button>
+              <button
+                onClick={() => setTab("leads")}
+                className={`cmd-tab ${tab === "leads" ? "cmd-tab--active" : ""}`}
+              >
+                <Inbox className="w-3 h-3" />
+                Leads
+              </button>
+            </div>
+          </div>
           <button onClick={onClose} className="cmd-close">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Add buttons */}
-        {!adding && (
-          <div className="cmd-add-row">
-            <button onClick={() => setAdding("image")} className="cmd-type-btn">
-              <Image className="w-3.5 h-3.5" />
-              <span>Image</span>
-            </button>
-            <button onClick={() => setAdding("video")} className="cmd-type-btn">
-              <Video className="w-3.5 h-3.5" />
-              <span>Video</span>
-            </button>
-            <button onClick={() => setAdding("code")} className="cmd-type-btn">
-              <Code className="w-3.5 h-3.5" />
-              <span>Code</span>
-            </button>
-          </div>
-        )}
+        {tab === "gallery" && (
+          <>
+            {/* Add buttons */}
+            {!adding && (
+              <div className="cmd-add-row">
+                <button onClick={() => setAdding("image")} className="cmd-type-btn">
+                  <Image className="w-3.5 h-3.5" />
+                  <span>Image</span>
+                </button>
+                <button onClick={() => setAdding("video")} className="cmd-type-btn">
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Video</span>
+                </button>
+                <button onClick={() => setAdding("code")} className="cmd-type-btn">
+                  <Code className="w-3.5 h-3.5" />
+                  <span>Code</span>
+                </button>
+              </div>
+            )}
 
         {/* Add form */}
         {adding && (
@@ -281,6 +305,10 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
             </div>
           ))}
         </div>
+          </>
+        )}
+
+        {tab === "leads" && <LeadInbox />}
       </div>
     </div>
   );

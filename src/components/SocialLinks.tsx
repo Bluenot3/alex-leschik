@@ -1,4 +1,6 @@
 import { useRef, useEffect, useState } from "react";
+import NewsletterSignup from "@/components/NewsletterSignup";
+
 
 /* ── Platform icon SVGs ─────────────────────────────── */
 function IconX() {
@@ -266,6 +268,7 @@ export default function SocialLinks() {
           </div>
         </div>
       </div>
+      <NewsletterSignup />
     </section>
   );
 }
