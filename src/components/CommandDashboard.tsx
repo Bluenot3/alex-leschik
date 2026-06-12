@@ -144,23 +144,25 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
           </button>
         </div>
 
-        {/* Add buttons */}
-        {!adding && (
-          <div className="cmd-add-row">
-            <button onClick={() => setAdding("image")} className="cmd-type-btn">
-              <Image className="w-3.5 h-3.5" />
-              <span>Image</span>
-            </button>
-            <button onClick={() => setAdding("video")} className="cmd-type-btn">
-              <Video className="w-3.5 h-3.5" />
-              <span>Video</span>
-            </button>
-            <button onClick={() => setAdding("code")} className="cmd-type-btn">
-              <Code className="w-3.5 h-3.5" />
-              <span>Code</span>
-            </button>
-          </div>
-        )}
+        {tab === "gallery" && (
+          <>
+            {/* Add buttons */}
+            {!adding && (
+              <div className="cmd-add-row">
+                <button onClick={() => setAdding("image")} className="cmd-type-btn">
+                  <Image className="w-3.5 h-3.5" />
+                  <span>Image</span>
+                </button>
+                <button onClick={() => setAdding("video")} className="cmd-type-btn">
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Video</span>
+                </button>
+                <button onClick={() => setAdding("code")} className="cmd-type-btn">
+                  <Code className="w-3.5 h-3.5" />
+                  <span>Code</span>
+                </button>
+              </div>
+            )}
 
         {/* Add form */}
         {adding && (
