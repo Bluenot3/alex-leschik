@@ -118,9 +118,27 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
       <div className="cmd-panel" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="cmd-header">
-          <h2 className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-foreground/80">
-            Command Dashboard
-          </h2>
+          <div className="cmd-header__left">
+            <h2 className="font-mono text-[0.65rem] tracking-[0.25em] uppercase text-foreground/80">
+              Command Dashboard
+            </h2>
+            <div className="cmd-tabs">
+              <button
+                onClick={() => setTab("gallery")}
+                className={`cmd-tab ${tab === "gallery" ? "cmd-tab--active" : ""}`}
+              >
+                <LayoutGrid className="w-3 h-3" />
+                Gallery
+              </button>
+              <button
+                onClick={() => setTab("leads")}
+                className={`cmd-tab ${tab === "leads" ? "cmd-tab--active" : ""}`}
+              >
+                <Inbox className="w-3 h-3" />
+                Leads
+              </button>
+            </div>
+          </div>
           <button onClick={onClose} className="cmd-close">
             <X className="w-4 h-4" />
           </button>
