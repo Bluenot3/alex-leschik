@@ -15,6 +15,7 @@ import BootSequence from "@/components/BootSequence";
 import LiveMetricsTicker from "@/components/LiveMetricsTicker";
 import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
+import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -403,36 +404,44 @@ export default function Index() {
             <div className="artifact-lab__item artifact-lab__item--wide">
               <div className="artifact-lab__label">Glass system · orbital field</div>
               <LazySection className="relative z-[1]">
-                <Suspense fallback={<div style={{ minHeight: "520px" }} />}>
-                  <GlassOrbit />
-                </Suspense>
+                <SafeVisual label="orbital field offline">
+                  <Suspense fallback={<div style={{ minHeight: "520px" }} />}>
+                    <GlassOrbit />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--narrow artifact-lab__item--centered">
               <div className="artifact-lab__label">Glass artifact · v2</div>
               <LazySection className="relative z-[1] flex items-center justify-center py-12">
-                <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-                  <GlassCube />
-                </Suspense>
+                <SafeVisual label="glass artifact offline">
+                  <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+                    <GlassCube />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--narrow">
               <div className="artifact-lab__label">Identity object</div>
               <LazySection className="relative z-[1] px-6 md:px-12 lg:px-20">
-                <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-                  <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
-                </Suspense>
+                <SafeVisual label="identity object offline">
+                  <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+                    <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--wide">
               <div className="artifact-lab__label">Generative field</div>
               <LazySection className="relative z-[1]">
-                <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
-                  <CubeRain />
-                </Suspense>
+                <SafeVisual label="generative field offline">
+                  <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+                    <CubeRain />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 

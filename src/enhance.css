@@ -503,3 +503,33 @@
   .sg-card__tilt { transform: none !important; }
   .scroll-progress { box-shadow: none; }
 }
+
+/* ── SafeVisual fallback — quiet placeholder for a failed scene ── */
+.safe-visual-fallback {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px dashed hsl(var(--foreground) / 0.12);
+  font-family: var(--font-mono);
+}
+
+.safe-visual-fallback__glyph {
+  font-size: 1.1rem;
+  color: hsl(var(--muted-foreground) / 0.5);
+  animation: safe-visual-pulse 2.4s ease-in-out infinite;
+}
+
+.safe-visual-fallback__text {
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.55);
+}
+
+@keyframes safe-visual-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
