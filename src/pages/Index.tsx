@@ -13,6 +13,8 @@ import SocialLinks from "@/components/SocialLinks";
 import CipherSmokeCursor from "@/components/CipherSmokeCursor";
 import BootSequence from "@/components/BootSequence";
 import LiveMetricsTicker from "@/components/LiveMetricsTicker";
+import ScrollProgress from "@/components/ScrollProgress";
+import ModelSignatures from "@/components/ModelSignatures";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -157,6 +159,9 @@ export default function Index() {
 
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />
+
+      {/* Reading-position hairline */}
+      <ScrollProgress />
 
       {/* Viewport corner indicators */}
       <div className="viewport-corners" aria-hidden="true">
@@ -500,6 +505,11 @@ export default function Index() {
             </div>
           </ScrollSection>
         </div>
+
+        <CrypticDivider lines={3} label="// ledger open" />
+
+        {/* Guestbook of the LLM era — every model signs on its way out */}
+        <ModelSignatures />
       </div>
 
       {/* Live technical metrics strip — fixed bottom */}
