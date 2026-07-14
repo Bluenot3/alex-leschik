@@ -1,0 +1,505 @@
+/* ═══════════════════════════════════════════════════════════
+   ENHANCEMENT LAYER — loaded after index.css, un-layered so it
+   takes precedence over @layer components rules it refines.
+   Covers: theater blur-up/Ken Burns/timer, gallery tilt +
+   lightbox, scroll progress hairline, and the model ledger.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Image Theater — drift wrapper carries parallax ──────── */
+.image-theater__feature-drift {
+  position: absolute;
+  inset: -4%; /* extra margin so parallax shift never shows edge */
+  animation: it-fade-in 0.5s ease;
+  will-change: transform;
+}
+
+.image-theater__feature-drift .image-theater__feature-img {
+  position: static;
+  inset: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  filter: blur(14px) saturate(1.15);
+  transform: scale(1.1);
+  transition: opacity 0.6s ease, filter 0.9s ease;
+  will-change: transform, filter;
+}
+
+/* Blur-up reveal, then a slow Ken Burns drift while the slide holds */
+.image-theater__feature-drift .image-theater__feature-img--in {
+  opacity: 1;
+  filter: blur(0) saturate(1);
+  animation: it-kenburns 14s ease-out forwards;
+}
+
+@keyframes it-kenburns {
+  from { transform: scale(1.1); }
+  to   { transform: scale(1.02); }
+}
+
+/* Decrypting shimmer while a frame streams in */
+.image-theater__feature-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(105deg, transparent 40%, rgba(120, 190, 255, 0.09) 50%, transparent 60%),
+    #05080f;
+  background-size: 220% 100%, auto;
+  animation: media-shimmer 1.2s linear infinite;
+}
+
+@keyframes media-shimmer {
+  from { background-position: 120% 0, 0 0; }
+  to   { background-position: -120% 0, 0 0; }
+}
+
+/* Autoplay countdown line — bottom edge, freezes while hovered */
+.image-theater__timer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  z-index: 5;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.85), hsl(var(--cryptic-violet) / 0.85));
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation-name: it-timer;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  pointer-events: none;
+}
+
+.image-theater__timer--held {
+  animation-play-state: paused;
+  opacity: 0.35;
+}
+
+@keyframes it-timer {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Scroll Gallery cards — now buttons with pointer tilt ── */
+.sg-card {
+  cursor: zoom-in;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  display: block;
+  width: 100%;
+  perspective: 900px;
+}
+
+.sg-card:focus-visible {
+  outline: 1.5px solid rgba(0, 212, 255, 0.7);
+  outline-offset: 2px;
+}
+
+/* Inner frame carries the pointer tilt so reveal + tilt never fight */
+.sg-card__tilt {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-style: preserve-3d;
+}
+
+.sg-card__glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    280px circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(160, 210, 255, 0.14),
+    transparent 65%
+  );
+  transition: opacity 0.35s ease;
+}
+
+.sg-card:hover .sg-card__glare { opacity: 1; }
+
+.sg-card__shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(105deg, transparent 40%, rgba(120, 190, 255, 0.09) 50%, transparent 60%),
+    rgba(6, 10, 18, 0.9);
+  background-size: 220% 100%, auto;
+  animation: media-shimmer 1.2s linear infinite;
+}
+
+.sg-card__expand {
+  position: absolute;
+  top: 10px;
+  right: 34px;
+  z-index: 4;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.sg-card:hover .sg-card__expand {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sg-card__img {
+  opacity: 0;
+  transition:
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.7s ease,
+    opacity 0.55s ease;
+}
+
+.sg-card__img--in { opacity: 1; }
+
+/* ── Gallery Lightbox ────────────────────────────────────── */
+.sg-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(3, 6, 12, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: sg-lb-in 0.28s ease;
+  cursor: zoom-out;
+}
+
+@keyframes sg-lb-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sg-lightbox__stage {
+  position: relative;
+  max-width: min(1200px, 92vw);
+  max-height: 86vh;
+  margin: 0;
+  cursor: default;
+}
+
+.sg-lightbox__img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(86vh - 3.5rem);
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  animation: sg-lb-img 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes sg-lb-img {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.sg-lightbox__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  padding-top: 0.9rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.sg-lightbox__name {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.sg-lightbox__sub {
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  color: rgba(100, 185, 255, 0.72);
+}
+
+.sg-lightbox__count {
+  margin-left: auto;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.sg-lightbox__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(5, 8, 15, 0.6);
+  color: rgba(255, 255, 255, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.sg-lightbox__arrow svg { width: 12px; height: 12px; }
+.sg-lightbox__arrow--prev { left: -14px; }
+.sg-lightbox__arrow--next { right: -14px; }
+
+.sg-lightbox__arrow:hover {
+  background: rgba(0, 212, 255, 0.14);
+  border-color: rgba(0, 212, 255, 0.4);
+  color: rgba(0, 212, 255, 0.95);
+}
+
+.sg-lightbox__close {
+  position: absolute;
+  top: clamp(0.9rem, 3vw, 1.8rem);
+  right: clamp(0.9rem, 3vw, 1.8rem);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(5, 8, 15, 0.6);
+  color: rgba(255, 255, 255, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.sg-lightbox__close svg { width: 12px; height: 12px; }
+
+.sg-lightbox__close:hover {
+  background: rgba(255, 80, 80, 0.14);
+  border-color: rgba(255, 120, 120, 0.4);
+  color: rgba(255, 160, 160, 0.95);
+  transform: rotate(90deg);
+}
+
+@media (max-width: 640px) {
+  .sg-lightbox__arrow--prev { left: 4px; }
+  .sg-lightbox__arrow--next { right: 4px; }
+}
+
+/* ── Scroll progress hairline — top edge ─────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 60;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 190, 255, 0.85),
+    hsl(var(--cryptic-violet) / 0.85)
+  );
+  transform-origin: left center;
+  transform: scaleX(0);
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(0, 190, 255, 0.25);
+}
+
+/* ═══ Model Ledger — signatures of every model that touched
+       this page. Compact, clean, algorithmic. ═══════════════ */
+.model-ledger {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto 3.5rem;
+  padding: 3.5rem clamp(1.25rem, 4vw, 2.75rem) 3rem;
+  font-family: var(--font-mono);
+  background: rgba(250, 252, 255, 0.78);
+  border: var(--hairline) solid hsl(var(--foreground) / 0.1);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+}
+
+.model-ledger__head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.model-ledger__rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.18), transparent);
+}
+
+.model-ledger__title {
+  font-size: 0.55rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.model-ledger__rows {
+  border-top: 1px solid hsl(var(--foreground) / 0.08);
+}
+
+.model-ledger__row {
+  display: grid;
+  grid-template-columns: 250px 1fr auto;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 0.9rem 0.4rem;
+  border-bottom: 1px solid hsl(var(--foreground) / 0.08);
+  transition: background 0.3s ease;
+}
+
+.model-ledger__row:hover {
+  background: hsl(var(--foreground) / 0.025);
+}
+
+.model-ledger__row--featured {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 190, 255, 0.035),
+    hsl(var(--cryptic-violet) / 0.045)
+  );
+}
+
+.model-ledger__row--featured::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(0, 190, 255, 0.7), hsl(var(--cryptic-violet) / 0.7));
+}
+
+.model-ledger__sig {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.model-ledger__canvas {
+  width: 100%;
+  height: 64px;
+  display: block;
+}
+
+.model-ledger__mark {
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  color: hsl(var(--muted-foreground) / 0.75);
+  padding-left: 0.2rem;
+}
+
+.model-ledger__id {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.model-ledger__name {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground) / 0.85);
+}
+
+.model-ledger__name--ghost {
+  color: hsl(var(--muted-foreground) / 0.5);
+}
+
+.model-ledger__org {
+  font-size: 0.52rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(210 85% 45% / 0.75);
+}
+
+.model-ledger__note {
+  font-size: 0.56rem;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+.model-ledger__stamp {
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  color: hsl(var(--muted-foreground) / 0.8);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.model-ledger__row--open {
+  opacity: 0.75;
+}
+
+.model-ledger__blank {
+  display: block;
+  width: 100%;
+  height: 64px;
+  border: 1px dashed hsl(var(--foreground) / 0.14);
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 7px,
+      hsl(var(--foreground) / 0.02) 7px,
+      hsl(var(--foreground) / 0.02) 8px
+    );
+}
+
+.model-ledger__foot {
+  margin-top: 1.4rem;
+  text-align: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.55);
+}
+
+@media (max-width: 680px) {
+  .model-ledger { margin-inline: 0.75rem; }
+  .model-ledger__row {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    padding: 1.1rem 0.4rem;
+  }
+  .model-ledger__sig { max-width: 280px; }
+  .model-ledger__stamp { justify-self: start; }
+  .model-ledger__title { max-width: 100%; font-size: 0.5rem; }
+}
+
+/* ═══ Reduced motion — settle everything new ════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .image-theater__feature-drift .image-theater__feature-img--in {
+    animation: none;
+    transform: scale(1.04);
+  }
+  .image-theater__timer,
+  .image-theater__feature-shimmer,
+  .sg-card__shimmer { animation: none; }
+  .sg-card__tilt { transform: none !important; }
+  .scroll-progress { box-shadow: none; }
+}
