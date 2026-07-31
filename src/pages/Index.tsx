@@ -37,6 +37,7 @@ const loadProjectSpotlight = () => import("@/components/ProjectSpotlight");
 const loadSignalConstellation = () => import("@/components/SignalConstellation");
 const loadImageTheater = () => import("@/components/ImageTheater");
 const loadArsenalShowcase = () => import("@/components/ArsenalShowcase");
+const loadZenGenGallery = () => import("@/components/ZenGenGallery");
 
 const GlassCube = lazy(loadGlassCube);
 const GlassOrbit = lazy(loadGlassOrbit);
@@ -50,6 +51,7 @@ const ProjectSpotlight = lazy(loadProjectSpotlight);
 const SignalConstellation = lazy(loadSignalConstellation);
 const ImageTheater = lazy(loadImageTheater);
 const ArsenalShowcase = lazy(loadArsenalShowcase);
+const ZenGenGallery = lazy(loadZenGenGallery);
 
 /* Ordered roughly by scroll position — prefetched during idle time after
    first paint so scrolling never hits a chunk-loading gap. */
@@ -60,6 +62,7 @@ const CHUNK_PRELOADERS = [
   loadMediaRoom,
   loadImageTheater,
   loadArsenalShowcase,
+  loadZenGenGallery,
   loadGalleryShowcase,
   loadGlassOrbit,
   loadGlassCube,
@@ -368,6 +371,15 @@ export default function Index() {
           <CrypticBackground rows={10} speed={115} opacity={0.05} />
           <Suspense fallback={<div style={{ minHeight: "680px" }} />}>
             <ArsenalShowcase />
+          </Suspense>
+        </LazySection>
+
+        <CrypticDivider lines={4} label="// zen-gen online" />
+
+        {/* Generative archive — owner-fed, four ways to read it */}
+        <LazySection className="relative" rootMargin="1200px 0px">
+          <Suspense fallback={<div style={{ minHeight: "90vh" }} />}>
+            <ZenGenGallery />
           </Suspense>
         </LazySection>
 
