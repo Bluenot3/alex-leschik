@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOwnerAuth } from "@/hooks/useOwnerAuth";
+import OwnerGate from "@/components/OwnerGate";
 import {
   ZENGEN_BUCKET,
   makeKey,
@@ -26,12 +27,7 @@ interface Props {
 }
 
 export default function ZenGenStudio({ collections, onClose, onUploaded }: Props) {
-  const { session, isOwner, checking, signIn, signOut } = useOwnerAuth();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [signingIn, setSigningIn] = useState(false);
+  const { session, isOwner } = useOwnerAuth();
 
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [running, setRunning] = useState(false);
@@ -140,15 +136,6 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
     onUploaded();
   }, [queue, running, uploadOne, onUploaded]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSigningIn(true);
-    setAuthError(null);
-    const err = await signIn(email.trim(), password);
-    setAuthError(err);
-    setSigningIn(false);
-  };
-
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
@@ -173,49 +160,10 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
           </button>
         </header>
 
-        {checking && <div className="zg-studio__note">verifying credentials…</div>}
-
-        {/* ── Locked ── */}
-        {!checking && !isOwner && (
-          <div className="zg-studio__gate">
-            {session && (
-              <p className="zg-studio__denied">
-                Signed in as <strong>{session.user.email}</strong>, but this account is not on the
-                owner allowlist. Uploads stay disabled.
-                <button type="button" className="zg-studio__linkbtn" onClick={signOut}>sign out</button>
-              </p>
-            )}
-
-            <form className="zg-studio__form" onSubmit={handleSignIn}>
-              <label>
-                <span>Email</span>
-                <input
-                  type="email" value={email} required autoComplete="username"
-                  onChange={(e) => setEmail(e.target.value)} placeholder="owner@domain.com"
-                />
-              </label>
-              <label>
-                <span>Password</span>
-                <input
-                  type="password" value={password} required autoComplete="current-password"
-                  onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
-                />
-              </label>
-              {authError && <p className="zg-studio__error">{authError}</p>}
-              <button type="submit" className="cta-btn" disabled={signingIn}>
-                {signingIn ? "verifying…" : "Unlock studio"}
-              </button>
-            </form>
-
-            <p className="zg-studio__hint">
-              Access is granted by email allowlist in the database. Row-level security enforces it
-              on every write — the interface only reflects what the server already decided.
-            </p>
-          </div>
-        )}
-
-        {/* ── Unlocked ── */}
-        {!checking && isOwner && (
+        <OwnerGate
+          purpose="Upload and file ZEN-GEN generations."
+          footNote={`signed in as ${session?.user.email ?? ""}`}
+        >
           <div className="zg-studio__body">
             <div
               className={`zg-drop${dragging ? " zg-drop--over" : ""}`}
@@ -308,12 +256,8 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
               </>
             )}
 
-            <footer className="zg-studio__foot">
-              <span>signed in as {session?.user.email}</span>
-              <button type="button" className="zg-studio__linkbtn" onClick={signOut}>sign out</button>
-            </footer>
           </div>
-        )}
+        </OwnerGate>
       </div>
     </div>
   );

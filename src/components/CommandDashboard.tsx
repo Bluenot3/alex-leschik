@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2, Image, Video, Code, GripVertical, X, Upload, Check, Inbox, LayoutGrid } from "lucide-react";
 import LeadInbox from "@/components/LeadInbox";
+import OwnerGate from "@/components/OwnerGate";
 
 type ItemType = "image" | "video" | "code";
 
@@ -144,6 +145,9 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
           </button>
         </div>
 
+        {/* Everything below manages published content and lead records,
+            so it stays behind the owner gate. */}
+        <OwnerGate purpose="Manage gallery content and read the lead inbox.">
         {tab === "gallery" && (
           <>
             {/* Add buttons */}
@@ -309,6 +313,7 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
         )}
 
         {tab === "leads" && <LeadInbox />}
+        </OwnerGate>
       </div>
     </div>
   );

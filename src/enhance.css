@@ -1667,3 +1667,149 @@
   .zg-frame { transition: opacity 0.3s ease; transform: none; }
   .zg-frame__scan { display: none; }
 }
+
+/* ── Owner gate — shared sign-in wall for admin panels ───────── */
+.owner-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.6rem 1.3rem;
+  font-family: var(--font-mono);
+}
+
+.owner-gate__note {
+  padding: 1.6rem 1.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.owner-gate__title {
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground) / 0.85);
+}
+
+.owner-gate__purpose {
+  font-size: 0.54rem;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+}
+
+.owner-gate__denied {
+  font-size: 0.54rem;
+  line-height: 1.8;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid hsl(25 90% 55% / 0.35);
+  background: hsl(25 90% 55% / 0.07);
+  color: hsl(25 60% 40%);
+  border-radius: 2px;
+}
+
+.owner-gate__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  max-width: 22rem;
+}
+
+.owner-gate__form label { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.owner-gate__form label span {
+  font-size: 0.46rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.owner-gate__form input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid hsl(var(--foreground) / 0.16);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  border-radius: 2px;
+}
+
+.owner-gate__form input:focus {
+  outline: none;
+  border-color: hsl(var(--cryptic-cool) / 0.7);
+  box-shadow: 0 0 0 3px hsl(var(--cryptic-cool) / 0.12);
+}
+
+.owner-gate__submit {
+  align-self: flex-start;
+  padding: 0.55rem 1.4rem;
+  border: none;
+  border-radius: 100px;
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.owner-gate__submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.owner-gate__error {
+  font-size: 0.52rem;
+  color: hsl(var(--destructive));
+  letter-spacing: 0.04em;
+}
+
+.owner-gate__link {
+  margin-left: 0.5rem;
+  border: none;
+  background: none;
+  padding: 0;
+  color: hsl(var(--cryptic-cool));
+  font-family: var(--font-mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.owner-gate__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1.3rem;
+  border-top: 1px solid hsl(var(--foreground) / 0.1);
+  font-family: var(--font-mono);
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
+/* Inside the ZEN-GEN studio the gate sits on a dark panel */
+.zg-studio .owner-gate__title { color: rgba(255, 255, 255, 0.92); }
+.zg-studio .owner-gate__purpose,
+.zg-studio .owner-gate__bar { color: rgba(150, 195, 230, 0.65); }
+.zg-studio .owner-gate__form label span { color: rgba(150, 195, 230, 0.65); }
+.zg-studio .owner-gate__form input {
+  border-color: rgba(120, 200, 255, 0.24);
+  background: rgba(4, 10, 20, 0.8);
+  color: #fff;
+}
+.zg-studio .owner-gate__form input:focus {
+  border-color: rgba(120, 230, 255, 0.7);
+  box-shadow: 0 0 18px rgba(0, 190, 255, 0.2);
+}
+.zg-studio .owner-gate__submit {
+  background: rgba(120, 230, 255, 0.92);
+  color: #04121f;
+}
+.zg-studio .owner-gate__bar { border-top-color: rgba(120, 200, 255, 0.16); }
+.zg-studio .owner-gate__link { color: rgba(120, 220, 255, 0.85); }
