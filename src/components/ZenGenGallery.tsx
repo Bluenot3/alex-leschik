@@ -4,6 +4,7 @@ import {
   fetchCollections,
   fetchImagePage,
   countImages,
+  isNotProvisioned,
   thumbUrl,
   fullUrl,
   type ZenGenCollection,
@@ -321,11 +322,13 @@ export default function ZenGenGallery() {
       setHasMore(more);
       setTotal(count);
       setPage(0);
-    } catch {
+    } catch (err) {
       setImages([]);
       setHasMore(false);
       setTotal(0);
-      setFailed(true);
+      /* A missing table means the archive is not set up yet — that
+         reads as standing by, not as a failure. */
+      setFailed(!isNotProvisioned(err));
     } finally {
       setLoading(false);
     }

@@ -62,6 +62,20 @@ export interface PageResult {
 }
 
 /**
+ * True when the archive tables simply have not been created yet.
+ * That is a setup state, not a fault, and the UI says so differently.
+ */
+export function isNotProvisioned(err: unknown): boolean {
+  const code = (err as { code?: string } | null)?.code ?? "";
+  const message = (err as { message?: string } | null)?.message ?? "";
+  return (
+    code === "42P01" ||        // postgres: undefined_table
+    code === "PGRST205" ||     // postgrest: table not found in schema cache
+    /does not exist|could not find the table/i.test(message)
+  );
+}
+
+/**
  * Offset pagination against the (created_at DESC, id DESC) index.
  * Requests one extra row to learn whether another page exists without
  * paying for a count query on a table meant to hold thousands of rows.
