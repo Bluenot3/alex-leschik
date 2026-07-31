@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import zenInfrastructure from "@/assets/zen-infrastructure.jpg";
 import zenLedger         from "@/assets/zen-ledger.jpg";
@@ -141,7 +142,8 @@ function Lightbox({
 
   if (!item) return null;
 
-  return (
+  /* Portalled to the body so page chrome cannot paint over the viewer. */
+  return createPortal(
     <div className="sg-lightbox" role="dialog" aria-modal="true" aria-label={item.label} onClick={onClose}>
       <figure className="sg-lightbox__stage" onClick={e => e.stopPropagation()}>
         <img key={item.src} src={item.src} alt={item.label} className="sg-lightbox__img" />
@@ -162,7 +164,8 @@ function Lightbox({
       <button type="button" className="sg-lightbox__close" onClick={onClose} aria-label="Close viewer">
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M1 1l10 10M11 1L1 11" /></svg>
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

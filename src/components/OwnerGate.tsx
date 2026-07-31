@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useOwnerAuth } from "@/hooks/useOwnerAuth";
+import { OWNER_EMAIL, PIN_LENGTH } from "@/lib/ownerConfig";
 
 interface Props {
   children: ReactNode;
@@ -8,6 +9,8 @@ interface Props {
   /** Rendered beside the sign-out link once unlocked. */
   footNote?: ReactNode;
 }
+
+const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "back"];
 
 /**
  * Sign-in wall for owner-only panels.
@@ -18,12 +21,56 @@ interface Props {
  */
 export default function OwnerGate({ children, purpose, footNote }: Props) {
   const { session, isOwner, checking, signIn, signOut } = useOwnerAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [useEmail, setUseEmail] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const padRef = useRef<HTMLDivElement>(null);
 
-  const submit = async (e: React.FormEvent) => {
+  const attempt = useCallback(async (code: string) => {
+    setBusy(true);
+    setError(null);
+    const err = await signIn(OWNER_EMAIL, code);
+    if (err) {
+      setError("PIN not accepted");
+      setPin("");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    }
+    setBusy(false);
+  }, [signIn]);
+
+  /* Fires the moment the last digit lands — no submit button needed */
+  useEffect(() => {
+    if (pin.length === PIN_LENGTH && !busy) void attempt(pin);
+  }, [pin, busy, attempt]);
+
+  const press = useCallback((key: string) => {
+    setError(null);
+    if (key === "clear") return setPin("");
+    if (key === "back") return setPin((p) => p.slice(0, -1));
+    setPin((p) => (p.length >= PIN_LENGTH ? p : p + key));
+  }, []);
+
+  /* Physical keyboard works alongside the pad */
+  useEffect(() => {
+    if (isOwner || useEmail) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (/^[0-9]$/.test(e.key)) press(e.key);
+      else if (e.key === "Backspace") press("back");
+      else if (e.key === "Escape") setPin("");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOwner, useEmail, press]);
+
+  useEffect(() => { padRef.current?.focus(); }, []);
+
+  const submitEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
@@ -51,7 +98,7 @@ export default function OwnerGate({ children, purpose, footNote }: Props) {
 
   return (
     <div className="owner-gate">
-      <span className="owner-gate__title">Owner access required</span>
+      <span className="owner-gate__title">Owner access</span>
       {purpose && <span className="owner-gate__purpose">{purpose}</span>}
 
       {session && (
@@ -64,26 +111,66 @@ export default function OwnerGate({ children, purpose, footNote }: Props) {
         </p>
       )}
 
-      <form className="owner-gate__form" onSubmit={submit}>
-        <label>
-          <span>Email</span>
-          <input
-            type="email" value={email} required autoComplete="username"
-            onChange={(e) => setEmail(e.target.value)} placeholder="owner@domain.com"
-          />
-        </label>
-        <label>
-          <span>Password</span>
-          <input
-            type="password" value={password} required autoComplete="current-password"
-            onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
-          />
-        </label>
-        {error && <p className="owner-gate__error">{error}</p>}
-        <button type="submit" className="owner-gate__submit" disabled={busy}>
-          {busy ? "verifying…" : "Unlock"}
-        </button>
-      </form>
+      {!useEmail ? (
+        <div className="owner-pin" ref={padRef} tabIndex={-1}>
+          <div className={`owner-pin__dots${shake ? " owner-pin__dots--deny" : ""}`} aria-live="polite">
+            {Array.from({ length: PIN_LENGTH }, (_, i) => (
+              <span
+                key={i}
+                className={`owner-pin__dot${i < pin.length ? " owner-pin__dot--on" : ""}`}
+                aria-hidden
+              />
+            ))}
+          </div>
+
+          <span className="owner-pin__status">
+            {busy ? "verifying…" : error ? error : `enter ${PIN_LENGTH}-digit PIN`}
+          </span>
+
+          <div className="owner-pin__pad">
+            {KEYS.map((k) => (
+              <button
+                key={k}
+                type="button"
+                className={`owner-pin__key${k === "clear" || k === "back" ? " owner-pin__key--alt" : ""}`}
+                onClick={() => press(k)}
+                disabled={busy}
+                aria-label={k === "back" ? "Delete" : k === "clear" ? "Clear" : k}
+              >
+                {k === "back" ? "⌫" : k === "clear" ? "✕" : k}
+              </button>
+            ))}
+          </div>
+
+          <button type="button" className="owner-gate__link" onClick={() => setUseEmail(true)}>
+            use email instead
+          </button>
+        </div>
+      ) : (
+        <form className="owner-gate__form" onSubmit={submitEmail}>
+          <label>
+            <span>Email</span>
+            <input
+              type="email" value={email} required autoComplete="username"
+              onChange={(e) => setEmail(e.target.value)} placeholder="owner@domain.com"
+            />
+          </label>
+          <label>
+            <span>Password</span>
+            <input
+              type="password" value={password} required autoComplete="current-password"
+              onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+            />
+          </label>
+          {error && <p className="owner-gate__error">{error}</p>}
+          <button type="submit" className="owner-gate__submit" disabled={busy}>
+            {busy ? "verifying…" : "Unlock"}
+          </button>
+          <button type="button" className="owner-gate__link" onClick={() => setUseEmail(false)}>
+            use PIN instead
+          </button>
+        </form>
+      )}
     </div>
   );
 }

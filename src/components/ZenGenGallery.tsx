@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import HoloSigilField from "@/components/zengen/HoloSigilField";
 import {
   fetchCollections,
@@ -258,7 +259,9 @@ function Viewer({
 
   if (!img) return null;
 
-  return (
+  /* Portalled to the body: the gallery sits inside a stacking context,
+     which would otherwise trap the overlay beneath fixed page chrome. */
+  return createPortal(
     <div className="zg-viewer" role="dialog" aria-modal="true" onClick={onClose}>
       <figure className="zg-viewer__stage" onClick={(e) => e.stopPropagation()}>
         <img key={img.id} src={fullUrl(img)} alt={img.title || "ZEN-GEN generation"} className="zg-viewer__img" />
@@ -277,7 +280,8 @@ function Viewer({
       <button type="button" className="sg-lightbox__close" onClick={onClose} aria-label="Close">
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M1 1l10 10M11 1L1 11" /></svg>
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

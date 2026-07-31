@@ -168,7 +168,7 @@
 .sg-lightbox {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 10000; /* clears fixed page chrome, which sits at 9993-9998 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1270,7 +1270,7 @@
 .zg-viewer {
   position: fixed;
   inset: 0;
-  z-index: 95;
+  z-index: 10010;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1333,7 +1333,7 @@
 .zg-studio {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 10020;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1813,3 +1813,106 @@
 }
 .zg-studio .owner-gate__bar { border-top-color: rgba(120, 200, 255, 0.16); }
 .zg-studio .owner-gate__link { color: rgba(120, 220, 255, 0.85); }
+
+/* ── Owner PIN pad ───────────────────────────────────────────── */
+.owner-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  outline: none;
+}
+
+.owner-pin__dots { display: flex; gap: 0.6rem; }
+
+.owner-pin__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid hsl(var(--foreground) / 0.28);
+  background: transparent;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.owner-pin__dot--on {
+  background: hsl(var(--cryptic-cool));
+  border-color: hsl(var(--cryptic-cool));
+  transform: scale(1.15);
+  box-shadow: 0 0 10px hsl(var(--cryptic-cool) / 0.55);
+}
+
+.owner-pin__dots--deny { animation: owner-pin-deny 0.45s ease; }
+
+@keyframes owner-pin-deny {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  45% { transform: translateX(6px); }
+  70% { transform: translateX(-3px); }
+}
+
+.owner-pin__status {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  min-height: 1em;
+}
+
+.owner-pin__pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  width: min(258px, 100%);
+}
+
+.owner-pin__key {
+  aspect-ratio: 1.5;
+  border: 1px solid hsl(var(--foreground) / 0.14);
+  border-radius: 6px;
+  background: hsl(var(--background) / 0.7);
+  color: hsl(var(--foreground) / 0.9);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.owner-pin__key:hover:not(:disabled) {
+  background: hsl(var(--cryptic-cool) / 0.1);
+  border-color: hsl(var(--cryptic-cool) / 0.45);
+}
+
+.owner-pin__key:active:not(:disabled) { transform: scale(0.94); }
+.owner-pin__key:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.owner-pin__key--alt {
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Dark studio panel variant */
+.zg-studio .owner-pin__dot { border-color: rgba(160, 205, 240, 0.35); }
+.zg-studio .owner-pin__dot--on {
+  background: rgba(120, 230, 255, 0.95);
+  border-color: rgba(120, 230, 255, 0.95);
+  box-shadow: 0 0 12px rgba(0, 200, 255, 0.7);
+}
+.zg-studio .owner-pin__status { color: rgba(150, 195, 230, 0.7); }
+.zg-studio .owner-pin__key {
+  border-color: rgba(120, 200, 255, 0.22);
+  background: rgba(6, 14, 28, 0.8);
+  color: rgba(225, 240, 255, 0.92);
+}
+.zg-studio .owner-pin__key:hover:not(:disabled) {
+  background: rgba(0, 160, 220, 0.16);
+  border-color: rgba(120, 230, 255, 0.6);
+}
+.zg-studio .owner-pin__key--alt { color: rgba(150, 195, 230, 0.7); }
+
+@media (prefers-reduced-motion: reduce) {
+  .owner-pin__dots--deny { animation: none; }
+  .owner-pin__dot--on { transform: none; }
+}

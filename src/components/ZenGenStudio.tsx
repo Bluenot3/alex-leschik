@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOwnerAuth } from "@/hooks/useOwnerAuth";
 import OwnerGate from "@/components/OwnerGate";
@@ -142,7 +143,9 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
     if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
   };
 
-  return (
+  /* Portalled so the panel escapes the gallery's stacking context and
+     lands above the page's fixed chrome. */
+  return createPortal(
     <div className="zg-studio" role="dialog" aria-modal="true" aria-label="ZEN-GEN studio">
       <div className="zg-studio__panel">
         <header className="zg-studio__head">
@@ -259,6 +262,7 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
           </div>
         </OwnerGate>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
