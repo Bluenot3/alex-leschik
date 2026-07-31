@@ -13,7 +13,8 @@
       "Bash(node -e ' *)",
       "Bash(git add *)",
       "Bash(git rebase *)",
-      "Bash(GIT_EDITOR=true git rebase --continue)"
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "mcp__Claude_Code_Remote__send_later"
     ]
   }
 }

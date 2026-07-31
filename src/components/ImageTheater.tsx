@@ -106,12 +106,16 @@ function useScramble(value: string) {
 }
 
 /* ── Main component ─────────────────────────────────────── */
+const AUTO_MS = 5500;
+
 export default function ImageTheater() {
   const [active,    setActive]    = useState(0);
   const [mouse,     setMouse]     = useState({ x: 0.5, y: 0.5 });
   const [paused,    setPaused]    = useState(false);
+  const [loaded,    setLoaded]    = useState(false);
   const [failedSet, setFailedSet] = useState<Set<string>>(() => new Set());
-  const autoRef = useRef<ReturnType<typeof setInterval>>();
+  const autoRef  = useRef<ReturnType<typeof setInterval>>();
+  const touchRef = useRef<{ x: number; y: number } | null>(null);
 
   const markFailed = useCallback((src: string) => {
     setFailedSet(prev => { const s = new Set(prev); s.add(src); return s; });
@@ -127,9 +131,16 @@ export default function ImageTheater() {
 
   useEffect(() => {
     if (paused) return;
-    autoRef.current = setInterval(next, 5500);
+    autoRef.current = setInterval(next, AUTO_MS);
     return () => clearInterval(autoRef.current);
   }, [paused, next]);
+
+  /* Warm the next slide so the crossfade never flashes an empty frame */
+  useEffect(() => {
+    if (n < 2) return;
+    const img = new Image();
+    img.src = items[(active + 1) % n].src;
+  }, [active, n, items]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -144,6 +155,23 @@ export default function ImageTheater() {
     const r = e.currentTarget.getBoundingClientRect();
     setMouse({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
   }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const start = touchRef.current;
+    touchRef.current = null;
+    if (!start) return;
+    const dx = e.changedTouches[0].clientX - start.x;
+    const dy = e.changedTouches[0].clientY - start.y;
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx > 0) prev(); else next();
+    }
+  }, [prev, next]);
+
+  useEffect(() => { setLoaded(false); }, [active]);
 
   const counterNum = useScramble(String(active + 1).padStart(2, "0"));
   const item = items[active];
@@ -173,6 +201,8 @@ export default function ImageTheater() {
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => { setPaused(false); setMouse({ x: 0.5, y: 0.5 }); }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Corner brackets */}
         <span className="tc-br tc-br--tl" aria-hidden />
@@ -180,18 +210,26 @@ export default function ImageTheater() {
         <span className="tc-br tc-br--bl" aria-hidden />
         <span className="tc-br tc-br--br" aria-hidden />
 
-        {/* Primary image — key forces fade-in on change */}
+        {/* Decrypting shimmer while the frame loads */}
+        {!loaded && <div className="image-theater__feature-shimmer" aria-hidden />}
+
+        {/* Primary image — parallax on wrapper, slow Ken Burns drift on img */}
         {item && (
-          <img
+          <div
             key={item.src}
-            src={item.src}
-            alt={item.label}
-            className="image-theater__feature-img"
-            style={{ transform: `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) scale(1.08)` }}
-            loading={item.eager ? "eager" : "lazy"}
-            decoding="async"
-            onError={() => markFailed(item.src)}
-          />
+            className="image-theater__feature-drift"
+            style={{ transform: `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px)` }}
+          >
+            <img
+              src={item.src}
+              alt={item.label}
+              className={`image-theater__feature-img${loaded ? " image-theater__feature-img--in" : ""}`}
+              loading={item.eager ? "eager" : "lazy"}
+              decoding="async"
+              onLoad={() => setLoaded(true)}
+              onError={() => markFailed(item.src)}
+            />
+          </div>
         )}
 
         {/* Scanlines overlay */}
@@ -204,6 +242,14 @@ export default function ImageTheater() {
             <span className="image-theater__feature-sub">{item.sub}</span>
           </div>
         )}
+
+        {/* Autoplay countdown — refills each slide, freezes on hover */}
+        <div
+          key={`t-${active}`}
+          className={`image-theater__timer${paused ? " image-theater__timer--held" : ""}`}
+          style={{ animationDuration: `${AUTO_MS}ms` }}
+          aria-hidden
+        />
 
         {/* Top-edge pulse line */}
         <div className="image-theater__feature-pulse" aria-hidden />

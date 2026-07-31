@@ -13,6 +13,9 @@ import SocialLinks from "@/components/SocialLinks";
 import CipherSmokeCursor from "@/components/CipherSmokeCursor";
 import BootSequence from "@/components/BootSequence";
 import LiveMetricsTicker from "@/components/LiveMetricsTicker";
+import ScrollProgress from "@/components/ScrollProgress";
+import ModelSignatures from "@/components/ModelSignatures";
+import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
   RevealHeading,
@@ -34,6 +37,7 @@ const loadProjectSpotlight = () => import("@/components/ProjectSpotlight");
 const loadSignalConstellation = () => import("@/components/SignalConstellation");
 const loadImageTheater = () => import("@/components/ImageTheater");
 const loadArsenalShowcase = () => import("@/components/ArsenalShowcase");
+const loadZenGenGallery = () => import("@/components/ZenGenGallery");
 
 const GlassCube = lazy(loadGlassCube);
 const GlassOrbit = lazy(loadGlassOrbit);
@@ -47,6 +51,7 @@ const ProjectSpotlight = lazy(loadProjectSpotlight);
 const SignalConstellation = lazy(loadSignalConstellation);
 const ImageTheater = lazy(loadImageTheater);
 const ArsenalShowcase = lazy(loadArsenalShowcase);
+const ZenGenGallery = lazy(loadZenGenGallery);
 
 /* Ordered roughly by scroll position — prefetched during idle time after
    first paint so scrolling never hits a chunk-loading gap. */
@@ -57,6 +62,7 @@ const CHUNK_PRELOADERS = [
   loadMediaRoom,
   loadImageTheater,
   loadArsenalShowcase,
+  loadZenGenGallery,
   loadGalleryShowcase,
   loadGlassOrbit,
   loadGlassCube,
@@ -157,6 +163,9 @@ export default function Index() {
 
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />
+
+      {/* Reading-position hairline */}
+      <ScrollProgress />
 
       {/* Viewport corner indicators */}
       <div className="viewport-corners" aria-hidden="true">
@@ -365,6 +374,15 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
+        <CrypticDivider lines={4} label="// zen-gen online" />
+
+        {/* Generative archive — owner-fed, four ways to read it */}
+        <LazySection className="relative" rootMargin="1200px 0px">
+          <Suspense fallback={<div style={{ minHeight: "90vh" }} />}>
+            <ZenGenGallery />
+          </Suspense>
+        </LazySection>
+
         <CrypticDivider lines={5} label="// opening the lab" />
 
         <div className="relative">
@@ -398,36 +416,44 @@ export default function Index() {
             <div className="artifact-lab__item artifact-lab__item--wide">
               <div className="artifact-lab__label">Glass system · orbital field</div>
               <LazySection className="relative z-[1]">
-                <Suspense fallback={<div style={{ minHeight: "520px" }} />}>
-                  <GlassOrbit />
-                </Suspense>
+                <SafeVisual label="orbital field offline">
+                  <Suspense fallback={<div style={{ minHeight: "520px" }} />}>
+                    <GlassOrbit />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--narrow artifact-lab__item--centered">
               <div className="artifact-lab__label">Glass artifact · v2</div>
               <LazySection className="relative z-[1] flex items-center justify-center py-12">
-                <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-                  <GlassCube />
-                </Suspense>
+                <SafeVisual label="glass artifact offline">
+                  <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+                    <GlassCube />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--narrow">
               <div className="artifact-lab__label">Identity object</div>
               <LazySection className="relative z-[1] px-6 md:px-12 lg:px-20">
-                <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-                  <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
-                </Suspense>
+                <SafeVisual label="identity object offline">
+                  <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
+                    <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--wide">
               <div className="artifact-lab__label">Generative field</div>
               <LazySection className="relative z-[1]">
-                <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
-                  <CubeRain />
-                </Suspense>
+                <SafeVisual label="generative field offline">
+                  <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+                    <CubeRain />
+                  </Suspense>
+                </SafeVisual>
               </LazySection>
             </div>
 
@@ -500,6 +526,11 @@ export default function Index() {
             </div>
           </ScrollSection>
         </div>
+
+        <CrypticDivider lines={3} label="// ledger open" />
+
+        {/* Guestbook of the LLM era — every model signs on its way out */}
+        <ModelSignatures />
       </div>
 
       {/* Live technical metrics strip — fixed bottom */}
