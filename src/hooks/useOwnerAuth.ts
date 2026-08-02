@@ -1,68 +1,45 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { checkOwner, signInWithPin, signOutOwner } from "@/lib/zengen";
 
 interface OwnerAuth {
-  session: Session | null;
   isOwner: boolean;
   checking: boolean;
-  signIn: (email: string, password: string) => Promise<string | null>;
+  signIn: (pin: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
 /**
- * Owner gate for the ZEN-GEN studio.
+ * Owner gate.
  *
- * The boolean here only decides what the UI offers — every write is
- * independently checked by row-level security against the allowlist,
- * so a forged `isOwner` still cannot upload or delete anything.
+ * The session is an HttpOnly cookie the browser cannot read, so this
+ * hook asks the server. The boolean only decides what the UI offers —
+ * every upload endpoint re-checks the cookie independently, so a forged
+ * `isOwner` still writes nothing.
  */
 export function useOwnerAuth(): OwnerAuth {
-  const [session, setSession] = useState<Session | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  const verify = useCallback(async (next: Session | null) => {
-    if (!next) {
-      setIsOwner(false);
-      setChecking(false);
-      return;
-    }
-    const { data, error } = await supabase.rpc("is_admin");
-    setIsOwner(!error && data === true);
-    setChecking(false);
-  }, []);
-
   useEffect(() => {
     let active = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      void verify(data.session);
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
-      if (!active) return;
-      setSession(next);
-      setChecking(true);
-      void verify(next);
-    });
-
+    checkOwner()
+      .then((owner) => active && setIsOwner(owner))
+      .finally(() => active && setChecking(false));
     return () => {
       active = false;
-      sub.subscription.unsubscribe();
     };
-  }, [verify]);
+  }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return error ? error.message : null;
+  const signIn = useCallback(async (pin: string) => {
+    const err = await signInWithPin(pin);
+    if (!err) setIsOwner(true);
+    return err;
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await signOutOwner();
+    setIsOwner(false);
   }, []);
 
-  return { session, isOwner, checking, signIn, signOut };
+  return { isOwner, checking, signIn, signOut };
 }

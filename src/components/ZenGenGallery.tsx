@@ -2,13 +2,10 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { createPortal } from "react-dom";
 import HoloSigilField from "@/components/zengen/HoloSigilField";
 import {
-  fetchCollections,
   fetchImagePage,
-  countImages,
-  isNotProvisioned,
+  COLLECTIONS,
   thumbUrl,
   fullUrl,
-  type ZenGenCollection,
   type ZenGenImage,
 } from "@/lib/zengen";
 
@@ -288,51 +285,29 @@ function Viewer({
 /* ── Section ──────────────────────────────────────────────────── */
 export default function ZenGenGallery() {
   const [images, setImages] = useState<ZenGenImage[]>([]);
-  const [collections, setCollections] = useState<ZenGenCollection[]>([]);
+  const collections = COLLECTIONS;
   const [activeCollection, setActiveCollection] = useState<string | null>(null);
   const [mode, setMode] = useState<ViewMode>("stream");
-  const [page, setPage] = useState(0);
+  const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-  const [total, setTotal] = useState(0);
   const [viewing, setViewing] = useState<number | null>(null);
   const [studioOpen, setStudioOpen] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetchCollections().then(setCollections).catch(() => setCollections([]));
-  }, []);
 
   const reload = useCallback(async (collectionId: string | null) => {
     setLoading(true);
     setFailed(false);
     try {
-      /* An unreachable backend would otherwise hang the section on its
-         loading state forever, so the request gets a hard ceiling. */
-      const withTimeout = <T,>(p: Promise<T>) =>
-        Promise.race([
-          p,
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("archive timed out")), 12000),
-          ),
-        ]);
-
-      const [{ images: rows, hasMore: more }, count] = await Promise.all([
-        withTimeout(fetchImagePage(0, collectionId)),
-        withTimeout(countImages(collectionId)),
-      ]);
+      const { images: rows, nextCursor } = await fetchImagePage(null, collectionId);
       setImages(rows);
-      setHasMore(more);
-      setTotal(count);
-      setPage(0);
-    } catch (err) {
+      setCursor(nextCursor);
+      setHasMore(!!nextCursor);
+    } catch {
       setImages([]);
       setHasMore(false);
-      setTotal(0);
-      /* A missing table means the archive is not set up yet — that
-         reads as standing by, not as a failure. */
-      setFailed(!isNotProvisioned(err));
+      setFailed(true);
     } finally {
       setLoading(false);
     }
@@ -350,12 +325,11 @@ export default function ZenGenGallery() {
     const io = new IntersectionObserver(async ([e]) => {
       if (!e.isIntersecting) return;
       io.disconnect();
-      const next = page + 1;
       try {
-        const { images: rows, hasMore: more } = await fetchImagePage(next, activeCollection);
+        const { images: rows, nextCursor } = await fetchImagePage(cursor, activeCollection);
         setImages((prev) => [...prev, ...rows]);
-        setHasMore(more);
-        setPage(next);
+        setCursor(nextCursor);
+        setHasMore(!!nextCursor);
       } catch {
         setHasMore(false);
       }
@@ -363,7 +337,7 @@ export default function ZenGenGallery() {
 
     io.observe(el);
     return () => io.disconnect();
-  }, [hasMore, loading, page, activeCollection, mode]);
+  }, [hasMore, loading, cursor, activeCollection, mode]);
 
   const stepViewer = useCallback((d: 1 | -1) => {
     setViewing((v) => (v === null ? v : (v + d + images.length) % images.length));
@@ -391,7 +365,7 @@ export default function ZenGenGallery() {
         </p>
 
         <div className="zen-gen__stat">
-          <span className="zen-gen__stat-n">{String(total).padStart(4, "0")}</span>
+          <span className="zen-gen__stat-n">{String(images.length).padStart(4, "0")}{hasMore ? "+" : ""}</span>
           <span className="zen-gen__stat-l">frames in the archive</span>
         </div>
       </header>
@@ -424,11 +398,10 @@ export default function ZenGenGallery() {
             </button>
             {collections.map((c) => (
               <button
-                key={c.id}
+                key={c.slug}
                 type="button"
-                className={`zg-chip zg-chip--${c.accent}${activeCollection === c.id ? " zg-chip--on" : ""}`}
-                onClick={() => setActiveCollection(c.id)}
-                title={c.description}
+                className={`zg-chip zg-chip--${c.accent}${activeCollection === c.slug ? " zg-chip--on" : ""}`}
+                onClick={() => setActiveCollection(c.slug)}
               >
                 {c.title}
               </button>
@@ -515,7 +488,7 @@ export default function ZenGenGallery() {
       )}
 
       <footer className="zen-gen__foot">
-        <span>zen-gen · {String(images.length).padStart(4, "0")} loaded of {String(total).padStart(4, "0")}</span>
+        <span>zen-gen · {String(images.length).padStart(4, "0")} frames loaded</span>
         <button type="button" className="zen-gen__studio-btn" onClick={() => setStudioOpen(true)}>
           ⌘ Studio
         </button>
