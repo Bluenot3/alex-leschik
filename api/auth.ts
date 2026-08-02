@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { verifyPin, issueCookie, clearCookie, isOwner } from "./_lib/session";
+import { verifyPin, issueCookie, clearCookie, isOwner } from "./_lib/session.js";
 
 /** Small delay on failure to blunt automated PIN guessing. */
 const FAIL_DELAY_MS = 600;

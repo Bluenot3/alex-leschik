@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createPage, title, text, NotionError } from "./_lib/notion";
+import { createPage, title, text, NotionError } from "./_lib/notion.js";
 
 const looksLikeEmail = (v: string) => /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(v);
 

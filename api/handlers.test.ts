@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import authHandler from "./auth";
-import leadHandler from "./lead";
+import authHandler from "./auth.js";
+import leadHandler from "./lead.js";
 
 /** Minimal stand-in for the Vercel req/res pair. */
 function mock(method: string, body: unknown = {}, cookie?: string) {

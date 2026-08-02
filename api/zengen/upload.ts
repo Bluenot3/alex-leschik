@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { isOwner } from "../_lib/session";
-import { presignUpload, makeKeys } from "../_lib/r2";
-import { createPage, title, text, select, number, checkbox, NotionError } from "../_lib/notion";
+import { isOwner } from "../_lib/session.js";
+import { presignUpload, makeKeys } from "../_lib/r2.js";
+import { createPage, title, text, select, number, checkbox, NotionError } from "../_lib/notion.js";
 
 /**
  * Two-step upload, both steps owner-gated:

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { verifyPin, issueCookie, clearCookie, isOwner } from "./session";
+import { verifyPin, issueCookie, clearCookie, isOwner } from "./session.js";
 
 const SECRET = "test-secret-that-is-long-enough";
 

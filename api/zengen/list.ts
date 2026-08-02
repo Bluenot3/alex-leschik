@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   queryDatabase, readText, readSelect, readNumber, readCheckbox, NotionError,
-} from "../_lib/notion";
-import { publicUrl } from "../_lib/r2";
+} from "../_lib/notion.js";
+import { publicUrl } from "../_lib/r2.js";
 
 const PAGE_SIZE = 48;
 

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createPage, title, text, email, select, NotionError } from "./_lib/notion";
+import { createPage, title, text, email, select, NotionError } from "./_lib/notion.js";
 
 const MAX = { name: 120, email: 200, company: 160, projectType: 120, budget: 80, message: 4000 };
 
