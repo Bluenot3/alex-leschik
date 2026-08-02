@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useOwnerAuth } from "@/hooks/useOwnerAuth";
 import OwnerGate from "@/components/OwnerGate";
-import {
-  ZENGEN_BUCKET,
-  makeKey,
-  processImage,
-  type ZenGenCollection,
-} from "@/lib/zengen";
+import { uploadOne, type ZenGenCollection } from "@/lib/zengen";
 
 type Status = "queued" | "working" | "done" | "failed";
 
@@ -28,7 +22,7 @@ interface Props {
 }
 
 export default function ZenGenStudio({ collections, onClose, onUploaded }: Props) {
-  const { session, isOwner } = useOwnerAuth();
+  const { isOwner } = useOwnerAuth();
 
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [running, setRunning] = useState(false);
@@ -78,36 +72,10 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
     setQueue((prev) => prev.map((q) => (q.id === id ? { ...q, status, error } : q)));
   }, []);
 
-  const uploadOne = useCallback(async (item: QueueItem) => {
+  const runOne = useCallback(async (item: QueueItem) => {
     mark(item.id, "working");
     try {
-      const { full, thumb, width, height } = await processImage(item.file);
-      const key = makeKey(item.file);
-      const fullPath = `full/${key}.webp`;
-      const thumbPath = `thumb/${key}.webp`;
-
-      const [fullRes, thumbRes] = await Promise.all([
-        supabase.storage.from(ZENGEN_BUCKET).upload(fullPath, full, {
-          contentType: "image/webp", cacheControl: "31536000", upsert: false,
-        }),
-        supabase.storage.from(ZENGEN_BUCKET).upload(thumbPath, thumb, {
-          contentType: "image/webp", cacheControl: "31536000", upsert: false,
-        }),
-      ]);
-      if (fullRes.error) throw fullRes.error;
-      if (thumbRes.error) throw thumbRes.error;
-
-      const { error } = await supabase.from("zengen_images").insert({
-        storage_path: fullPath,
-        thumb_path: thumbPath,
-        title: item.file.name.replace(/\.[^.]+$/, ""),
-        collection_id: collectionId || null,
-        width,
-        height,
-        bytes: full.size,
-      });
-      if (error) throw error;
-
+      await uploadOne(item.file, collectionId);
       mark(item.id, "done");
     } catch (err) {
       mark(item.id, "failed", err instanceof Error ? err.message : "upload failed");
@@ -127,7 +95,7 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
       while (!cancelled.current) {
         const idx = cursor++;
         if (idx >= pending.length) return;
-        await uploadOne(pending[idx]);
+        await runOne(pending[idx]);
       }
     };
 
@@ -135,7 +103,7 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
 
     setRunning(false);
     onUploaded();
-  }, [queue, running, uploadOne, onUploaded]);
+  }, [queue, running, runOne, onUploaded]);
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -165,7 +133,7 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
 
         <OwnerGate
           purpose="Upload and file ZEN-GEN generations."
-          footNote={`signed in as ${session?.user.email ?? ""}`}
+          footNote="owner session · uploads enabled"
         >
           <div className="zg-studio__body">
             <div
@@ -206,7 +174,7 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
                 <select value={collectionId} onChange={(e) => setCollectionId(e.target.value)}>
                   <option value="">— unfiled —</option>
                   {collections.map((c) => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
+                    <option key={c.slug} value={c.slug}>{c.title}</option>
                   ))}
                 </select>
               </label>

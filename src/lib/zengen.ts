@@ -1,122 +1,101 @@
-import { supabase } from "@/integrations/supabase/client";
-
-export const ZENGEN_BUCKET = "zen-gen";
-export const PAGE_SIZE = 48;
+/**
+ * ZEN-GEN data access.
+ *
+ * Records live in Notion and image bytes live in Cloudflare R2; both are
+ * reached through this site's own /api functions, so no third-party
+ * token ever ships to the browser.
+ */
 
 export interface ZenGenImage {
   id: string;
-  storage_path: string;
-  thumb_path: string | null;
+  url: string;
+  thumbUrl: string;
   title: string;
   prompt: string;
-  model: string;
-  collection_id: string | null;
+  collection: string;
   width: number | null;
   height: number | null;
   featured: boolean;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface ZenGenCollection {
   id: string;
   slug: string;
   title: string;
-  description: string;
   accent: string;
-  sort_order: number;
 }
 
-/** Storage paths are stable, so the resolved URL is worth caching. */
-const urlCache = new Map<string, string>();
+/** Mirrors the Collection options on the Notion database. */
+export const COLLECTIONS: ZenGenCollection[] = [
+  { id: "genesis", slug: "genesis", title: "GENESIS", accent: "cyan" },
+  { id: "artifacts", slug: "artifacts", title: "ARTIFACTS", accent: "violet" },
+  { id: "worlds", slug: "worlds", title: "WORLDS", accent: "amber" },
+];
 
-export function publicUrl(path: string | null | undefined): string {
-  if (!path) return "";
-  const hit = urlCache.get(path);
-  if (hit) return hit;
-  const { data } = supabase.storage.from(ZENGEN_BUCKET).getPublicUrl(path);
-  urlCache.set(path, data.publicUrl);
-  return data.publicUrl;
-}
-
-/** Grid/stream views pull the thumbnail; the lightbox pulls the original. */
-export function thumbUrl(img: ZenGenImage): string {
-  return publicUrl(img.thumb_path ?? img.storage_path);
-}
-
-export function fullUrl(img: ZenGenImage): string {
-  return publicUrl(img.storage_path);
-}
-
-export async function fetchCollections(): Promise<ZenGenCollection[]> {
-  const { data, error } = await supabase
-    .from("zengen_collections")
-    .select("id, slug, title, description, accent, sort_order")
-    .order("sort_order", { ascending: true });
-  if (error) throw error;
-  return (data ?? []) as ZenGenCollection[];
-}
+export const thumbUrl = (img: ZenGenImage) => img.thumbUrl || img.url;
+export const fullUrl = (img: ZenGenImage) => img.url;
 
 export interface PageResult {
   images: ZenGenImage[];
-  hasMore: boolean;
+  nextCursor: string | null;
+  configured: boolean;
 }
 
-/**
- * True when the archive tables simply have not been created yet.
- * That is a setup state, not a fault, and the UI says so differently.
- */
-export function isNotProvisioned(err: unknown): boolean {
-  const code = (err as { code?: string } | null)?.code ?? "";
-  const message = (err as { message?: string } | null)?.message ?? "";
-  return (
-    code === "42P01" ||        // postgres: undefined_table
-    code === "PGRST205" ||     // postgrest: table not found in schema cache
-    /does not exist|could not find the table/i.test(message)
-  );
+async function asJson(res: Response) {
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error ?? `Request failed (${res.status})`);
+  return body;
 }
 
-/**
- * Offset pagination against the (created_at DESC, id DESC) index.
- * Requests one extra row to learn whether another page exists without
- * paying for a count query on a table meant to hold thousands of rows.
- */
 export async function fetchImagePage(
-  page: number,
-  collectionId: string | null,
+  cursor: string | null,
+  collection: string | null,
 ): Promise<PageResult> {
-  const from = page * PAGE_SIZE;
-  let query = supabase
-    .from("zengen_images")
-    .select(
-      "id, storage_path, thumb_path, title, prompt, model, collection_id, width, height, featured, created_at",
-    )
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .range(from, from + PAGE_SIZE);
+  const params = new URLSearchParams();
+  if (cursor) params.set("cursor", cursor);
+  if (collection) params.set("collection", collection);
 
-  if (collectionId) query = query.eq("collection_id", collectionId);
-
-  const { data, error } = await query;
-  if (error) throw error;
-
-  const rows = (data ?? []) as ZenGenImage[];
-  return { images: rows.slice(0, PAGE_SIZE), hasMore: rows.length > PAGE_SIZE };
+  const body = await asJson(await fetch(`/api/zengen/list?${params}`));
+  return {
+    images: (body.images ?? []) as ZenGenImage[],
+    nextCursor: body.nextCursor ?? null,
+    configured: body.configured !== false,
+  };
 }
 
-export async function countImages(collectionId: string | null): Promise<number> {
-  let query = supabase
-    .from("zengen_images")
-    .select("id", { count: "exact", head: true });
-  if (collectionId) query = query.eq("collection_id", collectionId);
-  const { count, error } = await query;
-  if (error) throw error;
-  return count ?? 0;
+/* ── Owner session ─────────────────────────────────────────── */
+
+export async function checkOwner(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/auth", { credentials: "same-origin" });
+    return res.ok && (await res.json()).owner === true;
+  } catch {
+    return false;
+  }
 }
 
-/* ── Client-side image processing ──────────────────────────────
-   Thousands of full-resolution generations would make the grid
-   unusable, so each upload also produces a small WebP thumbnail.
-   Both derive from one decode pass.                             */
+export async function signInWithPin(pin: string): Promise<string | null> {
+  try {
+    const res = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ pin }),
+    });
+    if (res.ok) return null;
+    const body = await res.json().catch(() => ({}));
+    return body?.error ?? "PIN not accepted";
+  } catch {
+    return "Could not reach the server";
+  }
+}
+
+export async function signOutOwner(): Promise<void> {
+  await fetch("/api/auth", { method: "DELETE", credentials: "same-origin" }).catch(() => {});
+}
+
+/* ── Upload ────────────────────────────────────────────────── */
 
 export interface Processed {
   full: Blob;
@@ -148,6 +127,7 @@ function drawTo(bitmap: ImageBitmap, max: number, quality: number): Promise<Blob
   });
 }
 
+/** Both sizes come from a single decode pass. */
 export async function processImage(file: File): Promise<Processed> {
   const bitmap = await createImageBitmap(file);
   try {
@@ -161,15 +141,48 @@ export async function processImage(file: File): Promise<Processed> {
   }
 }
 
-/** Collision-proof key that keeps uploads sorted by arrival. */
-export function makeKey(file: File): string {
-  const stamp = Date.now().toString(36);
-  const rand = Math.random().toString(36).slice(2, 8);
-  const safe = file.name
-    .replace(/\.[^.]+$/, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 48) || "frame";
-  return `${stamp}-${rand}-${safe}`;
+export async function uploadOne(
+  file: File,
+  collection: string,
+): Promise<void> {
+  const { full, thumb, width, height } = await processImage(file);
+
+  const prep = await asJson(
+    await fetch("/api/zengen/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ name: file.name }),
+    }),
+  );
+
+  /* Bytes go browser -> R2 directly; the function only signs the URL. */
+  const put = async (url: string, blob: Blob) => {
+    const res = await fetch(url, {
+      method: "PUT",
+      body: blob,
+      headers: { "Content-Type": "image/webp" },
+    });
+    if (!res.ok) throw new Error(`Storage rejected the upload (${res.status})`);
+  };
+
+  await Promise.all([put(prep.fullUrl, full), put(prep.thumbUrl, thumb)]);
+
+  await asJson(
+    await fetch("/api/zengen/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        commit: {
+          key: prep.keys.full,
+          thumbKey: prep.keys.thumb,
+          title: file.name.replace(/\.[^.]+$/, ""),
+          collection: collection || "unfiled",
+          width,
+          height,
+        },
+      }),
+    }),
+  );
 }

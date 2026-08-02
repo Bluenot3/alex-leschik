@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Mail, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 
 export default function NewsletterSignup() {
@@ -19,9 +18,14 @@ export default function NewsletterSignup() {
 
     setSubmitting(true);
 
-    const { error: supaError } = await supabase.from("newsletter_signups").insert({
-      email: email.trim(),
+    const res = await fetch("/api/newsletter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim() }),
     });
+    const supaError = res.ok ? null : new Error(
+      (await res.json().catch(() => ({}))).error ?? "Signup failed",
+    );
 
     setSubmitting(false);
 
