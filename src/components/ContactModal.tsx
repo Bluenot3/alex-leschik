@@ -1,12 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import CrypticBackground from "@/components/CrypticBackground";
 import ContactForm from "@/components/ContactForm";
+import { NOTION_LEAD_FORM_URL } from "@/lib/notionForms";
+import { ExternalLink } from "lucide-react";
 
 interface ContactModalProps {
   onClose: () => void;
 }
 
 export default function ContactModal({ onClose }: ContactModalProps) {
+  // Notion is the primary destination. The native form stays available as a
+  // fallback path in case the embed is blocked by the visitor's browser.
+  const [mode, setMode] = useState<"notion" | "native">("notion");
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
@@ -45,9 +51,38 @@ export default function ContactModal({ onClose }: ContactModalProps) {
           </p>
         </div>
 
-        {/* Contact form */}
+        {/* Intake — Notion form (primary) */}
         <div className="contact-modal__frame contact-modal__frame--form">
-          <ContactForm onSuccess={() => setTimeout(onClose, 2500)} />
+          {mode === "notion" ? (
+            <iframe
+              src={NOTION_LEAD_FORM_URL}
+              title="Contact Alexander Leschik"
+              className="contact-modal__notion"
+              loading="lazy"
+            />
+          ) : (
+            <ContactForm onSuccess={() => setTimeout(onClose, 2500)} />
+          )}
+        </div>
+
+        {/* Intake footer */}
+        <div className="contact-modal__foot">
+          <a
+            href={NOTION_LEAD_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="contact-modal__foot-link"
+          >
+            <ExternalLink className="w-3 h-3" />
+            Open form in a new tab
+          </a>
+          <button
+            type="button"
+            className="contact-modal__foot-btn"
+            onClick={() => setMode(mode === "notion" ? "native" : "notion")}
+          >
+            {mode === "notion" ? "Form not loading? Use direct intake" : "Back to standard form"}
+          </button>
         </div>
 
         {/* Close */}
