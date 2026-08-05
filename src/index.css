@@ -5915,3 +5915,76 @@
   .arsenal-showcase { padding: 3.5rem 1rem 3rem; }
 }
 
+
+/* ── Notion intake embed ───────────────────────────────────────
+   Notion is the destination of record for inbound signal. The
+   embed is framed to match the modal's glass surface.            */
+.contact-modal__notion {
+  width: 100%;
+  height: clamp(360px, 58vh, 620px);
+  border: 0;
+  border-radius: 0.75rem;
+  background: hsl(var(--background));
+  display: block;
+}
+
+.contact-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+}
+
+.contact-modal__foot-link,
+.contact-modal__foot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.75);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.contact-modal__foot-link:hover,
+.contact-modal__foot-btn:hover {
+  color: hsl(var(--foreground));
+}
+
+/* Owner shortcut into the Notion boards */
+.notion-link-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.notion-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 0.5rem;
+  background: hsl(var(--card) / 0.6);
+  font-family: ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground) / 0.75);
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.notion-link:hover {
+  border-color: hsl(var(--foreground) / 0.35);
+  color: hsl(var(--foreground));
+}
