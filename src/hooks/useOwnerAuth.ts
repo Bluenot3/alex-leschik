@@ -28,7 +28,7 @@ export function useOwnerAuth(): OwnerAuth {
       setChecking(false);
       return;
     }
-    const { data, error } = await supabase.rpc("is_admin");
+    const { data, error } = await (supabase as any).rpc("is_admin");
     setIsOwner(!error && data === true);
     setChecking(false);
   }, []);

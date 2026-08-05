@@ -97,7 +97,7 @@ export default function ZenGenStudio({ collections, onClose, onUploaded }: Props
       if (fullRes.error) throw fullRes.error;
       if (thumbRes.error) throw thumbRes.error;
 
-      const { error } = await supabase.from("zengen_images").insert({
+      const { error } = await (supabase as any).from("zengen_images").insert({
         storage_path: fullPath,
         thumb_path: thumbPath,
         title: item.file.name.replace(/\.[^.]+$/, ""),

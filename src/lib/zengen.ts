@@ -48,12 +48,12 @@ export function fullUrl(img: ZenGenImage): string {
 }
 
 export async function fetchCollections(): Promise<ZenGenCollection[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("zengen_collections")
     .select("id, slug, title, description, accent, sort_order")
     .order("sort_order", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as ZenGenCollection[];
+  return (data ?? []) as unknown as ZenGenCollection[];
 }
 
 export interface PageResult {
@@ -85,7 +85,7 @@ export async function fetchImagePage(
   collectionId: string | null,
 ): Promise<PageResult> {
   const from = page * PAGE_SIZE;
-  let query = supabase
+  let query = (supabase as any)
     .from("zengen_images")
     .select(
       "id, storage_path, thumb_path, title, prompt, model, collection_id, width, height, featured, created_at",
@@ -99,12 +99,12 @@ export async function fetchImagePage(
   const { data, error } = await query;
   if (error) throw error;
 
-  const rows = (data ?? []) as ZenGenImage[];
+  const rows = (data ?? []) as unknown as ZenGenImage[];
   return { images: rows.slice(0, PAGE_SIZE), hasMore: rows.length > PAGE_SIZE };
 }
 
 export async function countImages(collectionId: string | null): Promise<number> {
-  let query = supabase
+  let query = (supabase as any)
     .from("zengen_images")
     .select("id", { count: "exact", head: true });
   if (collectionId) query = query.eq("collection_id", collectionId);
