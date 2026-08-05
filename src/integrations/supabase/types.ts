@@ -113,92 +113,6 @@ export type Database = {
         }
         Relationships: []
       }
-      zengen_collections: {
-        Row: {
-          accent: string
-          created_at: string
-          description: string
-          id: string
-          slug: string
-          sort_order: number
-          title: string
-        }
-        Insert: {
-          accent?: string
-          created_at?: string
-          description?: string
-          id?: string
-          slug: string
-          sort_order?: number
-          title?: string
-        }
-        Update: {
-          accent?: string
-          created_at?: string
-          description?: string
-          id?: string
-          slug?: string
-          sort_order?: number
-          title?: string
-        }
-        Relationships: []
-      }
-      zengen_images: {
-        Row: {
-          bytes: number | null
-          collection_id: string | null
-          created_at: string
-          featured: boolean
-          height: number | null
-          id: string
-          model: string
-          prompt: string
-          sort_order: number
-          storage_path: string
-          thumb_path: string | null
-          title: string
-          width: number | null
-        }
-        Insert: {
-          bytes?: number | null
-          collection_id?: string | null
-          created_at?: string
-          featured?: boolean
-          height?: number | null
-          id?: string
-          model?: string
-          prompt?: string
-          sort_order?: number
-          storage_path: string
-          thumb_path?: string | null
-          title?: string
-          width?: number | null
-        }
-        Update: {
-          bytes?: number | null
-          collection_id?: string | null
-          created_at?: string
-          featured?: boolean
-          height?: number | null
-          id?: string
-          model?: string
-          prompt?: string
-          sort_order?: number
-          storage_path?: string
-          thumb_path?: string | null
-          title?: string
-          width?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "zengen_images_collection_id_fkey"
-            columns: ["collection_id"]
-            isOneToOne: false
-            referencedRelation: "zengen_collections"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       portfolio_images: {
         Row: {
           created_at: string
@@ -231,10 +145,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
