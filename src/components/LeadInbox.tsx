@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { RefreshCw, Mail, Building2, Tag, Clock, CheckCircle2, Circle, XCircle, Filter, Trash2, Loader2 } from "lucide-react";
+import { RefreshCw, Mail, Building2, Tag, Clock, CheckCircle2, Circle, XCircle, Filter, Trash2, Loader2, ExternalLink } from "lucide-react";
+import { NOTION_LEADS_DB_URL, NOTION_NEWSLETTER_DB_URL } from "@/lib/notionForms";
 
 type Lead = Tables<"leads">;
 type Status = "new" | "contacted" | "closed";
@@ -66,6 +67,18 @@ export default function LeadInbox() {
 
   return (
     <div className="lead-inbox">
+      {/* Notion holds the working pipeline; this list is the backup mirror. */}
+      <div className="notion-link-row">
+        <a href={NOTION_LEADS_DB_URL} target="_blank" rel="noopener noreferrer" className="notion-link">
+          <ExternalLink className="w-3 h-3" />
+          Leads in Notion
+        </a>
+        <a href={NOTION_NEWSLETTER_DB_URL} target="_blank" rel="noopener noreferrer" className="notion-link">
+          <ExternalLink className="w-3 h-3" />
+          ZEN Weekly in Notion
+        </a>
+      </div>
+
       {/* Header + filters */}
       <div className="lead-inbox__header">
         <div className="lead-inbox__counts">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
+import { NOTION_NEWSLETTER_FORM_URL } from "@/lib/notionForms";
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("");
@@ -19,22 +20,25 @@ export default function NewsletterSignup() {
 
     setSubmitting(true);
 
-    const { error: supaError } = await supabase.from("newsletter_signups").insert({
-      email: email.trim(),
-    });
+    const value = email.trim();
 
-    setSubmitting(false);
+    // Backup record — the working list lives in Notion.
+    const { error: supaError } = await supabase
+      .from("newsletter_signups")
+      .insert({ email: value });
 
-    if (supaError) {
-      if (supaError.message?.includes("duplicate")) {
-        setSubmitted(true);
-        return;
-      }
-      setError("Something went wrong. Please try again.");
+    if (supaError && !supaError.message?.includes("duplicate")) {
       console.error(supaError);
-      return;
     }
 
+    // Confirm the subscription in Notion, the source of truth.
+    window.open(
+      `${NOTION_NEWSLETTER_FORM_URL}?prefill_Email=${encodeURIComponent(value)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+
+    setSubmitting(false);
     setSubmitted(true);
     setEmail("");
   };
@@ -43,7 +47,9 @@ export default function NewsletterSignup() {
     return (
       <div className="newsletter-signup newsletter-signup--success">
         <CheckCircle className="w-4 h-4 text-emerald-500" />
-        <span className="newsletter-signup__success-text">You are on the list.</span>
+        <span className="newsletter-signup__success-text">
+          Confirm in the Notion tab to finish.
+        </span>
       </div>
     );
   }
