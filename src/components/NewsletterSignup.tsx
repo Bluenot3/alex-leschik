@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
-import { NOTION_NEWSLETTER_FORM_URL } from "@/lib/notionForms";
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("");
@@ -22,7 +21,7 @@ export default function NewsletterSignup() {
 
     const value = email.trim();
 
-    // Backup record — the working list lives in Notion.
+    // Silent backup record.
     const { error: supaError } = await supabase
       .from("newsletter_signups")
       .insert({ email: value });
@@ -31,14 +30,18 @@ export default function NewsletterSignup() {
       console.error(supaError);
     }
 
-    // Confirm the subscription in Notion, the source of truth.
-    window.open(
-      `${NOTION_NEWSLETTER_FORM_URL}?prefill_Email=${encodeURIComponent(value)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    // Logged privately in the Notion subscriber board, server-side.
+    const { error: fnError } = await supabase.functions.invoke("notion-intake", {
+      body: { kind: "newsletter", email: value },
+    });
 
     setSubmitting(false);
+
+    if (fnError && supaError) {
+      setError("Something went wrong. Please try again.");
+      return;
+    }
+
     setSubmitted(true);
     setEmail("");
   };
@@ -48,7 +51,7 @@ export default function NewsletterSignup() {
       <div className="newsletter-signup newsletter-signup--success">
         <CheckCircle className="w-4 h-4 text-emerald-500" />
         <span className="newsletter-signup__success-text">
-          Confirm in the Notion tab to finish.
+          You're subscribed to ZEN Weekly.
         </span>
       </div>
     );
