@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
 import CrypticBackground from "@/components/CrypticBackground";
 import ContactForm from "@/components/ContactForm";
-import { NOTION_LEAD_FORM_URL } from "@/lib/notionForms";
-import { ExternalLink } from "lucide-react";
 
 interface ContactModalProps {
   onClose: () => void;
 }
 
 export default function ContactModal({ onClose }: ContactModalProps) {
-  // Notion is the primary destination. The native form stays available as a
-  // fallback path in case the embed is blocked by the visitor's browser.
-  const [mode, setMode] = useState<"notion" | "native">("notion");
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);

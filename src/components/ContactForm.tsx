@@ -61,11 +61,25 @@ export default function ContactForm({ onSuccess, source = "contact-modal" }: Con
       status: "new",
     });
 
+    // Logged privately in the Notion lead board, server-side.
+    const { error: fnError } = await supabase.functions.invoke("notion-intake", {
+      body: {
+        kind: "lead",
+        name: name.trim(),
+        email: email.trim(),
+        company: company.trim(),
+        project_type: projectType,
+        budget_range: budgetRange,
+        message: message.trim(),
+        source,
+      },
+    });
+
     setSubmitting(false);
 
-    if (supaError) {
+    if (supaError && fnError) {
       setError("Something went wrong. Please try again.");
-      console.error(supaError);
+      console.error(supaError, fnError);
       return;
     }
 
