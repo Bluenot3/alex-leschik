@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import CrypticBackground from "@/components/CrypticBackground";
 import ContactForm from "@/components/ContactForm";
 
@@ -45,38 +45,9 @@ export default function ContactModal({ onClose }: ContactModalProps) {
           </p>
         </div>
 
-        {/* Intake — Notion form (primary) */}
+        {/* Intake — native form, submitted privately */}
         <div className="contact-modal__frame contact-modal__frame--form">
-          {mode === "notion" ? (
-            <iframe
-              src={NOTION_LEAD_FORM_URL}
-              title="Contact Alexander Leschik"
-              className="contact-modal__notion"
-              loading="lazy"
-            />
-          ) : (
-            <ContactForm onSuccess={() => setTimeout(onClose, 2500)} />
-          )}
-        </div>
-
-        {/* Intake footer */}
-        <div className="contact-modal__foot">
-          <a
-            href={NOTION_LEAD_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="contact-modal__foot-link"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Open form in a new tab
-          </a>
-          <button
-            type="button"
-            className="contact-modal__foot-btn"
-            onClick={() => setMode(mode === "notion" ? "native" : "notion")}
-          >
-            {mode === "notion" ? "Form not loading? Use direct intake" : "Back to standard form"}
-          </button>
+          <ContactForm onSuccess={() => setTimeout(onClose, 2500)} />
         </div>
 
         {/* Close */}
