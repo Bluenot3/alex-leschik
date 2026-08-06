@@ -5988,3 +5988,17 @@
   border-color: hsl(var(--foreground) / 0.35);
   color: hsl(var(--foreground));
 }
+
+/* ── Private owner console ───────────────────────────────────── */
+.console-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(120% 80% at 50% 0%, hsl(var(--muted) / 0.5), transparent 70%),
+    hsl(var(--background));
+}
+
+.owner-pin__unlock {
+  margin-top: 0.85rem;
+  width: 100%;
+  max-width: 15rem;
+}
