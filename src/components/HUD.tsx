@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Terminal, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 const SECTION_NAMES = ["ORIGIN", "SIGNAL", "CONSTELLATION", "WORK", "LAB", "CONTACT"];
 const PIN_HASH = "31759";
@@ -10,7 +10,6 @@ interface HUDProps {
   onDotClick: (index: number) => void;
   editMode: boolean;
   onToggleEdit: () => void;
-  onOpenCmd?: () => void;
 }
 
 function PinOverlay({
@@ -116,7 +115,6 @@ export default function HUD({
   onDotClick,
   editMode,
   onToggleEdit,
-  onOpenCmd,
 }: HUDProps) {
   const pct = String(Math.round(progress * 100)).padStart(3, "0");
   const name = SECTION_NAMES[currentSection] ?? "";
