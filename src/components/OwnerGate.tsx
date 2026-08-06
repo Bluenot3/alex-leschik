@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useOwnerAuth } from "@/hooks/useOwnerAuth";
-import { OWNER_EMAIL, PIN_LENGTH } from "@/lib/ownerConfig";
+import { OWNER_EMAIL, MIN_PIN_LENGTH, MAX_PIN_LENGTH } from "@/lib/ownerConfig";
 
 interface Props {
   children: ReactNode;
@@ -44,16 +44,13 @@ export default function OwnerGate({ children, purpose, footNote }: Props) {
     setBusy(false);
   }, [signIn]);
 
-  /* Fires the moment the last digit lands — no submit button needed */
-  useEffect(() => {
-    if (pin.length === PIN_LENGTH && !busy) void attempt(pin);
-  }, [pin, busy, attempt]);
+  const canSubmit = pin.length >= MIN_PIN_LENGTH && !busy;
 
   const press = useCallback((key: string) => {
     setError(null);
     if (key === "clear") return setPin("");
     if (key === "back") return setPin((p) => p.slice(0, -1));
-    setPin((p) => (p.length >= PIN_LENGTH ? p : p + key));
+    setPin((p) => (p.length >= MAX_PIN_LENGTH ? p : p + key));
   }, []);
 
   /* Physical keyboard works alongside the pad */
@@ -63,10 +60,11 @@ export default function OwnerGate({ children, purpose, footNote }: Props) {
       if (/^[0-9]$/.test(e.key)) press(e.key);
       else if (e.key === "Backspace") press("back");
       else if (e.key === "Escape") setPin("");
+      else if (e.key === "Enter" && pin.length >= MIN_PIN_LENGTH && !busy) void attempt(pin);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isOwner, useEmail, press]);
+  }, [isOwner, useEmail, press, pin, busy, attempt]);
 
   useEffect(() => { padRef.current?.focus(); }, []);
 
@@ -114,7 +112,7 @@ export default function OwnerGate({ children, purpose, footNote }: Props) {
       {!useEmail ? (
         <div className="owner-pin" ref={padRef} tabIndex={-1}>
           <div className={`owner-pin__dots${shake ? " owner-pin__dots--deny" : ""}`} aria-live="polite">
-            {Array.from({ length: PIN_LENGTH }, (_, i) => (
+            {Array.from({ length: Math.max(MIN_PIN_LENGTH, pin.length) }, (_, i) => (
               <span
                 key={i}
                 className={`owner-pin__dot${i < pin.length ? " owner-pin__dot--on" : ""}`}
@@ -124,7 +122,7 @@ export default function OwnerGate({ children, purpose, footNote }: Props) {
           </div>
 
           <span className="owner-pin__status">
-            {busy ? "verifying…" : error ? error : `enter ${PIN_LENGTH}-digit PIN`}
+            {busy ? "verifying…" : error ? error : "enter PIN, then unlock"}
           </span>
 
           <div className="owner-pin__pad">
@@ -141,6 +139,15 @@ export default function OwnerGate({ children, purpose, footNote }: Props) {
               </button>
             ))}
           </div>
+
+          <button
+            type="button"
+            className="owner-gate__submit owner-pin__unlock"
+            onClick={() => void attempt(pin)}
+            disabled={!canSubmit}
+          >
+            {busy ? "verifying…" : "Unlock"}
+          </button>
 
           <button type="button" className="owner-gate__link" onClick={() => setUseEmail(true)}>
             use email instead
