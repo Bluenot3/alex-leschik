@@ -184,18 +184,6 @@ export default function HUD({
       {/* Bottom-right controls */}
       <div className="fixed bottom-[var(--ui-inset)] right-[var(--ui-inset)] z-20 flex items-center gap-2">
         <button
-          onClick={onOpenCmd}
-          className="upload-panel hud-icon-btn flex items-center gap-2 cursor-pointer group"
-          style={{ position: "relative", bottom: "auto", right: "auto" }}
-          title="Command"
-          aria-label="Open command dashboard"
-        >
-          <Terminal className="w-3 h-3 text-muted-foreground/60" />
-          <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground hud-icon-label">
-            Command
-          </span>
-        </button>
-        <button
           onClick={handleEditClick}
           className="upload-panel hud-icon-btn flex items-center gap-2 cursor-pointer group"
           style={{ position: "relative", bottom: "auto", right: "auto" }}
