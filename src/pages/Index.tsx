@@ -4,7 +4,6 @@ import CubeScene from "@/components/CubeScene";
 import InteractiveName from "@/components/InteractiveName";
 import HUD from "@/components/HUD";
 import HoloNav from "@/components/HoloNav";
-import CommandDashboard from "@/components/CommandDashboard";
 import ContactModal from "@/components/ContactModal";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
@@ -89,7 +88,6 @@ export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
   const [editMode, setEditMode] = useState(false);
-  const [cmdOpen, setCmdOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
   /* ── Idle prefetch: warm every lazy chunk after first paint ── */
@@ -189,10 +187,8 @@ export default function Index() {
         onDotClick={scrollToSection}
         editMode={editMode}
         onToggleEdit={() => setEditMode((value) => !value)}
-        onOpenCmd={() => setCmdOpen(true)}
       />
 
-      <CommandDashboard open={cmdOpen} onClose={() => setCmdOpen(false)} />
       {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
       <HoloNav onNavigate={scrollToSection} />
 

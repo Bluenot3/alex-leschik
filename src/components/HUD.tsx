@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Terminal, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 const SECTION_NAMES = ["ORIGIN", "SIGNAL", "CONSTELLATION", "WORK", "LAB", "CONTACT"];
 const PIN_HASH = "31759";
@@ -10,7 +10,6 @@ interface HUDProps {
   onDotClick: (index: number) => void;
   editMode: boolean;
   onToggleEdit: () => void;
-  onOpenCmd?: () => void;
 }
 
 function PinOverlay({
@@ -116,7 +115,6 @@ export default function HUD({
   onDotClick,
   editMode,
   onToggleEdit,
-  onOpenCmd,
 }: HUDProps) {
   const pct = String(Math.round(progress * 100)).padStart(3, "0");
   const name = SECTION_NAMES[currentSection] ?? "";
@@ -183,18 +181,6 @@ export default function HUD({
 
       {/* Bottom-right controls */}
       <div className="fixed bottom-[var(--ui-inset)] right-[var(--ui-inset)] z-20 flex items-center gap-2">
-        <button
-          onClick={onOpenCmd}
-          className="upload-panel hud-icon-btn flex items-center gap-2 cursor-pointer group"
-          style={{ position: "relative", bottom: "auto", right: "auto" }}
-          title="Command"
-          aria-label="Open command dashboard"
-        >
-          <Terminal className="w-3 h-3 text-muted-foreground/60" />
-          <span className="font-mono text-[0.55rem] tracking-widest uppercase text-muted-foreground hud-icon-label">
-            Command
-          </span>
-        </button>
         <button
           onClick={handleEditClick}
           className="upload-panel hud-icon-btn flex items-center gap-2 cursor-pointer group"
