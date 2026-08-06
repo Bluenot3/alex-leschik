@@ -7,9 +7,12 @@
  * session whose verified email is not on the allowlist, so knowing or
  * bypassing anything in this file grants nothing on its own.
  *
- * Note that a six-digit PIN is a short password. It is protected by
- * Supabase's auth rate limiting rather than by length.
+ * The pad accepts any code between MIN_PIN_LENGTH and MAX_PIN_LENGTH
+ * digits, so the account password can be any length without the UI
+ * dictating it. Short codes are protected by auth rate limiting rather
+ * than by length — prefer a longer one.
  */
 export const OWNER_EMAIL = "royaltokens@gmail.com";
 
-export const PIN_LENGTH = 6;
+export const MIN_PIN_LENGTH = 4;
+export const MAX_PIN_LENGTH = 12;
