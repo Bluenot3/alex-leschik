@@ -198,7 +198,9 @@ export default function Index() {
           <CrypticBackground rows={12} speed={180} opacity={0.07} />
 
           <div className="hero-poster__content">
-            <div className="hero-poster__eyebrow">Alex Leschik // systems, software, education, creative technology</div>
+            <div className="hero-poster__eyebrow">
+              Alex Leschik <span aria-hidden="true" title="ordo ab chao">△</span> systems · software · education · creative technology
+            </div>
 
             <div className="hero-poster__headline-block">
               <p className="hero-poster__lead">Software architect. Founder. Builder of products that become infrastructure.</p>
@@ -212,8 +214,8 @@ export default function Index() {
             </div>
 
             <p className="hero-poster__body">
-              I turn early ideas into deployed systems that students, institutions, teams, and communities can actually use,
-              from AI literacy programs to agentic apps, automation, dashboards, and credentials.
+              I turn early ideas into deployed systems that students, institutions, and teams actually use — AI literacy
+              programs, agentic applications, automation, dashboards, and credentialing infrastructure.
             </p>
 
             <div className="hero-poster__actions">
@@ -221,7 +223,7 @@ export default function Index() {
                 Explore the work
               </button>
               <button type="button" className="cta-btn-muted" onClick={() => scrollToSection(2)}>
-                Map the system
+                See the architecture
               </button>
             </div>
 
@@ -236,7 +238,7 @@ export default function Index() {
           </div>
 
           <aside className="hero-poster__transmission" aria-label="Current transmission">
-            <div className="hero-poster__transmission-head">
+            <div className="hero-poster__transmission-head" data-marker="G">
               <span className="hero-poster__transmission-label">Transmission</span>
               <span className="hero-poster__transmission-live">Live</span>
             </div>
@@ -252,11 +254,11 @@ export default function Index() {
           </aside>
         </section>
 
-        <CrypticDivider lines={4} label="// origin locked" />
+        <CrypticDivider lines={4} label="// ordo ab chao" />
 
         <SocialLinks />
 
-        <CrypticDivider lines={3} label="// network mapped" />
+        <CrypticDivider lines={3} label="// as above, so below" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={112} opacity={0.05} />
@@ -271,17 +273,17 @@ export default function Index() {
               SYSTEMS
             </RevealHeading>
             <RevealBody>
-              The point is durable leverage. Historic AI literacy work, institutional partnerships, and product systems that
-              can survive real use, real teams, and real scale.
+              The point is durable leverage — historic AI literacy work, institutional partnerships, and product systems
+              built to survive real users, real teams, and real scale.
             </RevealBody>
             <RevealStats
               stats={[
                 { num: "1st", label: "Historic education milestone" },
-                { num: "30K", label: "National members" },
-                { num: "Multi", label: "Industries crossed" },
+                { num: "30K", label: "National members reached" },
+                { num: "7", label: "Industries crossed" },
               ]}
             />
-            <RevealCTA onClick={() => scrollToSection(2)}>Trace the orbit</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(2)}>Follow the thread</RevealCTA>
           </ScrollSection>
         </div>
 
