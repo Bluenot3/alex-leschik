@@ -73,15 +73,15 @@ const CHUNK_PRELOADERS = [
 const SECTION_COUNT = 6;
 
 const HERO_SIGNALS = [
-  { value: "1st", label: "Youth AI literacy program in US history" },
-  { value: "50+", label: "Products, prototypes, and systems shipped" },
-  { value: "5", label: "Fortune 500 relationships in orbit" },
+  { value: "1st", label: "Youth AI literacy program in U.S. history" },
+  { value: "50+", label: "Products and systems shipped to production" },
+  { value: "5", label: "Fortune 500 relationships in motion" },
 ];
 
 const HERO_FEED = [
-  "First youth AI literacy program in U.S. history",
-  "50+ shipped products, prototypes, dashboards, and systems",
-  "AI, automation, and Web3 infrastructure built for real users",
+  "Founded the first youth AI literacy program in U.S. history",
+  "50+ products, dashboards, and systems shipped and in use",
+  "AI, automation, and Web3 infrastructure built for real institutions",
 ];
 
 export default function Index() {
@@ -156,8 +156,9 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="relative portfolio-shell">
+    <div className="relative portfolio-shell" data-sigil="ordo-ab-chao">
       <h1 className="sr-only">Alex Leschik — Founder of ZEN AI Co. Creator of the first youth AI literacy program in U.S. history.</h1>
+      {/* As above, so below. — the structure is the message */}
 
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />
@@ -197,7 +198,9 @@ export default function Index() {
           <CrypticBackground rows={12} speed={180} opacity={0.07} />
 
           <div className="hero-poster__content">
-            <div className="hero-poster__eyebrow">Alex Leschik // systems, software, education, creative technology</div>
+            <div className="hero-poster__eyebrow">
+              Alex Leschik <span aria-hidden="true" title="ordo ab chao">△</span> systems · software · education · creative technology
+            </div>
 
             <div className="hero-poster__headline-block">
               <p className="hero-poster__lead">Software architect. Founder. Builder of products that become infrastructure.</p>
@@ -211,8 +214,8 @@ export default function Index() {
             </div>
 
             <p className="hero-poster__body">
-              I turn early ideas into deployed systems that students, institutions, teams, and communities can actually use,
-              from AI literacy programs to agentic apps, automation, dashboards, and credentials.
+              I turn early ideas into deployed systems that students, institutions, and teams actually use — AI literacy
+              programs, agentic applications, automation, dashboards, and credentialing infrastructure.
             </p>
 
             <div className="hero-poster__actions">
@@ -220,7 +223,7 @@ export default function Index() {
                 Explore the work
               </button>
               <button type="button" className="cta-btn-muted" onClick={() => scrollToSection(2)}>
-                Map the system
+                See the architecture
               </button>
             </div>
 
@@ -235,7 +238,7 @@ export default function Index() {
           </div>
 
           <aside className="hero-poster__transmission" aria-label="Current transmission">
-            <div className="hero-poster__transmission-head">
+            <div className="hero-poster__transmission-head" data-marker="G">
               <span className="hero-poster__transmission-label">Transmission</span>
               <span className="hero-poster__transmission-live">Live</span>
             </div>
@@ -251,11 +254,11 @@ export default function Index() {
           </aside>
         </section>
 
-        <CrypticDivider lines={4} label="// origin locked" />
+        <CrypticDivider lines={4} label="// ordo ab chao" />
 
         <SocialLinks />
 
-        <CrypticDivider lines={3} label="// network mapped" />
+        <CrypticDivider lines={3} label="// as above, so below" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={112} opacity={0.05} />
@@ -270,21 +273,21 @@ export default function Index() {
               SYSTEMS
             </RevealHeading>
             <RevealBody>
-              The point is durable leverage. Historic AI literacy work, institutional partnerships, and product systems that
-              can survive real use, real teams, and real scale.
+              The point is durable leverage — historic AI literacy work, institutional partnerships, and product systems
+              built to survive real users, real teams, and real scale.
             </RevealBody>
             <RevealStats
               stats={[
                 { num: "1st", label: "Historic education milestone" },
-                { num: "30K", label: "National members" },
-                { num: "Multi", label: "Industries crossed" },
+                { num: "30K", label: "National members reached" },
+                { num: "7", label: "Industries crossed" },
               ]}
             />
-            <RevealCTA onClick={() => scrollToSection(2)}>Trace the orbit</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(2)}>Follow the thread</RevealCTA>
           </ScrollSection>
         </div>
 
-        <CrypticDivider lines={3} label="// mapping vectors" />
+        <CrypticDivider lines={3} label="// solve et coagula" />
 
         <section id="s2" data-scroll-section className="constellation-section">
           <CrypticBackground rows={12} speed={138} opacity={0.06} />
@@ -297,8 +300,8 @@ export default function Index() {
               HAS A STRUCTURE
             </h2>
             <p className="constellation-section__body">
-              The portfolio is organized by what actually shipped: public impact, execution, interfaces, labs, partnerships,
-              and systems that connect education, automation, and AI deployment.
+              This portfolio is organized around what actually shipped: public impact, execution, interfaces, labs, and
+              partnerships — the connective tissue between education, automation, and AI deployment.
             </p>
           </div>
 
@@ -307,7 +310,7 @@ export default function Index() {
           </Suspense>
         </section>
 
-        <CrypticDivider lines={5} label="// deploying flagships" />
+        <CrypticDivider lines={5} label="// the third degree" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={118} opacity={0.05} />
@@ -322,17 +325,17 @@ export default function Index() {
               GRAVITY
             </RevealHeading>
             <RevealBody>
-              This is the proof layer: 50+ shipped projects, AI literacy infrastructure, production dashboards, generative
-              tools, automation systems, and experiments that became real products.
+              This is the proof layer — 50+ shipped projects: AI literacy infrastructure, production dashboards,
+              generative tools, automation systems, and experiments that graduated into real products.
             </RevealBody>
             <RevealStats
               stats={[
                 { num: "50+", label: "Projects shipped" },
-                { num: "5", label: "Fortune 500 ties" },
-                { num: "24/7", label: "Prototype cadence" },
+                { num: "5", label: "Fortune 500 relationships" },
+                { num: "33", label: "Active systems in orbit" },
               ]}
             />
-            <RevealCTA onClick={() => scrollToSection(4)}>Open the archive</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(4)}>Enter the archive</RevealCTA>
           </ScrollSection>
         </div>
 
@@ -343,7 +346,7 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={4} label="// as seen on" />
+        <CrypticDivider lines={4} label="// as seen, as spoken" />
 
         <LazySection className="relative" rootMargin="2500px 0px">
           <CrypticBackground rows={8} speed={140} opacity={0.04} />
@@ -352,7 +355,7 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={4} label="// visual archive" />
+        <CrypticDivider lines={4} label="// the eye keeps records" />
 
         <div className="relative">
           <CrypticBackground rows={8} speed={130} opacity={0.04} />
@@ -379,7 +382,7 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={5} label="// opening the lab" />
+        <CrypticDivider lines={5} label="// vitriol · the inner work" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={142} opacity={0.05} />
@@ -394,10 +397,10 @@ export default function Index() {
               SIGNAL
             </RevealHeading>
             <RevealBody>
-              Beyond client-facing builds, the lab captures motion studies, media systems, archives, and visual experiments
-              that keep the production work from ever looking interchangeable.
+              Beyond client work, the lab holds motion studies, media systems, archives, and visual experiments — the
+              reason none of the production work ever looks interchangeable.
             </RevealBody>
-            <RevealCTA onClick={() => scrollToSection(5)}>Start a conversation</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(5)}>Open a channel</RevealCTA>
           </ScrollSection>
         </div>
 
@@ -456,7 +459,7 @@ export default function Index() {
           </div>
         </section>
 
-        <CrypticDivider lines={3} label="// visual field" />
+        <CrypticDivider lines={3} label="// let there be light" />
 
         <div className="relative">
           <CrypticBackground rows={8} speed={125} opacity={0.04} />
@@ -465,7 +468,7 @@ export default function Index() {
           </Suspense>
         </div>
 
-        <CrypticDivider lines={4} label="// opening channel" />
+        <CrypticDivider lines={4} label="// on the level, on the square" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={110} opacity={0.05} />
@@ -480,7 +483,7 @@ export default function Index() {
               IMPOSSIBLE THING
             </RevealHeading>
             <RevealBody>
-              If the problem matters, the interface matters, and the system has to hold up after launch, we should talk.
+              If the problem matters, the interface matters, and the system has to hold after launch — we should talk.
             </RevealBody>
 
             <div
@@ -523,7 +526,7 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <CrypticDivider lines={3} label="// ledger open" />
+        <CrypticDivider lines={3} label="// the ledger remains open" />
 
         {/* Guestbook of the LLM era — every model signs on its way out */}
         <ModelSignatures />
