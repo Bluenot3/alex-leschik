@@ -295,13 +295,13 @@ export default function Index() {
           <div className="constellation-section__header">
             <span className="tag-label">02 - Constellation</span>
             <h2 className="constellation-section__title display-heading">
-              THE WORK
+              EVERYTHING
               <br />
-              HAS A STRUCTURE
+              CONNECTS
             </h2>
             <p className="constellation-section__body">
-              This portfolio is organized around what actually shipped: public impact, execution, interfaces, labs, and
-              partnerships — the connective tissue between education, automation, and AI deployment.
+              Every piece here shipped and is still running — youth AI literacy programs, production platforms,
+              national partnerships, and the tools built to hold them together.
             </p>
           </div>
 
