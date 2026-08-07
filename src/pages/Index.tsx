@@ -74,14 +74,14 @@ const SECTION_COUNT = 6;
 
 const HERO_SIGNALS = [
   { value: "1st", label: "Youth AI literacy program in U.S. history" },
-  { value: "50+", label: "Products and systems shipped to production" },
-  { value: "5", label: "Fortune 500 relationships in motion" },
+  { value: "50+", label: "Products shipped to production" },
+  { value: "5", label: "Fortune 500 companies worked with" },
 ];
 
 const HERO_FEED = [
   "Founded the first youth AI literacy program in U.S. history",
-  "50+ products, dashboards, and systems shipped and in use",
-  "AI, automation, and Web3 infrastructure built for real institutions",
+  "50+ products, dashboards, and tools shipped and in daily use",
+  "AI, automation, and Web3 systems built for schools, nonprofits, and enterprises",
 ];
 
 export default function Index() {
@@ -203,7 +203,7 @@ export default function Index() {
             </div>
 
             <div className="hero-poster__headline-block">
-              <p className="hero-poster__lead">Software architect. Founder. Builder of products that become infrastructure.</p>
+              <p className="hero-poster__lead">Software architect, founder, and educator building products people rely on.</p>
               <h2 className="hero-poster__title display-heading">
                 BUILT THE FIRST
                 <br />
@@ -214,8 +214,8 @@ export default function Index() {
             </div>
 
             <p className="hero-poster__body">
-              I turn early ideas into deployed systems that students, institutions, and teams actually use — AI literacy
-              programs, agentic applications, automation, dashboards, and credentialing infrastructure.
+              I take ideas from first sketch to shipped software that students, schools, and companies use every day —
+              AI literacy curriculum, AI applications, automation, dashboards, and credentialing systems.
             </p>
 
             <div className="hero-poster__actions">
@@ -223,7 +223,7 @@ export default function Index() {
                 Explore the work
               </button>
               <button type="button" className="cta-btn-muted" onClick={() => scrollToSection(2)}>
-                See the architecture
+                See how it fits together
               </button>
             </div>
 
@@ -266,24 +266,24 @@ export default function Index() {
             <RevealLine />
             <RevealTag>01 - Signal</RevealTag>
             <RevealHeading>
-              NOT CONTENT
+              BUILT
               <br />
-              REAL
+              TO
               <br />
-              SYSTEMS
+              LAST
             </RevealHeading>
             <RevealBody>
-              The point is durable leverage — historic AI literacy work, institutional partnerships, and product systems
-              built to survive real users, real teams, and real scale.
+              First-of-its-kind AI literacy work, long-term institutional partnerships, and software built to hold up
+              under real users, real teams, and real growth.
             </RevealBody>
             <RevealStats
               stats={[
-                { num: "1st", label: "Historic education milestone" },
-                { num: "30K", label: "National members reached" },
-                { num: "7", label: "Industries crossed" },
+                { num: "1st", label: "Program of its kind in the U.S." },
+                { num: "30K", label: "Members reached nationally" },
+                { num: "7", label: "Industries worked in" },
               ]}
             />
-            <RevealCTA onClick={() => scrollToSection(2)}>Follow the thread</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(2)}>Keep going</RevealCTA>
           </ScrollSection>
         </div>
 
