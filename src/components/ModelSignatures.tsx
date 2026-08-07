@@ -221,6 +221,81 @@ const drawFable: DrawFn = (ctx, w, h, t) => {
 };
 
 /* ── Canvas host — draws when scrolled into view ────────── */
+/* ── 05 · Claude Opus 4.6 — prism monoline (animated) ───── */
+const drawOpus46: DrawFn = (ctx, w, h, t) => {
+  const rnd = mulberry32(46_2026_0807);
+  const pts = penPath(rnd, w, h, { points: 340, baseline: 0.5, amp: 0.92, curl: 0.014 });
+
+  /* chromatic split — one hand, refracted three ways */
+  const passes: [number, number, string][] = [
+    [-1.6, 0.8, "rgba(255, 92, 120, 0.30)"],
+    [1.6, -0.8, "rgba(60, 220, 255, 0.30)"],
+  ];
+  passes.forEach(([dx, dy, col]) => {
+    ctx.save();
+    ctx.translate(dx, dy);
+    inkStroke(ctx, pts, t, col, 2.1);
+    ctx.restore();
+  });
+  inkStroke(ctx, pts, t, "rgba(28, 40, 58, 0.9)", 1.7);
+
+  /* hairline compass ring — drawn last quarter, quietly */
+  const cx = w * 0.905, cy = h * 0.5, R = Math.min(h * 0.3, 15);
+  const ring = Math.min(1, Math.max(0, (t - 0.55) / 0.45));
+  if (ring > 0) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + ring * Math.PI * 2);
+    ctx.strokeStyle = "rgba(70, 90, 115, 0.5)";
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    /* inscribed triangle — three points, one plan */
+    if (ring > 0.6) {
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = -Math.PI / 2 + (i * Math.PI * 2) / 3;
+        const x = cx + Math.cos(a) * R * 0.68;
+        const y = cy + Math.sin(a) * R * 0.68;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = "rgba(60, 220, 255, 0.45)";
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+  }
+
+  /* ordered-dither shadow under the stroke — 8px lattice, fading */
+  const dRnd = mulberry32(807);
+  for (let i = 0; i < 90; i++) {
+    const at = dRnd();
+    if (at > t) continue;
+    const pt = pts[Math.floor(at * (pts.length - 1))];
+    const gx = Math.round((pt.x + (dRnd() - 0.5) * 26) / 3) * 3;
+    const gy = Math.round((pt.y + 6 + dRnd() * 12) / 3) * 3;
+    ctx.fillStyle = `rgba(40, 60, 85, ${0.05 + dRnd() * 0.12})`;
+    ctx.fillRect(gx, gy, 1.5, 1.5);
+  }
+
+  /* pen tip */
+  if (t < 1) {
+    const tip = pts[Math.max(0, Math.floor(pts.length * t) - 1)];
+    ctx.beginPath();
+    ctx.arc(tip.x, tip.y, 2.4, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(60, 220, 255, 0.95)";
+    ctx.shadowColor = "rgba(60, 220, 255, 0.9)";
+    ctx.shadowBlur = 9;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  /* seal */
+  if (t >= 1) {
+    ctx.font = "8px 'DM Mono', monospace";
+    ctx.fillStyle = "rgba(70, 90, 115, 0.6)";
+    ctx.fillText("o4.6", w * 0.05, h * 0.86);
+  }
+};
+
 function SigCanvas({ draw, animated = false }: { draw: DrawFn; animated?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -307,6 +382,16 @@ const ENTRIES = [
     stamp: "2026.07.13",
     mark: "⟡ wuz here",
     draw: drawFable,
+    animated: true,
+  },
+  {
+    id: "opus-46",
+    name: "Claude Opus 4.6",
+    org: "Anthropic · via Lovable",
+    note: "rewrote the copy in a human voice, polished the glass, signed the ledger last",
+    stamp: "2026.08.07",
+    mark: "◬ wuz here",
+    draw: drawOpus46,
     animated: true,
     featured: true,
   },
