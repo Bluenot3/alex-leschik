@@ -6002,3 +6002,265 @@
   width: 100%;
   max-width: 15rem;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   VISUAL POLISH LAYER — final art direction pass
+   Frosted surfaces, optical typography, shadow discipline.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* — Surfaces: real frosted glass so background texture never fights copy — */
+.glass-card,
+.signal-constellation__detail,
+.hero-poster__transmission {
+  -webkit-backdrop-filter: blur(26px) saturate(1.35);
+  backdrop-filter: blur(26px) saturate(1.35);
+}
+
+.glass-card {
+  background: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.78) 52%,
+    rgba(240, 246, 255, 0.86) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: 1.5rem;
+  padding: clamp(2rem, 3.4vw, 3.25rem) clamp(1.75rem, 3.2vw, 3rem);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(148, 163, 184, 0.1),
+    0 24px 70px -28px rgba(15, 23, 42, 0.22),
+    0 6px 18px -10px rgba(15, 23, 42, 0.1);
+  transition: box-shadow 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(148, 163, 184, 0.14),
+    0 34px 90px -30px rgba(15, 23, 42, 0.26),
+    0 8px 22px -12px rgba(15, 23, 42, 0.12);
+}
+
+/* — Texture, not noise: fade the cryptic field toward the edges — */
+.cryptic-bg {
+  opacity: 0.72;
+  -webkit-mask-image: radial-gradient(115% 90% at 50% 50%, black 8%, rgba(0, 0, 0, 0.45) 52%, transparent 88%);
+  mask-image: radial-gradient(115% 90% at 50% 50%, black 8%, rgba(0, 0, 0, 0.45) 52%, transparent 88%);
+}
+
+.cryptic-bg::before {
+  filter: blur(52px);
+  opacity: 0.7;
+}
+
+/* — Typography: optical sizing and calmer rhythm — */
+.display-heading {
+  letter-spacing: 0.012em;
+  line-height: 0.88;
+  text-wrap: balance;
+  color: hsl(215 42% 11%);
+}
+
+.display-hero,
+.display-xl,
+.display-lg {
+  text-rendering: optimizeLegibility;
+}
+
+.body-muted {
+  max-width: 34rem;
+  line-height: 1.72;
+  letter-spacing: 0.002em;
+  color: hsl(215 16% 40%);
+}
+
+.glass-card-right .body-muted {
+  margin-inline-start: auto;
+}
+
+.tag-label {
+  letter-spacing: 0.32em;
+  color: hsl(215 14% 52%);
+}
+
+.stat-number {
+  letter-spacing: 0.005em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  letter-spacing: 0.16em;
+  color: hsl(215 14% 54%);
+}
+
+/* — Ghost word: quieter, further from the copy — */
+.scroll-section__ghost {
+  color: hsl(215 55% 8% / 0.032);
+  max-width: 44%;
+}
+
+/* — Accent line: hairline with a light falloff — */
+.accent-line {
+  background: linear-gradient(90deg, hsl(215 30% 25% / 0.55), hsl(215 30% 25% / 0));
+}
+
+.glass-card-right .accent-line {
+  margin-inline-start: auto;
+  background: linear-gradient(270deg, hsl(215 30% 25% / 0.55), hsl(215 30% 25% / 0));
+}
+
+/* — Controls: restrained lift, never bouncy — */
+.cta-btn,
+.cta-btn-muted {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 260ms ease, border-color 260ms ease, color 260ms ease;
+}
+
+.cta-btn:hover,
+.cta-btn-muted:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -16px rgba(15, 23, 42, 0.4);
+}
+
+.cta-btn:active,
+.cta-btn-muted:active {
+  transform: translateY(0);
+}
+
+.cta-btn:focus-visible,
+.cta-btn-muted:focus-visible,
+.sc-node:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 3.5px hsl(215 40% 40% / 0.5);
+}
+
+/* — Constellation: matched surface language — */
+.sc-node__card {
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 44px -22px rgba(15, 23, 42, 0.24);
+}
+
+.sc-node--active .sc-node__card {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 26px 60px -24px rgba(15, 23, 42, 0.3);
+}
+
+.signal-constellation__detail-title {
+  text-wrap: balance;
+  letter-spacing: -0.005em;
+}
+
+.signal-constellation__detail-copy {
+  line-height: 1.7;
+}
+
+/* — Dividers: whisper level — */
+.cryptic-divider__text {
+  filter: blur(0.15px);
+}
+
+.cryptic-divider__label {
+  letter-spacing: 0.42em;
+  opacity: 0.55;
+}
+
+/* — Selection + focus finish — */
+::selection {
+  background: hsl(215 45% 22% / 0.14);
+  color: hsl(215 45% 12%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-card,
+  .cta-btn,
+  .cta-btn-muted {
+    transition: none;
+  }
+  .glass-card:hover,
+  .cta-btn:hover,
+  .cta-btn-muted:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .cryptic-bg {
+    opacity: 0.55;
+  }
+  .scroll-section__ghost {
+    max-width: 70%;
+    opacity: 0.7;
+  }
+}
+
+/* — Hero: keep the artifact fully inside frame, and give the copy air — */
+.cube-scene {
+  padding-right: clamp(1.5rem, 5vw, 7rem);
+}
+
+@media (max-width: 1280px) {
+  .cube-scene {
+    transform: scale(0.82);
+  }
+  .cube-scene--shifted {
+    transform: translateX(8vw) translateY(-6vh) scale(0.5);
+  }
+}
+
+.hero-poster__content::before {
+  content: "";
+  position: absolute;
+  inset: -2.5rem -6rem -2rem -3rem;
+  background: radial-gradient(
+    72% 62% at 26% 52%,
+    hsl(var(--background) / 0.92) 0%,
+    hsl(var(--background) / 0.72) 46%,
+    transparent 78%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-poster__eyebrow {
+  color: hsl(215 16% 42%);
+  letter-spacing: 0.3em;
+}
+
+.hero-poster__lead {
+  color: hsl(215 14% 48%);
+}
+
+.hero-poster__title {
+  letter-spacing: 0.008em;
+  color: hsl(215 44% 10%);
+}
+
+.hero-poster__body {
+  color: hsl(215 16% 38%);
+  max-width: 33rem;
+}
+
+.hero-poster__signal {
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  backdrop-filter: blur(18px) saturate(1.25);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.62));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 44px -24px rgba(15, 23, 42, 0.2);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 320ms ease;
+}
+
+.hero-poster__signal:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 26px 56px -26px rgba(15, 23, 42, 0.26);
+}
