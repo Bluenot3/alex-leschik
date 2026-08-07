@@ -6207,8 +6207,11 @@
 }
 
 @media (max-width: 1280px) {
-  .cube {
-    --cube-size: min(var(--cube-size, 24rem), 30vw);
+  .cube-scene {
+    transform: scale(0.82);
+  }
+  .cube-scene--shifted {
+    transform: translateX(8vw) translateY(-6vh) scale(0.5);
   }
 }
 
