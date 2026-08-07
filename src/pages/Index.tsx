@@ -73,15 +73,15 @@ const CHUNK_PRELOADERS = [
 const SECTION_COUNT = 6;
 
 const HERO_SIGNALS = [
-  { value: "1st", label: "Youth AI literacy program in US history" },
-  { value: "50+", label: "Products, prototypes, and systems shipped" },
-  { value: "5", label: "Fortune 500 relationships in orbit" },
+  { value: "1st", label: "Youth AI literacy program in U.S. history" },
+  { value: "50+", label: "Products and systems shipped to production" },
+  { value: "5", label: "Fortune 500 relationships in motion" },
 ];
 
 const HERO_FEED = [
-  "First youth AI literacy program in U.S. history",
-  "50+ shipped products, prototypes, dashboards, and systems",
-  "AI, automation, and Web3 infrastructure built for real users",
+  "Founded the first youth AI literacy program in U.S. history",
+  "50+ products, dashboards, and systems shipped and in use",
+  "AI, automation, and Web3 infrastructure built for real institutions",
 ];
 
 export default function Index() {
@@ -156,8 +156,9 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="relative portfolio-shell">
+    <div className="relative portfolio-shell" data-sigil="ordo-ab-chao">
       <h1 className="sr-only">Alex Leschik — Founder of ZEN AI Co. Creator of the first youth AI literacy program in U.S. history.</h1>
+      {/* As above, so below. — the structure is the message */}
 
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />
