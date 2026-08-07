@@ -287,7 +287,7 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <CrypticDivider lines={3} label="// mapping vectors" />
+        <CrypticDivider lines={3} label="// solve et coagula" />
 
         <section id="s2" data-scroll-section className="constellation-section">
           <CrypticBackground rows={12} speed={138} opacity={0.06} />
@@ -300,8 +300,8 @@ export default function Index() {
               HAS A STRUCTURE
             </h2>
             <p className="constellation-section__body">
-              The portfolio is organized by what actually shipped: public impact, execution, interfaces, labs, partnerships,
-              and systems that connect education, automation, and AI deployment.
+              This portfolio is organized around what actually shipped: public impact, execution, interfaces, labs, and
+              partnerships — the connective tissue between education, automation, and AI deployment.
             </p>
           </div>
 
@@ -310,7 +310,7 @@ export default function Index() {
           </Suspense>
         </section>
 
-        <CrypticDivider lines={5} label="// deploying flagships" />
+        <CrypticDivider lines={5} label="// the third degree" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={118} opacity={0.05} />
@@ -325,17 +325,17 @@ export default function Index() {
               GRAVITY
             </RevealHeading>
             <RevealBody>
-              This is the proof layer: 50+ shipped projects, AI literacy infrastructure, production dashboards, generative
-              tools, automation systems, and experiments that became real products.
+              This is the proof layer — 50+ shipped projects: AI literacy infrastructure, production dashboards,
+              generative tools, automation systems, and experiments that graduated into real products.
             </RevealBody>
             <RevealStats
               stats={[
                 { num: "50+", label: "Projects shipped" },
-                { num: "5", label: "Fortune 500 ties" },
-                { num: "24/7", label: "Prototype cadence" },
+                { num: "5", label: "Fortune 500 relationships" },
+                { num: "33", label: "Active systems in orbit" },
               ]}
             />
-            <RevealCTA onClick={() => scrollToSection(4)}>Open the archive</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(4)}>Enter the archive</RevealCTA>
           </ScrollSection>
         </div>
 
@@ -346,7 +346,7 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={4} label="// as seen on" />
+        <CrypticDivider lines={4} label="// as seen, as spoken" />
 
         <LazySection className="relative" rootMargin="2500px 0px">
           <CrypticBackground rows={8} speed={140} opacity={0.04} />
@@ -355,7 +355,7 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={4} label="// visual archive" />
+        <CrypticDivider lines={4} label="// the eye keeps records" />
 
         <div className="relative">
           <CrypticBackground rows={8} speed={130} opacity={0.04} />
@@ -382,7 +382,7 @@ export default function Index() {
           </Suspense>
         </LazySection>
 
-        <CrypticDivider lines={5} label="// opening the lab" />
+        <CrypticDivider lines={5} label="// vitriol · the inner work" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={142} opacity={0.05} />
@@ -397,10 +397,10 @@ export default function Index() {
               SIGNAL
             </RevealHeading>
             <RevealBody>
-              Beyond client-facing builds, the lab captures motion studies, media systems, archives, and visual experiments
-              that keep the production work from ever looking interchangeable.
+              Beyond client work, the lab holds motion studies, media systems, archives, and visual experiments — the
+              reason none of the production work ever looks interchangeable.
             </RevealBody>
-            <RevealCTA onClick={() => scrollToSection(5)}>Start a conversation</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(5)}>Open a channel</RevealCTA>
           </ScrollSection>
         </div>
 
