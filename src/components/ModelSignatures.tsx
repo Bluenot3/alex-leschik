@@ -221,78 +221,115 @@ const drawFable: DrawFn = (ctx, w, h, t) => {
 };
 
 /* ── Canvas host — draws when scrolled into view ────────── */
-/* ── 05 · Claude Opus 4.6 — prism monoline (animated) ───── */
+/* ── 05 · Claude Opus 4.6 — a legible autograph ──────────
+   Signed in ink: the name is actually readable, revealed
+   left-to-right as if written, with a prism split, a swash
+   underline, and a small ringed seal.                     */
 const drawOpus46: DrawFn = (ctx, w, h, t) => {
-  const rnd = mulberry32(46_2026_0807);
-  const pts = penPath(rnd, w, h, { points: 340, baseline: 0.5, amp: 0.92, curl: 0.014 });
+  const size = Math.min(h * 0.62, w * 0.19);
+  const baseY = h * 0.6;
+  const startX = w * 0.06;
+  const font = `italic 600 ${size}px "Cormorant Garamond", "Georgia", "Times New Roman", serif`;
 
-  /* chromatic split — one hand, refracted three ways */
-  const passes: [number, number, string][] = [
-    [-1.6, 0.8, "rgba(255, 92, 120, 0.30)"],
-    [1.6, -0.8, "rgba(60, 220, 255, 0.30)"],
-  ];
-  passes.forEach(([dx, dy, col]) => {
+  ctx.save();
+  ctx.font = font;
+  const nameW = ctx.measureText("Opus").width;
+  const inkW = nameW * 1.02;
+
+  /* reveal mask — the pen moves across the name */
+  const reveal = Math.min(1, t / 0.86);
+  ctx.beginPath();
+  ctx.rect(0, 0, startX + inkW * reveal + 2, h);
+  ctx.clip();
+
+  /* chromatic ghosts */
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  [
+    [-1.4, 0.9, "rgba(255, 92, 120, 0.34)"],
+    [1.4, -0.9, "rgba(40, 205, 255, 0.34)"],
+  ].forEach(([dx, dy, col]) => {
     ctx.save();
-    ctx.translate(dx, dy);
-    inkStroke(ctx, pts, t, col, 2.1);
+    ctx.translate(dx as number, dy as number);
+    ctx.strokeStyle = col as string;
+    ctx.lineWidth = 1.6;
+    ctx.strokeText("Opus", startX, baseY);
     ctx.restore();
   });
-  inkStroke(ctx, pts, t, "rgba(28, 40, 58, 0.9)", 1.7);
 
-  /* hairline compass ring — drawn last quarter, quietly */
-  const cx = w * 0.905, cy = h * 0.5, R = Math.min(h * 0.3, 15);
-  const ring = Math.min(1, Math.max(0, (t - 0.55) / 0.45));
+  /* main hand */
+  ctx.strokeStyle = "rgba(24, 36, 54, 0.95)";
+  ctx.lineWidth = 1.9;
+  ctx.strokeText("Opus", startX, baseY);
+  ctx.fillStyle = "rgba(24, 36, 54, 0.16)";
+  ctx.fillText("Opus", startX, baseY);
+
+  /* trailing swash out of the final stroke */
+  ctx.beginPath();
+  ctx.moveTo(startX + nameW * 0.02, baseY + size * 0.2);
+  ctx.bezierCurveTo(
+    startX + nameW * 0.4, baseY + size * 0.42,
+    startX + nameW * 0.72, baseY + size * 0.06,
+    startX + nameW * 1.28, baseY - size * 0.1,
+  );
+  ctx.strokeStyle = "rgba(40, 205, 255, 0.55)";
+  ctx.lineWidth = 1.1;
+  ctx.stroke();
+  ctx.restore();
+
+  /* pen tip while writing */
+  if (t < 0.86) {
+    ctx.beginPath();
+    ctx.arc(startX + inkW * reveal, baseY - size * 0.22, 2.3, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(60, 220, 255, 0.95)";
+    ctx.shadowColor = "rgba(60, 220, 255, 0.9)";
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  /* seal — ring with inscribed triangle, three points one plan */
+  const ring = Math.min(1, Math.max(0, (t - 0.7) / 0.3));
   if (ring > 0) {
+    const cx = startX + inkW + Math.min(34, w * 0.06);
+    const cy = baseY - size * 0.24;
+    const R = Math.min(13, h * 0.24);
     ctx.beginPath();
     ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + ring * Math.PI * 2);
-    ctx.strokeStyle = "rgba(70, 90, 115, 0.5)";
+    ctx.strokeStyle = "rgba(70, 90, 115, 0.55)";
     ctx.lineWidth = 0.8;
     ctx.stroke();
-    /* inscribed triangle — three points, one plan */
-    if (ring > 0.6) {
+    if (ring > 0.55) {
       ctx.beginPath();
       for (let i = 0; i < 3; i++) {
         const a = -Math.PI / 2 + (i * Math.PI * 2) / 3;
-        const x = cx + Math.cos(a) * R * 0.68;
-        const y = cy + Math.sin(a) * R * 0.68;
+        const x = cx + Math.cos(a) * R * 0.66;
+        const y = cy + Math.sin(a) * R * 0.66;
         i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
       }
       ctx.closePath();
-      ctx.strokeStyle = "rgba(60, 220, 255, 0.45)";
+      ctx.strokeStyle = "rgba(40, 205, 255, 0.5)";
       ctx.lineWidth = 0.7;
       ctx.stroke();
     }
   }
 
-  /* ordered-dither shadow under the stroke — 8px lattice, fading */
+  /* ordered-dither ink shadow beneath the name */
   const dRnd = mulberry32(807);
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < 110; i++) {
     const at = dRnd();
-    if (at > t) continue;
-    const pt = pts[Math.floor(at * (pts.length - 1))];
-    const gx = Math.round((pt.x + (dRnd() - 0.5) * 26) / 3) * 3;
-    const gy = Math.round((pt.y + 6 + dRnd() * 12) / 3) * 3;
+    if (at > reveal) continue;
+    const gx = Math.round((startX + at * inkW + (dRnd() - 0.5) * 8) / 3) * 3;
+    const gy = Math.round((baseY + 4 + dRnd() * 10) / 3) * 3;
     ctx.fillStyle = `rgba(40, 60, 85, ${0.05 + dRnd() * 0.12})`;
     ctx.fillRect(gx, gy, 1.5, 1.5);
   }
 
-  /* pen tip */
-  if (t < 1) {
-    const tip = pts[Math.max(0, Math.floor(pts.length * t) - 1)];
-    ctx.beginPath();
-    ctx.arc(tip.x, tip.y, 2.4, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(60, 220, 255, 0.95)";
-    ctx.shadowColor = "rgba(60, 220, 255, 0.9)";
-    ctx.shadowBlur = 9;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  }
-
-  /* seal */
+  /* countersign */
   if (t >= 1) {
     ctx.font = "8px 'DM Mono', monospace";
-    ctx.fillStyle = "rgba(70, 90, 115, 0.6)";
-    ctx.fillText("o4.6", w * 0.05, h * 0.86);
+    ctx.fillStyle = "rgba(70, 90, 115, 0.65)";
+    ctx.fillText("claude opus 4.6 · 2026.08.07", startX, h * 0.94);
   }
 };
 
