@@ -459,7 +459,7 @@ export default function Index() {
           </div>
         </section>
 
-        <CrypticDivider lines={3} label="// visual field" />
+        <CrypticDivider lines={3} label="// let there be light" />
 
         <div className="relative">
           <CrypticBackground rows={8} speed={125} opacity={0.04} />
@@ -468,7 +468,7 @@ export default function Index() {
           </Suspense>
         </div>
 
-        <CrypticDivider lines={4} label="// opening channel" />
+        <CrypticDivider lines={4} label="// on the level, on the square" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={110} opacity={0.05} />
@@ -483,7 +483,7 @@ export default function Index() {
               IMPOSSIBLE THING
             </RevealHeading>
             <RevealBody>
-              If the problem matters, the interface matters, and the system has to hold up after launch, we should talk.
+              If the problem matters, the interface matters, and the system has to hold after launch — we should talk.
             </RevealBody>
 
             <div
@@ -526,7 +526,7 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <CrypticDivider lines={3} label="// ledger open" />
+        <CrypticDivider lines={3} label="// the ledger remains open" />
 
         {/* Guestbook of the LLM era — every model signs on its way out */}
         <ModelSignatures />
