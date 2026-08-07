@@ -331,11 +331,11 @@ export default function Index() {
             <RevealStats
               stats={[
                 { num: "50+", label: "Projects shipped" },
-                { num: "5", label: "Fortune 500 relationships" },
-                { num: "33", label: "Active systems in orbit" },
+                { num: "5", label: "Fortune 500 companies" },
+                { num: "33", label: "Systems live today" },
               ]}
             />
-            <RevealCTA onClick={() => scrollToSection(4)}>Enter the archive</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(4)}>See the archive</RevealCTA>
           </ScrollSection>
         </div>
 
@@ -390,17 +390,15 @@ export default function Index() {
             <RevealLine />
             <RevealTag>04 - Lab</RevealTag>
             <RevealHeading>
-              ARTIFACTS,
+              THE
               <br />
-              ENGINES,
-              <br />
-              SIGNAL
+              LAB
             </RevealHeading>
             <RevealBody>
-              Beyond client work, the lab holds motion studies, media systems, archives, and visual experiments — the
-              reason none of the production work ever looks interchangeable.
+              Outside of client work, this is where motion studies, media tools, and visual experiments live. It's the
+              reason none of the production work looks like everyone else's.
             </RevealBody>
-            <RevealCTA onClick={() => scrollToSection(5)}>Open a channel</RevealCTA>
+            <RevealCTA onClick={() => scrollToSection(5)}>Get in touch</RevealCTA>
           </ScrollSection>
         </div>
 
@@ -476,14 +474,15 @@ export default function Index() {
             <RevealLine />
             <RevealTag>05 - Contact</RevealTag>
             <RevealHeading>
-              BUILD THE
+              LET'S BUILD
               <br />
-              NEXT
+              SOMETHING
               <br />
-              IMPOSSIBLE THING
+              REAL
             </RevealHeading>
             <RevealBody>
-              If the problem matters, the interface matters, and the system has to hold after launch — we should talk.
+              If you have a problem worth solving and it needs to keep working long after launch, I'd like to hear
+              about it.
             </RevealBody>
 
             <div
@@ -520,7 +519,7 @@ export default function Index() {
                 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                   <path d="M11 6H1M6 11L1 6l5-5" />
                 </svg>
-                Return to origin
+                Back to top
               </button>
             </div>
           </ScrollSection>
