@@ -6308,6 +6308,7 @@
 .reveal--step-2 { --reveal-delay: calc(var(--reveal-step) * 2); }
 .reveal--step-3 { --reveal-delay: calc(var(--reveal-step) * 3); }
 .reveal--step-4 { --reveal-delay: calc(var(--reveal-step) * 4); }
+.reveal--step-5 { --reveal-delay: calc(var(--reveal-step) * 5); }
 
 /* ── Artifact wrapper: reserved space, soft blur-up on arrival ── */
 .artifact {

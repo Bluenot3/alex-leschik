@@ -307,9 +307,9 @@ export default function Index() {
             </p>
           </div>
 
-          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+          <Artifact minHeight={400} lead="eager" guard={false}>
             <SignalConstellation onExploreWork={() => scrollToSection(3)} />
-          </Suspense>
+          </Artifact>
         </section>
 
         <CrypticDivider lines={5} label="// the third degree" />
