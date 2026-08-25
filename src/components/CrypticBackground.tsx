@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { subscribeTick, prefersReducedMotion } from "@/hooks/useRafTicker";
+
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=<>{}[]|/\\~^`.,:;!?-_∷∵∴⊕⊗※÷≈≡∞アイウエオカキクケコ";
 
