@@ -449,12 +449,11 @@ export default function Index() {
 
         <CrypticDivider lines={3} label="// let there be light" />
 
-        <div className="relative">
+        <Artifact className="relative" minHeight={640} lead="far" guard={false}>
           <CrypticBackground rows={8} speed={125} opacity={0.04} />
-          <Suspense fallback={<div style={{ minHeight: "640px" }} />}>
-            <ScrollGallery />
-          </Suspense>
-        </div>
+          <ScrollGallery />
+        </Artifact>
+
 
         <CrypticDivider lines={4} label="// on the level, on the square" />
 
