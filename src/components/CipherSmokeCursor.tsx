@@ -180,13 +180,14 @@ export default function CipherSmokeCursor({
 
     ctx.restore();
     pool.current = alive;
-    raf.current  = requestAnimationFrame(render);
   }, [emit]);
+
+  /* Joins the shared page clock — no private rAF loop. */
+  useRafTicker(render);
 
   /* ── Lifecycle ── */
   useEffect(() => {
     resize();
-    raf.current = requestAnimationFrame(render);
 
     const onMove  = (e: MouseEvent) => {
       mouse.current = { x: e.clientX, y: e.clientY, on: true };
@@ -198,12 +199,12 @@ export default function CipherSmokeCursor({
     window.addEventListener("resize",       resize,  { passive: true });
 
     return () => {
-      cancelAnimationFrame(raf.current);
       window.removeEventListener("mousemove",    onMove);
       document.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("resize",       resize);
     };
-  }, [resize, render]);
+  }, [resize]);
+
 
   return (
     <canvas
