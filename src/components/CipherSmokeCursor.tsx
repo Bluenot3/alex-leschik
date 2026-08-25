@@ -1,4 +1,6 @@
 import { useRef, useEffect, useCallback } from "react";
+import { useRafTicker } from "@/hooks/useRafTicker";
+
 
 /* ─────────────────────────────────────────────────────
    Cipher glyph vocabulary
