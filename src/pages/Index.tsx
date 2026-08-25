@@ -8,6 +8,8 @@ import ContactModal from "@/components/ContactModal";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
+import Artifact from "@/components/Artifact";
+
 import SocialLinks from "@/components/SocialLinks";
 import CipherSmokeCursor from "@/components/CipherSmokeCursor";
 import BootSequence from "@/components/BootSequence";
