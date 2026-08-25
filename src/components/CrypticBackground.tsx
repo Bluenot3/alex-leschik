@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { subscribeTick, prefersReducedMotion } from "@/hooks/useRafTicker";
+
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=<>{}[]|/\\~^`.,:;!?-_∷∵∴⊕⊗※÷≈≡∞アイウエオカキクケコ";
 
@@ -41,7 +43,6 @@ export default function CrypticBackground({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glyphsRef = useRef<Glyph[]>([]);
-  const rafRef = useRef(0);
   const visibleRef = useRef(false);
   const lastRef = useRef(0);
 
@@ -101,29 +102,8 @@ export default function CrypticBackground({
       glyphsRef.current = glyphs;
     };
 
-    const io = new IntersectionObserver(
-      ([e]) => {
-        visibleRef.current = e.isIntersecting;
-        if (e.isIntersecting && rafRef.current === 0) {
-          lastRef.current = performance.now();
-          rafRef.current = requestAnimationFrame(paint);
-        }
-      },
-      { threshold: 0.01, rootMargin: "200px 0px" }
-    );
-    io.observe(container);
-
-    buildGlyphs();
-
-    const ro = new ResizeObserver(() => buildGlyphs());
-    ro.observe(container);
-
     const paint = (now: number) => {
-      if (!visibleRef.current) {
-        rafRef.current = 0;
-        return;
-      }
-      rafRef.current = requestAnimationFrame(paint);
+      if (!visibleRef.current) return;
       if (now - lastRef.current < frameInterval) return;
       lastRef.current = now;
 
@@ -138,7 +118,7 @@ export default function CrypticBackground({
       ctx.textBaseline = "middle";
 
       const glyphs = glyphsRef.current;
-      // Only swap ~15% of glyphs per frame for a subtle shimmer instead of full redraw
+      // Only swap ~18% of glyphs per tick for a subtle shimmer instead of full redraw
       const swapCount = Math.max(1, (glyphs.length * 0.18) | 0);
       for (let s = 0; s < swapCount; s++) {
         const idx = (Math.random() * glyphs.length) | 0;
@@ -158,14 +138,34 @@ export default function CrypticBackground({
       ctx.restore();
     };
 
-    rafRef.current = requestAnimationFrame(paint);
+    const io = new IntersectionObserver(
+      ([e]) => {
+        visibleRef.current = e.isIntersecting;
+      },
+      { threshold: 0.01, rootMargin: "200px 0px" }
+    );
+    io.observe(container);
+
+    buildGlyphs();
+
+    const ro = new ResizeObserver(() => buildGlyphs());
+    ro.observe(container);
+
+    // Draw one static frame, then join the shared page clock unless the
+    // visitor asked for reduced motion.
+    visibleRef.current = true;
+    paint(performance.now());
+    visibleRef.current = false;
+
+    const unsubscribe = prefersReducedMotion() ? undefined : subscribeTick(paint);
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
+      unsubscribe?.();
       io.disconnect();
       ro.disconnect();
     };
-  }, [rows, speed, effectiveOpacity]);
+  }, [rows, speed, effectiveOpacity, frameInterval]);
+
 
   return (
     <div

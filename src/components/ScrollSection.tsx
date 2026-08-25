@@ -9,7 +9,6 @@ interface ScrollSectionProps {
 
 export default function ScrollSection({ children, index, align = "left", ghost }: ScrollSectionProps) {
   const ref = useRef<HTMLElement>(null);
-  const childRefs = useRef<HTMLElement[]>([]);
 
   useEffect(() => {
     const els = ref.current?.querySelectorAll("[data-reveal]");
@@ -19,10 +18,7 @@ export default function ScrollSection({ children, index, align = "left", ghost }
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            const el = e.target as HTMLElement;
-            el.style.opacity = "1";
-            el.style.transform = "translateY(0) scaleX(1)";
-            el.style.filter = "blur(0px)";
+            e.target.classList.add("is-revealed");
             io.unobserve(e.target);
           }
         });
@@ -60,14 +56,13 @@ export default function ScrollSection({ children, index, align = "left", ghost }
   );
 }
 
-/* Reveal helper components */
+/* ── Reveal helpers ──
+   All reveals share one easing curve and one stagger scale (`--reveal-step`),
+   declared in CSS so the compositor — not React — animates them. */
+
 export function RevealTag({ children }: { children: ReactNode }) {
   return (
-    <div
-      data-reveal
-      className="tag-label"
-      style={{ opacity: 0, transform: "translateY(10px)", transition: "opacity 0.5s ease, transform 0.5s ease" }}
-    >
+    <div data-reveal className="tag-label reveal reveal--step-0">
       {children}
     </div>
   );
@@ -76,11 +71,7 @@ export function RevealTag({ children }: { children: ReactNode }) {
 export function RevealHeading({ children, size = "lg" }: { children: ReactNode; size?: "xl" | "lg" | "hero" }) {
   const cls = size === "xl" ? "display-xl" : size === "hero" ? "display-hero" : "display-lg";
   return (
-    <h2
-      data-reveal
-      className={`display-heading ${cls}`}
-      style={{ opacity: 0, transform: "translateY(18px)", filter: "blur(4px)", transition: "opacity 0.55s cubic-bezier(0.22,1,0.36,1) 0.08s, transform 0.55s cubic-bezier(0.22,1,0.36,1) 0.08s, filter 0.55s ease 0.08s" }}
-    >
+    <h2 data-reveal className={`display-heading ${cls} reveal reveal--blur reveal--step-1`}>
       {children}
     </h2>
   );
@@ -88,33 +79,19 @@ export function RevealHeading({ children, size = "lg" }: { children: ReactNode; 
 
 export function RevealBody({ children }: { children: ReactNode }) {
   return (
-    <p
-      data-reveal
-      className="body-muted"
-      style={{ opacity: 0, transform: "translateY(10px)", transition: "opacity 0.5s ease 0.2s, transform 0.5s ease 0.2s" }}
-    >
+    <p data-reveal className="body-muted reveal reveal--step-2">
       {children}
     </p>
   );
 }
 
 export function RevealLine() {
-  return (
-    <div
-      data-reveal
-      className="accent-line"
-      style={{ opacity: 0, transform: "scaleX(0)", transformOrigin: "left", transition: "opacity 0.4s ease, transform 0.4s ease" }}
-    />
-  );
+  return <div data-reveal className="accent-line reveal reveal--line" />;
 }
 
 export function RevealStats({ stats }: { stats: { num: string; label: string }[] }) {
   return (
-    <div
-      data-reveal
-      className="flex gap-10 mt-8 flex-wrap"
-      style={{ opacity: 0, transform: "translateY(10px)", transition: "opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s" }}
-    >
+    <div data-reveal className="flex gap-10 mt-8 flex-wrap reveal reveal--step-3">
       {stats.map((s) => (
         <div key={s.label} className="flex flex-col gap-0.5">
           <span className="stat-number">{s.num}</span>
@@ -127,11 +104,7 @@ export function RevealStats({ stats }: { stats: { num: string; label: string }[]
 
 export function RevealCTA({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
-    <div
-      data-reveal
-      className="mt-7 flex items-center gap-3"
-      style={{ opacity: 0, transform: "translateY(10px)", transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s" }}
-    >
+    <div data-reveal className="mt-7 flex items-center gap-3 reveal reveal--step-4">
       <button onClick={onClick} className="cta-btn">
         {children}
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">

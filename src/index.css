@@ -6264,3 +6264,143 @@
     0 1px 0 rgba(255, 255, 255, 0.95) inset,
     0 26px 56px -26px rgba(15, 23, 42, 0.26);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CONSOLIDATED MOTION + ARTIFACT LAYER
+   One easing curve, one stagger scale, one skeleton language.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --reveal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --reveal-dur: 0.62s;
+  --reveal-step: 0.075s;
+  --reveal-rise: 14px;
+}
+
+/* ── Shared reveal system ── */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-rise), 0);
+  transition:
+    opacity var(--reveal-dur) var(--reveal-ease) var(--reveal-delay, 0s),
+    transform var(--reveal-dur) var(--reveal-ease) var(--reveal-delay, 0s),
+    filter var(--reveal-dur) var(--reveal-ease) var(--reveal-delay, 0s);
+  will-change: opacity, transform;
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+  will-change: auto;
+}
+
+.reveal--blur { filter: blur(5px); }
+
+.reveal--line {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.reveal--line.is-revealed { transform: scaleX(1); }
+
+.reveal--step-0 { --reveal-delay: 0s; }
+.reveal--step-1 { --reveal-delay: calc(var(--reveal-step) * 1); }
+.reveal--step-2 { --reveal-delay: calc(var(--reveal-step) * 2); }
+.reveal--step-3 { --reveal-delay: calc(var(--reveal-step) * 3); }
+.reveal--step-4 { --reveal-delay: calc(var(--reveal-step) * 4); }
+.reveal--step-5 { --reveal-delay: calc(var(--reveal-step) * 5); }
+
+/* ── Artifact wrapper: reserved space, soft blur-up on arrival ── */
+.artifact {
+  position: relative;
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  filter: blur(6px);
+  transition:
+    opacity 0.7s var(--reveal-ease),
+    transform 0.7s var(--reveal-ease),
+    filter 0.7s var(--reveal-ease);
+  contain: paint;
+}
+
+.artifact--ready {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+}
+
+.artifact__skeleton {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      180deg,
+      hsl(var(--foreground) / 0.014),
+      hsl(var(--foreground) / 0.03)
+    );
+}
+
+.artifact__skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    hsl(var(--foreground) / 0.045) 48%,
+    transparent 76%
+  );
+  transform: translate3d(-100%, 0, 0);
+  animation: artifact-sheen 2.4s var(--reveal-ease) infinite;
+}
+
+@keyframes artifact-sheen {
+  to { transform: translate3d(100%, 0, 0); }
+}
+
+/* ── Scroll smoothness: keep paint work inside section boundaries ── */
+.scroll-section,
+.constellation-section,
+.artifact-lab {
+  contain: layout paint style;
+}
+
+/* Two stacked frosted layers is the single biggest scroll cost —
+   the inner one inherits the outer blur instead of adding its own. */
+.artifact .glass-card,
+.artifact-lab__item .cryptic-bg { backdrop-filter: none; }
+
+/* ── Sharper glass depth on the artifact panels ── */
+.artifact-lab__item {
+  position: relative;
+  isolation: isolate;
+}
+
+.artifact-lab__item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120% 80% at 50% -10%,
+      hsl(var(--foreground) / 0.05),
+      transparent 62%
+    );
+  mix-blend-mode: normal;
+  z-index: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .artifact {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .artifact__skeleton::after { animation: none; }
+}

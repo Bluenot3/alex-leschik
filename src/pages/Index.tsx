@@ -8,6 +8,8 @@ import ContactModal from "@/components/ContactModal";
 import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
+import Artifact from "@/components/Artifact";
+
 import SocialLinks from "@/components/SocialLinks";
 import CipherSmokeCursor from "@/components/CipherSmokeCursor";
 import BootSequence from "@/components/BootSequence";
@@ -305,9 +307,9 @@ export default function Index() {
             </p>
           </div>
 
-          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
+          <Artifact minHeight={400} lead="eager" guard={false}>
             <SignalConstellation onExploreWork={() => scrollToSection(3)} />
-          </Suspense>
+          </Artifact>
         </section>
 
         <CrypticDivider lines={5} label="// the third degree" />
@@ -339,48 +341,38 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <LazySection className="relative" rootMargin="1400px 0px">
+        <Artifact className="relative" minHeight="80vh" lead="far" label="spotlight offline">
           <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
-          <Suspense fallback={<div style={{ minHeight: "80vh" }} />}>
-            <ProjectSpotlight editMode={editMode} />
-          </Suspense>
-        </LazySection>
+          <ProjectSpotlight editMode={editMode} />
+        </Artifact>
 
         <CrypticDivider lines={4} label="// as seen, as spoken" />
 
-        <LazySection className="relative" rootMargin="2500px 0px">
+        <Artifact className="relative" minHeight={500} lead="eager" guard={false}>
           <CrypticBackground rows={8} speed={140} opacity={0.04} />
-          <Suspense fallback={<div style={{ minHeight: "500px" }} />}>
-            <MediaRoom />
-          </Suspense>
-        </LazySection>
+          <MediaRoom />
+        </Artifact>
 
         <CrypticDivider lines={4} label="// the eye keeps records" />
 
-        <div className="relative">
+        <Artifact className="relative" minHeight={640} lead="far" guard={false}>
           <CrypticBackground rows={8} speed={130} opacity={0.04} />
-          <Suspense fallback={<div style={{ minHeight: "640px" }} />}>
-            <ImageTheater />
-          </Suspense>
-        </div>
+          <ImageTheater />
+        </Artifact>
 
         <CrypticDivider lines={3} label="// arsenal.world" />
 
-        <LazySection className="relative" rootMargin="1400px 0px">
+        <Artifact className="relative" minHeight={680} lead="far" guard={false}>
           <CrypticBackground rows={10} speed={115} opacity={0.05} />
-          <Suspense fallback={<div style={{ minHeight: "680px" }} />}>
-            <ArsenalShowcase />
-          </Suspense>
-        </LazySection>
+          <ArsenalShowcase />
+        </Artifact>
 
         <CrypticDivider lines={4} label="// zen-gen online" />
 
         {/* Generative archive — owner-fed, four ways to read it */}
-        <LazySection className="relative" rootMargin="1200px 0px">
-          <Suspense fallback={<div style={{ minHeight: "90vh" }} />}>
-            <ZenGenGallery />
-          </Suspense>
-        </LazySection>
+        <Artifact className="relative" minHeight="90vh" lead="far" label="archive offline">
+          <ZenGenGallery />
+        </Artifact>
 
         <CrypticDivider lines={5} label="// vitriol · the inner work" />
 
@@ -402,69 +394,66 @@ export default function Index() {
           </ScrollSection>
         </div>
 
-        <LazySection className="relative z-[1] py-16 px-6 md:px-12 lg:px-20">
-          <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
-            <GalleryShowcase />
-          </Suspense>
-        </LazySection>
+        <Artifact
+          className="relative z-[1] py-16 px-6 md:px-12 lg:px-20"
+          minHeight={400}
+          lead="far"
+          guard={false}
+        >
+          <GalleryShowcase />
+        </Artifact>
 
         <section className="artifact-lab">
           <div className="artifact-lab__grid">
             <div className="artifact-lab__item artifact-lab__item--wide">
               <div className="artifact-lab__label">Glass system · orbital field</div>
-              <LazySection className="relative z-[1]">
-                <SafeVisual label="orbital field offline">
-                  <Suspense fallback={<div style={{ minHeight: "520px" }} />}>
-                    <GlassOrbit />
-                  </Suspense>
-                </SafeVisual>
-              </LazySection>
+              <Artifact className="relative z-[1]" minHeight={520} lead="near" label="orbital field offline">
+                <GlassOrbit />
+              </Artifact>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--narrow artifact-lab__item--centered">
               <div className="artifact-lab__label">Glass artifact · v2</div>
-              <LazySection className="relative z-[1] flex items-center justify-center py-12">
-                <SafeVisual label="glass artifact offline">
-                  <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-                    <GlassCube />
-                  </Suspense>
-                </SafeVisual>
-              </LazySection>
+              <Artifact
+                className="relative z-[1] flex items-center justify-center py-12"
+                minHeight={300}
+                lead="near"
+                label="glass artifact offline"
+              >
+                <GlassCube />
+              </Artifact>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--narrow">
               <div className="artifact-lab__label">Identity object</div>
-              <LazySection className="relative z-[1] px-6 md:px-12 lg:px-20">
-                <SafeVisual label="identity object offline">
-                  <Suspense fallback={<div style={{ minHeight: "300px" }} />}>
-                    <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
-                  </Suspense>
-                </SafeVisual>
-              </LazySection>
+              <Artifact
+                className="relative z-[1] px-6 md:px-12 lg:px-20"
+                minHeight={300}
+                lead="near"
+                label="identity object offline"
+              >
+                <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
+              </Artifact>
             </div>
 
             <div className="artifact-lab__item artifact-lab__item--wide">
               <div className="artifact-lab__label">Generative field</div>
-              <LazySection className="relative z-[1]">
-                <SafeVisual label="generative field offline">
-                  <Suspense fallback={<div style={{ minHeight: "400px" }} />}>
-                    <CubeRain />
-                  </Suspense>
-                </SafeVisual>
-              </LazySection>
+              <Artifact className="relative z-[1]" minHeight={400} lead="near" label="generative field offline">
+                <CubeRain />
+              </Artifact>
             </div>
 
           </div>
         </section>
 
+
         <CrypticDivider lines={3} label="// let there be light" />
 
-        <div className="relative">
+        <Artifact className="relative" minHeight={640} lead="far" guard={false}>
           <CrypticBackground rows={8} speed={125} opacity={0.04} />
-          <Suspense fallback={<div style={{ minHeight: "640px" }} />}>
-            <ScrollGallery />
-          </Suspense>
-        </div>
+          <ScrollGallery />
+        </Artifact>
+
 
         <CrypticDivider lines={4} label="// on the level, on the square" />
 
@@ -487,12 +476,7 @@ export default function Index() {
 
             <div
               data-reveal
-              className="mt-7 flex items-center gap-3 justify-end"
-              style={{
-                opacity: 0,
-                transform: "translateY(10px)",
-                transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s",
-              }}
+              className="mt-7 flex items-center gap-3 justify-end reveal reveal--step-4"
             >
               <button
                 type="button"
@@ -508,13 +492,9 @@ export default function Index() {
 
             <div
               data-reveal
-              className="mt-4 flex items-center gap-3 justify-end"
-              style={{
-                opacity: 0,
-                transform: "translateY(10px)",
-                transition: "opacity 0.5s ease 0.45s, transform 0.5s ease 0.45s",
-              }}
+              className="mt-4 flex items-center gap-3 justify-end reveal reveal--step-5"
             >
+
               <button onClick={() => scrollToSection(0)} className="cta-btn-muted">
                 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                   <path d="M11 6H1M6 11L1 6l5-5" />

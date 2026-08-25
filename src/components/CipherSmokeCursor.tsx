@@ -1,4 +1,6 @@
 import { useRef, useEffect, useCallback } from "react";
+import { useRafTicker } from "@/hooks/useRafTicker";
+
 
 /* ─────────────────────────────────────────────────────
    Cipher glyph vocabulary
@@ -115,17 +117,15 @@ export default function CipherSmokeCursor({
   /* ── Render ── */
   const render = useCallback((now: number) => {
     const c = canvasRef.current;
-    if (!c) { raf.current = requestAnimationFrame(render); return; }
+    if (!c) return;
     const ctx = c.getContext("2d")!;
     const d   = dpr.current;
 
     ctx.clearRect(0, 0, c.width, c.height);
     emit(now);
 
-    if (pool.current.length === 0) {
-      raf.current = requestAnimationFrame(render);
-      return;
-    }
+    if (pool.current.length === 0) return;
+
 
     ctx.save();
     ctx.scale(d, d);
@@ -182,13 +182,14 @@ export default function CipherSmokeCursor({
 
     ctx.restore();
     pool.current = alive;
-    raf.current  = requestAnimationFrame(render);
   }, [emit]);
+
+  /* Joins the shared page clock — no private rAF loop. */
+  useRafTicker(render);
 
   /* ── Lifecycle ── */
   useEffect(() => {
     resize();
-    raf.current = requestAnimationFrame(render);
 
     const onMove  = (e: MouseEvent) => {
       mouse.current = { x: e.clientX, y: e.clientY, on: true };
@@ -200,12 +201,12 @@ export default function CipherSmokeCursor({
     window.addEventListener("resize",       resize,  { passive: true });
 
     return () => {
-      cancelAnimationFrame(raf.current);
       window.removeEventListener("mousemove",    onMove);
       document.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("resize",       resize);
     };
-  }, [resize, render]);
+  }, [resize]);
+
 
   return (
     <canvas
