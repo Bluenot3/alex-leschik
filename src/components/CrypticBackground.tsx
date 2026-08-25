@@ -43,7 +43,6 @@ export default function CrypticBackground({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glyphsRef = useRef<Glyph[]>([]);
-  const rafRef = useRef(0);
   const visibleRef = useRef(false);
   const lastRef = useRef(0);
 
