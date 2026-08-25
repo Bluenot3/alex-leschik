@@ -476,12 +476,7 @@ export default function Index() {
 
             <div
               data-reveal
-              className="mt-7 flex items-center gap-3 justify-end"
-              style={{
-                opacity: 0,
-                transform: "translateY(10px)",
-                transition: "opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s",
-              }}
+              className="mt-7 flex items-center gap-3 justify-end reveal reveal--step-4"
             >
               <button
                 type="button"
@@ -497,13 +492,9 @@ export default function Index() {
 
             <div
               data-reveal
-              className="mt-4 flex items-center gap-3 justify-end"
-              style={{
-                opacity: 0,
-                transform: "translateY(10px)",
-                transition: "opacity 0.5s ease 0.45s, transform 0.5s ease 0.45s",
-              }}
+              className="mt-4 flex items-center gap-3 justify-end reveal reveal--step-5"
             >
+
               <button onClick={() => scrollToSection(0)} className="cta-btn-muted">
                 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
                   <path d="M11 6H1M6 11L1 6l5-5" />
