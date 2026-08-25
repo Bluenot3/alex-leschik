@@ -115,17 +115,15 @@ export default function CipherSmokeCursor({
   /* ── Render ── */
   const render = useCallback((now: number) => {
     const c = canvasRef.current;
-    if (!c) { raf.current = requestAnimationFrame(render); return; }
+    if (!c) return;
     const ctx = c.getContext("2d")!;
     const d   = dpr.current;
 
     ctx.clearRect(0, 0, c.width, c.height);
     emit(now);
 
-    if (pool.current.length === 0) {
-      raf.current = requestAnimationFrame(render);
-      return;
-    }
+    if (pool.current.length === 0) return;
+
 
     ctx.save();
     ctx.scale(d, d);
