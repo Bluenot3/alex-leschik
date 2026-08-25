@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useRafTicker, prefersReducedMotion } from "@/hooks/useRafTicker";
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=<>{}[]|/\\~^`.,:;!?-_";
 
@@ -23,7 +24,8 @@ export default function CrypticDivider({ lines = 6, label }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [textLines, setTextLines] = useState<string[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const colsRef = useRef(60);
+  const reduced = prefersReducedMotion();
 
   useEffect(() => {
     const el = ref.current;
@@ -36,25 +38,21 @@ export default function CrypticDivider({ lines = 6, label }: Props) {
     return () => io.disconnect();
   }, []);
 
+  /* Seed a static frame as soon as the strip is measured. */
   useEffect(() => {
-    if (!visible) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      return;
-    }
     const cols = Math.min(80, Math.floor((ref.current?.clientWidth || 600) / 8));
-    const update = () => {
-      const newLines: string[] = [];
-      for (let i = 0; i < lines; i++) {
-        newLines.push(generateLine(cols));
-      }
-      setTextLines(newLines);
-    };
-    update();
-    intervalRef.current = setInterval(update, 120);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [visible, lines]);
+    colsRef.current = cols;
+    setTextLines(Array.from({ length: lines }, () => generateLine(cols)));
+  }, [lines]);
+
+  /* Shimmer on the shared page clock, throttled and gated to the viewport. */
+  useRafTicker(
+    () => {
+      setTextLines(Array.from({ length: lines }, () => generateLine(colsRef.current)));
+    },
+    visible && !reduced,
+    120
+  );
 
   return (
     <div
