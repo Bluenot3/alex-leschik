@@ -1,51 +1,36 @@
+# Sleeker Graphics, Smoother Load & Scroll
 
+Goal: the site feels more expensive and glides — nothing removed, but several duplicated layers get consolidated into shared, cheaper systems.
 
-# Scroll-Reveal Project Previews
+## What changes for a visitor
 
-## Concept
-Replace the current single-placeholder ProjectShowcase with a **scroll-triggered sidebar preview system** — as the user scrolls, project preview cards slide in from alternating sides (left/right), each containing a live iframe embed of the GitHub Pages deployment. Only one project is prominently visible at a time, creating a cinematic reveal effect.
+- Scrolling feels continuous instead of stepping: reveals and section motion share one timing language, with a single global smooth-scroll behavior.
+- Graphics read sharper: refined glass depth, cleaner light falloff on the artifact panels, tighter grain/dither, and a subtle unified vignette so heavy sections stop competing with copy.
+- Nothing pops in late: heavy 3D/canvas artifacts fade in on a soft blur-up instead of appearing abruptly, and only the ones near the viewport actually animate.
+- No stutter while scrolling on mid-range laptops and phones.
 
-## GitHub Pages URLs
-Most of these repos are deployed via GitHub Pages. The embed URLs will be:
+## Consolidation (nothing removed)
 
-| Project | Embed URL |
-|---------|-----------|
-| ROAM | `https://bluenot3.github.io/ROAM/` |
-| AI-Literacy-Constitution | `https://bluenot3.github.io/AI-Literacy-Constitution/` |
-| AGENT-ARENA-TEMPLATE | `https://bluenot3.github.io/AGENT-ARENA-TEMPLATE/` |
-| popuppastries | `https://bluenot3.github.io/popuppastries/` |
-| globe.gl | `https://bluenot3.github.io/globe.gl/` |
-| homeschool-kit | `https://bluenot3.github.io/homeschool-kit/` |
-| vibe-book-pm | `https://bluenot3.github.io/vibe-book-pm/` |
-| V3 | `https://bluenot3.github.io/V3/` |
-| Fus3 | `https://bluenot3.github.io/Fus3/` |
-| brooks-showcase-studio | `https://bluenot3.github.io/brooks-showcase-studio/` |
+1. **One background engine.** The page currently mounts 25 separate cryptic background/divider instances, each with its own canvas or interval. Replace the per-section instances with a single shared canvas driven by one animation loop, and have each section declare its density/opacity through props on a lightweight wrapper. Same visual texture in every place it appears today, one loop instead of many.
+2. **One motion clock.** `CrypticDivider`'s interval, `LiveMetricsTicker`'s loop, and `CipherSmokeCursor`'s loop subscribe to a single shared rAF ticker that pauses when the tab is hidden or when the element is offscreen.
+3. **One reveal system.** The inline per-element transition styles in `ScrollSection` move to design-system classes with a shared easing/stagger scale, so all reveals match and the browser can composite them.
+4. **One lazy wrapper.** `LazySection` + `Suspense` + `SafeVisual` collapse into a single `Artifact` wrapper with consistent prefetch margins and a shared skeleton, replacing the hand-tuned `rootMargin`/`minHeight` values scattered per section (which currently cause layout shifts of different sizes).
 
-(If any don't load, they'll show a fallback card with a link to the repo.)
+## Performance work
 
-## Implementation
+- Reserve exact height for every lazy block so no section jumps as chunks arrive (kills the scroll glitches).
+- Pause all canvas/3D render loops when their section is offscreen; cap devicePixelRatio on the three.js scenes and lower it further on mobile.
+- Keep the existing idle chunk prefetch but order it by scroll position and stop prefetching heavy three.js chunks on low-memory/mobile devices until closer to view.
+- Promote animated layers with `transform`/`opacity` only, add `contain: paint` to section wrappers, and remove backdrop-blur stacking where two blurred layers overlap (double blur is the main scroll cost).
+- Honor `prefers-reduced-motion` across the consolidated systems.
 
-### 1. New component: `ScrollProjectReel.tsx`
-- Array of 10 projects with title, description, GitHub URL, and Pages embed URL
-- Each project rendered as a full-viewport-height section with a glass-morphism card containing an iframe
-- Cards alternate left/right alignment using `IntersectionObserver`
-- When a card enters the viewport: slides in from its side with opacity + translateX animation
-- When it leaves: fades out
-- Each card has an "Open" external link button to the GitHub repo
-- Iframes use `loading="lazy"` and only mount when within ~1 screen of viewport (performance guard)
+## Technical notes
 
-### 2. Update `Index.tsx`
-- Replace the existing `<ProjectShowcase />` section with the new `<ScrollProjectReel />`
-- Pass `smoothProgress` so cards can optionally react to scroll position
+- New: `src/hooks/useRafTicker.ts` (shared clock + visibility gating), `src/hooks/useInView.ts`, `src/components/Artifact.tsx` (lazy + suspense + error boundary + skeleton), `src/components/CrypticField.tsx` (single shared canvas + context provider).
+- Edited: `src/pages/Index.tsx` (swap wrappers, reserved heights), `ScrollSection.tsx` (class-based reveals), `CrypticBackground.tsx` / `CrypticDivider.tsx` (consume shared field/ticker, keep their current look), `CipherSmokeCursor.tsx`, `LiveMetricsTicker.tsx`, `CubeRain.tsx` / `GlassOrbit.tsx` / `GlassCube.tsx` / `AZ1Logo3D.tsx` (frameloop gating, dpr caps), `src/index.css` + `src/enhance.css` (reveal/skeleton/glass tokens).
+- No copy, section, or feature is deleted; existing components keep their public props so behavior stays identical.
 
-### 3. Styling in `index.css`
-- Replace `.project-showcase` / `.project-grid` styles with new `.scroll-reel` styles
-- Each card: fixed width (~400px desktop, full-width mobile), glass background, rounded corners
-- Alternating cards positioned `left: 3vw` and `right: 3vw` via odd/even
-- CSS transitions for slide-in (`transform`, `opacity`) triggered by a `.visible` class
+## Verification
 
-### 4. Performance safeguards
-- Iframes only render when the card is near the viewport (lazy mounting via IntersectionObserver)
-- No more than 2 iframes active at once — unmount iframes that scroll far out of view
-- `sandbox="allow-scripts allow-same-origin"` on all iframes
-
+- Playwright pass at desktop and mobile viewports: screenshot the hero, constellation, spotlight, artifact lab, and footer; confirm no console errors and no missing artifacts.
+- Scroll-through check for layout shift and dropped frames before/after.
