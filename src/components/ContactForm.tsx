@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Send, CheckCircle, Loader2 } from "lucide-react";
 
 const PROJECT_TYPES = [
@@ -50,27 +49,34 @@ export default function ContactForm({ onSuccess, source = "contact-modal" }: Con
 
     setSubmitting(true);
 
-    const { error: supaError } = await supabase.from("leads").insert({
-      name: name.trim(),
-      email: email.trim(),
-      company: company.trim() || null,
-      project_type: projectType || null,
-      budget_range: budgetRange || null,
-      message: message.trim() || null,
-      source,
-      status: "new",
-    });
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          company: company.trim(),
+          projectType,
+          budgetRange,
+          message: message.trim(),
+          source,
+        }),
+      });
 
-    setSubmitting(false);
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        throw new Error(data.error || "Submission failed");
+      }
 
-    if (supaError) {
-      setError("Something went wrong. Please try again.");
-      console.error(supaError);
-      return;
+      setSubmitted(true);
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      console.error(err);
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitted(true);
-    onSuccess?.();
   };
 
   if (submitted) {

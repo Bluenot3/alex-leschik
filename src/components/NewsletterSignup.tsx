@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Mail, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 
 export default function NewsletterSignup() {
@@ -19,24 +18,26 @@ export default function NewsletterSignup() {
 
     setSubmitting(true);
 
-    const { error: supaError } = await supabase.from("newsletter_signups").insert({
-      email: email.trim(),
-    });
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
 
-    setSubmitting(false);
-
-    if (supaError) {
-      if (supaError.message?.includes("duplicate")) {
-        setSubmitted(true);
-        return;
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        throw new Error(data.error || "Subscription failed");
       }
-      setError("Something went wrong. Please try again.");
-      console.error(supaError);
-      return;
-    }
 
-    setSubmitted(true);
-    setEmail("");
+      setSubmitted(true);
+      setEmail("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
