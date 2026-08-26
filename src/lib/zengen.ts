@@ -13,6 +13,62 @@ export interface ZenGenImage {
   createdAt: string;
 }
 
+interface ProcessedImage {
+  full: Blob;
+  thumb: Blob;
+  width: number;
+  height: number;
+}
+
+export async function processImage(file: File): Promise<ProcessedImage> {
+  const img = new Image();
+  const blob = await new Promise<Blob>((resolve) => {
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d")!;
+
+      const maxWidth = Math.min(img.width, 2560);
+      const ratio = img.height / img.width;
+      const width = maxWidth;
+      const height = Math.round(width * ratio);
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob((blob) => resolve(blob!), "image/webp", 0.85);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
+  const thumbCanvas = document.createElement("canvas");
+  const thumbCtx = thumbCanvas.getContext("2d")!;
+  const thumbImg = new Image();
+
+  const thumb = await new Promise<Blob>((resolve) => {
+    thumbImg.onload = () => {
+      const maxThumb = 640;
+      const ratio = thumbImg.height / thumbImg.width;
+      const width = Math.min(thumbImg.width, maxThumb);
+      const height = Math.round(width * ratio);
+
+      thumbCanvas.width = width;
+      thumbCanvas.height = height;
+      thumbCtx.drawImage(thumbImg, 0, 0, width, height);
+
+      thumbCanvas.toBlob((blob) => resolve(blob!), "image/webp", 0.75);
+    };
+    thumbImg.src = URL.createObjectURL(file);
+  });
+
+  return {
+    full: blob,
+    thumb,
+    width: img.width,
+    height: img.height,
+  };
+}
+
 export async function fetchImagePage(cursor?: string, collection?: string) {
   const params = new URLSearchParams();
   if (cursor) params.append("cursor", cursor);

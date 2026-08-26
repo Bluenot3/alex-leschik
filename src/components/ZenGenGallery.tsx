@@ -2,15 +2,16 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { createPortal } from "react-dom";
 import HoloSigilField from "@/components/zengen/HoloSigilField";
 import {
-  fetchCollections,
   fetchImagePage,
-  countImages,
-  isNotProvisioned,
-  thumbUrl,
-  fullUrl,
-  type ZenGenCollection,
   type ZenGenImage,
 } from "@/lib/zengen";
+
+const COLLECTIONS = [
+  { id: "gallery", title: "Gallery" },
+  { id: "archive", title: "Archive" },
+  { id: "sketches", title: "Sketches" },
+  { id: "unfiled", title: "Unfiled" },
+];
 
 const ZenGenStudio = lazy(() => import("@/components/ZenGenStudio"));
 
@@ -59,7 +60,7 @@ function StreamFrame({
       {!ok && <span className="zg-frame__shimmer" aria-hidden />}
       {vis && (
         <img
-          src={thumbUrl(image)}
+          src={image.thumbUrl}
           alt={image.title || "ZEN-GEN generation"}
           className={`zg-frame__img${ok ? " zg-frame__img--in" : ""}`}
           loading="lazy"
@@ -106,7 +107,7 @@ function Slideshow({
   useEffect(() => {
     if (n < 2) return;
     const img = new Image();
-    img.src = fullUrl(images[(i + 1) % n]);
+    img.src = images[(i + 1) % n].url;
   }, [i, n, images]);
 
   const current = images[i];
@@ -122,7 +123,7 @@ function Slideshow({
         {!ok && <span className="zg-frame__shimmer" aria-hidden />}
         <img
           key={current.id}
-          src={fullUrl(current)}
+          src={current.url}
           alt={current.title || "ZEN-GEN generation"}
           className={`zg-slideshow__img${ok ? " zg-slideshow__img--in" : ""}`}
           decoding="async"
@@ -220,7 +221,7 @@ function Orbit({
             onClick={() => onOpen(images.indexOf(img))}
             aria-label={img.title || `Generation ${i + 1}`}
           >
-            <img src={thumbUrl(img)} alt="" loading="lazy" decoding="async" />
+            <img src={img.thumbUrl} alt="" loading="lazy" decoding="async" />
             <span className="zg-orbit__glow" aria-hidden />
           </button>
         ))}
@@ -264,7 +265,7 @@ function Viewer({
   return createPortal(
     <div className="zg-viewer" role="dialog" aria-modal="true" onClick={onClose}>
       <figure className="zg-viewer__stage" onClick={(e) => e.stopPropagation()}>
-        <img key={img.id} src={fullUrl(img)} alt={img.title || "ZEN-GEN generation"} className="zg-viewer__img" />
+        <img key={img.id} src={img.url} alt={img.title || "ZEN-GEN generation"} className="zg-viewer__img" />
         <figcaption className="zg-viewer__meta">
           <span className="zg-viewer__count">{String(index + 1).padStart(3, "0")} / {String(images.length).padStart(3, "0")}</span>
           {img.title && <span className="zg-viewer__title">{img.title}</span>}
@@ -495,7 +496,7 @@ export default function ZenGenGallery() {
                   onClick={() => setViewing(i)}
                   aria-label={img.title || `Generation ${i + 1}`}
                 >
-                  <img src={thumbUrl(img)} alt="" loading="lazy" decoding="async" />
+                  <img src={img.thumbUrl} alt="" loading="lazy" decoding="async" />
                   <span className="zg-tile__glow" aria-hidden />
                 </button>
               ))}
