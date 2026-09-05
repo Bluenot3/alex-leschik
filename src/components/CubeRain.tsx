@@ -1,5 +1,6 @@
 import { useRef, useEffect, useMemo, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import RenderWhenVisible from "@/components/RenderWhenVisible";
 import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
@@ -189,6 +190,7 @@ export default function CubeRain() {
         style={{ background: "transparent" }}
         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
       >
+        <RenderWhenVisible />
         <Scene progressRef={progressRef} />
       </Canvas>
     </div>

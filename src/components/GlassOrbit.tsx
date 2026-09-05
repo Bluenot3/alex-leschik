@@ -1,5 +1,6 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import RenderWhenVisible from "@/components/RenderWhenVisible";
 import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
@@ -175,6 +176,7 @@ export default function GlassOrbit() {
         }}
         style={{ background: "transparent" }}
       >
+        <RenderWhenVisible />
         <ambientLight intensity={1.3} />
         <directionalLight position={[-6, 5, -8]} intensity={4.5} />
         <directionalLight position={[7, 5, 7]} intensity={2.5} />

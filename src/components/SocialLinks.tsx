@@ -166,7 +166,7 @@ export default function SocialLinks() {
       <div className="social-links-header">
         <span className="tag-label" style={rv(0)}>Network</span>
         <h2 className="display-heading display-lg social-links-title" style={rv(0.06, 14)}>
-          WHERE<br />TO<br />FIND ME
+          WHERE{" "}<br />TO<br />FIND ME
         </h2>
         <p className="body-muted social-links-desc" style={rv(0.14)}>
           ZEN AI builds in the open across education, automation, AI agents, and credentialing. Follow along, browse

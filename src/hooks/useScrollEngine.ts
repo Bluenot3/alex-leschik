@@ -32,6 +32,7 @@ export function useScrollEngine(sectionCount: number) {
   const maxScrollRef = useRef(1);
   const sectionTopsRef = useRef<number[]>([]);
   const frameRef = useRef(0);
+  const navigationFrameRef = useRef(0);
 
   const buildSectionTops = useCallback(() => {
     const sections = document.querySelectorAll("[data-scroll-section]");
@@ -133,15 +134,27 @@ export function useScrollEngine(sectionCount: number) {
       window.removeEventListener("scroll", onScroll);
       ro.disconnect();
       cancelAnimationFrame(frameRef.current);
+      cancelAnimationFrame(navigationFrameRef.current);
     };
   }, [buildSectionTops, sectionIndexFromScroll, getCubeRotation]);
 
   const scrollToSection = useCallback((index: number) => {
     if (sectionTopsRef.current[index] !== undefined) {
-      const targetY = sectionTopsRef.current[index];
+      cancelAnimationFrame(navigationFrameRef.current);
+      const getTarget = () => {
+        const section = document.getElementById(`s${index}`);
+        const inset = document.querySelector(".astra-nav")?.getBoundingClientRect().height ?? 0;
+        return Math.max(0, Math.min(
+          (section ? section.getBoundingClientRect().top + window.scrollY : sectionTopsRef.current[index]) - inset,
+          document.documentElement.scrollHeight - window.innerHeight,
+        ));
+      };
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        window.scrollTo(0, getTarget());
+        return;
+      }
 
       const startY = window.scrollY;
-      const diff = targetY - startY;
       const start = performance.now();
       const duration = 900;
 
@@ -150,13 +163,13 @@ export function useScrollEngine(sectionCount: number) {
 
       const tick = (now: number) => {
         const p = Math.min(1, (now - start) / duration);
-        const y = startY + diff * easeInOutCubic(p);
+        const y = startY + (getTarget() - startY) * easeInOutCubic(p);
         window.scrollTo(0, y);
         tgtRef.current = y / maxScrollRef.current;
         smoothRef.current = tgtRef.current;
-        if (p < 1) requestAnimationFrame(tick);
+        if (p < 1) navigationFrameRef.current = requestAnimationFrame(tick);
       };
-      requestAnimationFrame(tick);
+      navigationFrameRef.current = requestAnimationFrame(tick);
     }
   }, []);
 

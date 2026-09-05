@@ -16,6 +16,9 @@ import BootSequence from "@/components/BootSequence";
 import LiveMetricsTicker from "@/components/LiveMetricsTicker";
 import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
+import AstraField from "@/components/AstraField";
+import AstraSignature from "@/components/AstraSignature";
+import "@/astra.css";
 import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
@@ -158,7 +161,8 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="relative portfolio-shell" data-sigil="ordo-ab-chao">
+    <div className="relative portfolio-shell astra" data-sigil="ordo-ab-chao">
+      <a className="astra-skip" href="#s0">Skip to content</a>
       <h1 className="sr-only">Alex Leschik — Founder of ZEN AI Co. Creator of the first youth AI literacy program in U.S. history.</h1>
       {/* As above, so below. — the structure is the message */}
 
@@ -176,9 +180,7 @@ export default function Index() {
         <div className="vc vc--br" />
       </div>
 
-      <CipherSmokeCursor variant="pearl" intensity="cinematic" />
-      <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
-      <InteractiveName scrollProgress={smoothProgress} />
+      <CipherSmokeCursor variant="pearl" intensity="normal" className="astra-cursor" />
 
       <Suspense fallback={null}>
         <ImageVortex progress={smoothProgress} />
@@ -193,13 +195,17 @@ export default function Index() {
       />
 
       {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
-      <HoloNav onNavigate={scrollToSection} />
+      <HoloNav onNavigate={scrollToSection} currentSection={currentSection} />
 
       <div className="relative z-[1]">
-        <section id="s0" data-scroll-section className="hero-poster">
+        <section id="s0" data-scroll-section className="hero-poster" tabIndex={-1}>
           <CrypticBackground rows={12} speed={180} opacity={0.07} />
 
           <div className="hero-poster__content">
+            <div className="astra-name">
+              <InteractiveName scrollProgress={0} />
+              <span className="astra-name__fallback">ALEXANDER<br />LESCHIK</span>
+            </div>
             <div className="hero-poster__eyebrow">
               Alex Leschik <span aria-hidden="true" title="ordo ab chao">△</span> systems · software · education · creative technology
             </div>
@@ -207,10 +213,8 @@ export default function Index() {
             <div className="hero-poster__headline-block">
               <p className="hero-poster__lead">Software architect, founder, and educator building products people rely on.</p>
               <h2 className="hero-poster__title display-heading">
-                BUILT THE FIRST
-                <br />
-                YOUTH AI LITERACY
-                <br />
+                BUILT THE FIRST{" "}
+                <em>YOUTH AI LITERACY</em>{" "}
                 PROGRAM IN U.S. HISTORY
               </h2>
             </div>
@@ -229,14 +233,24 @@ export default function Index() {
               </button>
             </div>
 
-            <div className="hero-poster__signal-grid">
+          </div>
+
+          <div className="astra-observatory" aria-label="Orbital sculpture with the original ZEN image cube">
+            <AstraField />
+            <span className="astra-observatory__number">01 / Origin</span>
+            <div className="astra-observatory__cube">
+              <CubeScene rotation={{ rx: cubeRotation.rx - 22, ry: cubeRotation.ry + 32 }} editMode={editMode} />
+            </div>
+            <span className="astra-observatory__caption">Everything connects <span aria-hidden="true">✳</span></span>
+          </div>
+
+          <div className="hero-poster__signal-grid">
               {HERO_SIGNALS.map((signal) => (
                 <div key={signal.label} className="hero-poster__signal">
                   <span className="hero-poster__signal-value">{signal.value}</span>
                   <span className="hero-poster__signal-label">{signal.label}</span>
                 </div>
               ))}
-            </div>
           </div>
 
           <aside className="hero-poster__transmission" aria-label="Current transmission">
@@ -348,6 +362,7 @@ export default function Index() {
 
         <CrypticDivider lines={4} label="// as seen, as spoken" />
 
+        <div id="media" />
         <Artifact className="relative" minHeight={500} lead="eager" guard={false}>
           <CrypticBackground rows={8} speed={140} opacity={0.04} />
           <MediaRoom />
@@ -370,6 +385,7 @@ export default function Index() {
         <CrypticDivider lines={4} label="// zen-gen online" />
 
         {/* Generative archive — owner-fed, four ways to read it */}
+        <div id="archive" />
         <Artifact className="relative" minHeight="90vh" lead="far" label="archive offline">
           <ZenGenGallery />
         </Artifact>
@@ -508,7 +524,8 @@ export default function Index() {
         <CrypticDivider lines={3} label="// the ledger remains open" />
 
         {/* Guestbook of the LLM era — every model signs on its way out */}
-        <ModelSignatures />
+        <div id="model-ledger"><ModelSignatures /></div>
+        <AstraSignature />
       </div>
 
       {/* Live technical metrics strip — fixed bottom */}
