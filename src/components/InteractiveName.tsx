@@ -46,8 +46,8 @@ const SPEED_SCATTER = 26;
 /* ─────────────────────────────────────────────────────
    Colour LUTs — vivid, saturated for crispness
 ───────────────────────────────────────────────────── */
-const BASE_LUT    = Array.from({length:101},(_,i)=>`hsl(170 16% 90% / ${(i/100).toFixed(2)})`);
-const ACCENT_LUT  = Array.from({length:101},(_,i)=>`hsl(172 60% 78% / ${(i/100).toFixed(2)})`);
+const BASE_LUT    = Array.from({length:101},(_,i)=>`hsl(215 58% 16% / ${(i/100).toFixed(2)})`);
+const ACCENT_LUT  = Array.from({length:101},(_,i)=>`hsl(204 100% 63% / ${(i/100).toFixed(2)})`);
 const GLOW_LUT    = Array.from({length:101},(_,i)=>`hsl(190 100% 65% / ${(i/100).toFixed(2)})`);
 const SCATTER_LUT = Array.from({length:101},(_,i)=>`hsl(265 95% 70% / ${(i/100).toFixed(2)})`);
 const SHIMMER_LUT = Array.from({length:101},(_,i)=>`hsl(214 80% 96% / ${(i/100).toFixed(2)})`);

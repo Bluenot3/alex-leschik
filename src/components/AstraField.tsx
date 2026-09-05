@@ -8,7 +8,7 @@ interface AstraFieldProps {
 }
 
 const TAU = Math.PI * 2;
-const COLORS = ["168,233,224", "218,193,161", "211,225,235"];
+const COLORS = ["44,112,169", "117,84,165", "76,132,153"];
 const STARS = Array.from({ length: 84 }, (_, i) => ({
   x: ((i * 73.137 + 19.31) % 101) / 101,
   y: ((i * i * 13.731 + 7.91) % 103) / 103,
@@ -45,21 +45,21 @@ export default function AstraField({ variant = "hero", formation = 0 }: AstraFie
 
     // The dim stars and measurement rings stay crisp; only the core blooms.
     for (const star of STARS) {
-      ctx.fillStyle = `rgba(186,213,217,${star.size > 1 ? 0.6 : 0.3})`;
+      ctx.fillStyle = `rgba(76,105,135,${star.size > 1 ? 0.6 : 0.3})`;
       ctx.fillRect(star.x * w, star.y * h, star.size, star.size);
     }
     ctx.save();
     ctx.translate(cx, cy);
     const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
-    glow.addColorStop(0, "rgba(126,219,207,0.17)");
-    glow.addColorStop(0.36, "rgba(96,175,183,0.05)");
-    glow.addColorStop(1, "rgba(96,175,183,0)");
+    glow.addColorStop(0, "rgba(121,183,238,0.17)");
+    glow.addColorStop(0.36, "rgba(140,129,199,0.05)");
+    glow.addColorStop(1, "rgba(140,129,199,0)");
     ctx.fillStyle = glow;
     ctx.fillRect(-cx, -cy, w, h);
     for (const scale of [0.76, 0.96, 1, 1.04]) {
       ctx.beginPath();
       ctx.arc(0, 0, radius * scale, 0, TAU);
-      ctx.strokeStyle = `rgba(218,193,161,${scale === 1 ? 0.38 : 0.13})`;
+      ctx.strokeStyle = `rgba(100,112,141,${scale === 1 ? 0.38 : 0.13})`;
       ctx.lineWidth = 0.7;
       ctx.setLineDash(scale === 0.76 ? [1, 5] : []);
       ctx.stroke();
@@ -72,10 +72,10 @@ export default function AstraField({ variant = "hero", formation = 0 }: AstraFie
       ctx.beginPath();
       ctx.moveTo(Math.cos(a) * inner, Math.sin(a) * inner);
       ctx.lineTo(Math.cos(a) * radius * 0.96, Math.sin(a) * radius * 0.96);
-      ctx.strokeStyle = `rgba(218,193,161,${major ? 0.5 : 0.22})`;
+      ctx.strokeStyle = `rgba(100,112,141,${major ? 0.5 : 0.22})`;
       ctx.stroke();
     }
-    ctx.strokeStyle = "rgba(191,222,220,0.16)";
+    ctx.strokeStyle = "rgba(67,108,145,0.16)";
     for (let i = 0; i < 4; i++) {
       ctx.save();
       ctx.rotate(i * Math.PI / 2);
@@ -144,12 +144,12 @@ export default function AstraField({ variant = "hero", formation = 0 }: AstraFie
     if (signature) {
       ctx.rotate(-t * 0.025);
       const core = ctx.createRadialGradient(0, 0, 1, 0, 0, 30);
-      core.addColorStop(0, "rgba(240,255,251,1)");
-      core.addColorStop(0.12, "rgba(168,233,224,0.8)");
-      core.addColorStop(1, "rgba(168,233,224,0)");
+      core.addColorStop(0, "rgba(31,102,164,1)");
+      core.addColorStop(0.12, "rgba(76,145,205,0.8)");
+      core.addColorStop(1, "rgba(76,145,205,0)");
       ctx.fillStyle = core;
       ctx.fillRect(-30, -30, 60, 60);
-      ctx.strokeStyle = "rgba(232,255,247,0.9)";
+      ctx.strokeStyle = "rgba(37,93,145,0.9)";
       for (let i = 0; i < 6; i++) {
         ctx.rotate(TAU / 6);
         ctx.beginPath();
