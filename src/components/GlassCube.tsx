@@ -1,5 +1,6 @@
 import { useRef, useMemo, useCallback } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import RenderWhenVisible from "@/components/RenderWhenVisible";
 import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
@@ -224,6 +225,7 @@ export default function GlassCube() {
           }}
           style={{ background: "transparent" }}
         >
+          <RenderWhenVisible />
           <ambientLight intensity={1.2} />
           <directionalLight position={[-5, 3, -10]} intensity={3.5} />
           <directionalLight position={[0, 10, 0]} intensity={2} />

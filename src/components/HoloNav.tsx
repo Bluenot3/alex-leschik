@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Plus, X } from "lucide-react";
 
 const SECTIONS = [
   { label: "Origin",        glyph: "01" },
@@ -16,58 +17,64 @@ const SOCIALS = [
   { label: "ZEN AI",      icon: "↗",  href: "https://www.zenai.world/" },
 ];
 
-export default function HoloNav({ onNavigate }: { onNavigate: (index: number) => void }) {
-  const [visible, setVisible] = useState(false);
+export default function HoloNav({ onNavigate, currentSection = 0 }: { onNavigate: (index: number) => void; currentSection?: number }) {
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 400);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setOpen(false); triggerRef.current?.focus(); }
+    };
+    const onOutside = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onOutside);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onOutside);
+    };
+  }, [open]);
+
+  const navigate = (index: number) => {
+    onNavigate(index);
+    setOpen(false);
+  };
 
   return (
-    <div
-      className={`holo-nav ${visible ? "holo-nav--visible" : ""} ${open ? "holo-nav--open" : ""}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <div className="holo-nav__panel">
-        <div className="holo-nav__section-label">Navigate</div>
-
-        {SECTIONS.map((s, i) => (
-          <button
-            key={s.glyph}
-            className="holo-nav__link"
-            onClick={() => { onNavigate(i); setOpen(false); }}
-          >
-            <span className="holo-nav__link-glyph">{s.glyph}</span>
-            <span className="holo-nav__link-label">{s.label}</span>
-          </button>
+    <header className="astra-nav" ref={rootRef}>
+      <a href="#s0" className="astra-nav__brand" aria-label="Alex Leschik home">
+        <svg viewBox="0 0 40 34" fill="none" aria-hidden="true"><path d="M2 30 15 4l13 26M8 21h15M28 4v26h10" stroke="currentColor" strokeWidth="2.5" /></svg>
+        <span>Alex Leschik</span>
+      </a>
+      <nav className="astra-nav__chapters" aria-label="Main navigation">
+        {SECTIONS.map((section, index) => (
+          <button key={section.glyph} aria-current={currentSection === index ? "location" : undefined} onClick={() => navigate(index)}>{section.label}</button>
         ))}
-
-        <div className="holo-nav__divider" />
-
-        <div className="holo-nav__section-label">Connect</div>
-
-        {SOCIALS.map((s) => (
-          <a
-            key={s.label}
-            href={s.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="holo-nav__link"
-          >
-            <span className="holo-nav__link-icon">{s.icon}</span>
-            <span className="holo-nav__link-label">{s.label}</span>
-          </a>
-        ))}
-      </div>
-
-      <div className="holo-nav__trigger" aria-label="Navigation">
-        <span className="holo-nav__trigger-glyph">◈</span>
-      </div>
-    </div>
+      </nav>
+      <button ref={triggerRef} className="astra-nav__trigger" aria-expanded={open} aria-controls="astra-index" onClick={() => setOpen((value) => !value)}>
+        {open ? "Close" : "Index"} {open ? <X size={16} /> : <Plus size={16} />}
+      </button>
+      {open && <nav id="astra-index" className="astra-index" aria-label="Portfolio index">
+        <div className="astra-index__title">Navigate <span><span aria-hidden="true">◈</span> 01 — 06</span></div>
+        <div className="astra-index__chapters">
+          {SECTIONS.map((section, index) => (
+            <button key={section.glyph} onClick={() => navigate(index)}><span>{section.glyph}</span>{section.label}<ArrowUpRight size={17} /></button>
+          ))}
+        </div>
+        <div className="astra-index__shortcuts">
+          {[
+            ["network", "Network"], ["media", "Media room"], ["archive", "Generative archive"],
+            ["model-ledger", "Model ledger"], ["astra-signature", "Astra signature"],
+          ].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => setOpen(false)}>{label}<ArrowUpRight size={14} /></a>)}
+        </div>
+        <div className="astra-index__title">Connect</div>
+        <div className="astra-index__socials">{SOCIALS.map((social) => (
+          <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer"><span>{social.icon}</span>{social.label}<ArrowUpRight size={13} /></a>
+        ))}</div>
+      </nav>}
+    </header>
   );
 }

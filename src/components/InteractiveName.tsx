@@ -46,8 +46,8 @@ const SPEED_SCATTER = 26;
 /* ─────────────────────────────────────────────────────
    Colour LUTs — vivid, saturated for crispness
 ───────────────────────────────────────────────────── */
-const BASE_LUT    = Array.from({length:101},(_,i)=>`hsl(215 58% 16% / ${(i/100).toFixed(2)})`);
-const ACCENT_LUT  = Array.from({length:101},(_,i)=>`hsl(204 100% 63% / ${(i/100).toFixed(2)})`);
+const BASE_LUT    = Array.from({length:101},(_,i)=>`hsl(170 16% 90% / ${(i/100).toFixed(2)})`);
+const ACCENT_LUT  = Array.from({length:101},(_,i)=>`hsl(172 60% 78% / ${(i/100).toFixed(2)})`);
 const GLOW_LUT    = Array.from({length:101},(_,i)=>`hsl(190 100% 65% / ${(i/100).toFixed(2)})`);
 const SCATTER_LUT = Array.from({length:101},(_,i)=>`hsl(265 95% 70% / ${(i/100).toFixed(2)})`);
 const SHIMMER_LUT = Array.from({length:101},(_,i)=>`hsl(214 80% 96% / ${(i/100).toFixed(2)})`);
@@ -174,6 +174,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const raf       = useRef(0);
   const dpr       = useRef(1);
   const t0        = useRef(performance.now());
+  const activeRef = useRef(false);
 
   /* ── Scroll opacity/transform — direct DOM write ── */
   useEffect(() => {
@@ -217,6 +218,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
      Render loop
   ───────────────────────────────────────────────────── */
   const render = useCallback((now: number) => {
+    if (!activeRef.current) return;
     const canvas = canvasRef.current;
     const trail  = trailRef.current;
     if (!canvas) { raf.current = requestAnimationFrame(render); return; }
@@ -368,9 +370,29 @@ export default function InteractiveName({ scrollProgress }: Props) {
   /* ── Lifecycle ── */
   useLayoutEffect(() => {
     rebuild();
-    raf.current = requestAnimationFrame(render);
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let inView = true;
+    const sync = () => {
+      const active = inView && !document.hidden && !media.matches;
+      if (active === activeRef.current) return;
+      activeRef.current = active;
+      cancelAnimationFrame(raf.current);
+      if (active) raf.current = requestAnimationFrame(render);
+    };
+    const io = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; sync(); });
+    if (wrapRef.current) io.observe(wrapRef.current);
+    document.addEventListener("visibilitychange", sync);
+    media.addEventListener("change", sync);
+    sync();
     window.addEventListener("resize", rebuild);
-    return () => { cancelAnimationFrame(raf.current); window.removeEventListener("resize", rebuild); };
+    return () => {
+      activeRef.current = false;
+      cancelAnimationFrame(raf.current);
+      io.disconnect();
+      media.removeEventListener("change", sync);
+      document.removeEventListener("visibilitychange", sync);
+      window.removeEventListener("resize", rebuild);
+    };
   }, [rebuild, render]);
 
   useEffect(() => {
