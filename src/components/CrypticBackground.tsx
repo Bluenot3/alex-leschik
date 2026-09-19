@@ -118,11 +118,13 @@ export default function CrypticBackground({
       ctx.textBaseline = "middle";
 
       const glyphs = glyphsRef.current;
+      if (glyphs.length === 0) { ctx.restore(); return; }
       // Only swap ~18% of glyphs per tick for a subtle shimmer instead of full redraw
       const swapCount = Math.max(1, (glyphs.length * 0.18) | 0);
       for (let s = 0; s < swapCount; s++) {
-        const idx = (Math.random() * glyphs.length) | 0;
-        glyphs[idx].char = randomGlyph();
+        const idx = Math.min(glyphs.length - 1, (Math.random() * glyphs.length) | 0);
+        const g = glyphs[idx];
+        if (g) g.char = randomGlyph();
       }
 
       for (let i = 0; i < glyphs.length; i++) {
