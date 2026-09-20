@@ -459,7 +459,7 @@ export default function Index() {
 
         <CrypticDivider lines={3} label="// turing // daily" />
 
-        <section className="turing-cta-band">
+        <section className="turing-cta-band relative z-[1]">
           <span className="tag-label">Daily transmission</span>
           <h2 className="turing-cta-band__title display-heading">
             CAN YOU TELL
