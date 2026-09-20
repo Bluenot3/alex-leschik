@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_puzzles: {
+        Row: {
+          day_key: string
+          generated_at: string
+          puzzle: Json
+        }
+        Insert: {
+          day_key: string
+          generated_at?: string
+          puzzle: Json
+        }
+        Update: {
+          day_key?: string
+          generated_at?: string
+          puzzle?: Json
+        }
+        Relationships: []
+      }
       gallery_items: {
         Row: {
           code_content: string | null
@@ -50,6 +68,36 @@ export type Database = {
           storage_path?: string | null
           title?: string
           type?: string
+        }
+        Relationships: []
+      }
+      game_plays: {
+        Row: {
+          created_at: string
+          day_key: string
+          email_captured: boolean
+          id: string
+          picks: Json
+          player_hash: string | null
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          day_key: string
+          email_captured?: boolean
+          id?: string
+          picks?: Json
+          player_hash?: string | null
+          score: number
+        }
+        Update: {
+          created_at?: string
+          day_key?: string
+          email_captured?: boolean
+          id?: string
+          picks?: Json
+          player_hash?: string | null
+          score?: number
         }
         Relationships: []
       }
