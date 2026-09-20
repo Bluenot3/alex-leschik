@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2, Image, Video, Code, GripVertical, X, Upload, Check, Inbox, LayoutGrid } from "lucide-react";
 import LeadInbox from "@/components/LeadInbox";
 import OwnerGate from "@/components/OwnerGate";
+import TuringStats from "@/components/TuringStats";
 
 type ItemType = "image" | "video" | "code";
 
@@ -23,7 +24,7 @@ interface CommandDashboardProps {
   onClose: () => void;
 }
 
-type Tab = "gallery" | "leads";
+type Tab = "gallery" | "leads" | "game";
 
 export default function CommandDashboard({ open, onClose }: CommandDashboardProps) {
   const [tab, setTab] = useState<Tab>("gallery");
@@ -137,6 +138,13 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
               >
                 <Inbox className="w-3 h-3" />
                 Leads
+              </button>
+              <button
+                onClick={() => setTab("game")}
+                className={`cmd-tab ${tab === "game" ? "cmd-tab--active" : ""}`}
+              >
+                <LayoutGrid className="w-3 h-3" />
+                Game
               </button>
             </div>
           </div>
@@ -313,6 +321,7 @@ export default function CommandDashboard({ open, onClose }: CommandDashboardProp
         )}
 
         {tab === "leads" && <LeadInbox />}
+        {tab === "game" && <TuringStats />}
         </OwnerGate>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Console from "./pages/Console.tsx";
+import Game from "./pages/Game.tsx";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          {/* TURING — public daily game */}
+          <Route path="/game" element={<Game />} />
           {/* Unlisted owner console — not linked from the public site */}
           <Route path="/console" element={<Console />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

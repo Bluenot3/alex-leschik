@@ -1,0 +1,454 @@
+/* ══════════════════════════════════════════════════════════════
+   TURING — daily game
+   Own room, same house: liquid glass, slate, terminal accents.
+   ══════════════════════════════════════════════════════════════ */
+
+.turing-shell {
+  position: relative;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+.turing-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.05;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    color-mix(in srgb, var(--foreground) 30%, transparent) 2px,
+    color-mix(in srgb, var(--foreground) 30%, transparent) 3px
+  );
+}
+
+/* Fine dither field, very low key */
+.turing-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--foreground) 60%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 4px 4px;
+}
+
+.turing-frame {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 720px;
+  padding: clamp(1.5rem, 5vw, 3rem) 1.25rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.turing-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--muted-foreground) 75%, transparent);
+}
+
+.turing-topbar__home {
+  color: color-mix(in srgb, var(--foreground) 60%, transparent);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+.turing-topbar__home:hover {
+  color: var(--foreground);
+}
+
+.turing-title {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(2.6rem, 9vw, 4.6rem);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.turing-sub {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
+  margin: 0;
+}
+
+/* ── Glass panels ──────────────────────────────────────────── */
+
+.turing-panel {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--card) 92%, transparent),
+      color-mix(in srgb, var(--card) 72%, transparent)
+    );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent) inset,
+    0 18px 50px -30px color-mix(in srgb, var(--foreground) 35%, transparent);
+  padding: 1.4rem 1.5rem;
+}
+
+.turing-panel__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
+  margin-bottom: 1rem;
+}
+
+.turing-body-text {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--foreground) 88%, transparent);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── Choices ───────────────────────────────────────────────── */
+
+.turing-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1.4rem;
+}
+
+.turing-choice {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 100%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+  color: var(--foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  padding: 1rem 0.5rem;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.turing-choice:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--foreground) 45%, transparent);
+}
+
+.turing-choice:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ── Verdict ───────────────────────────────────────────────── */
+
+.turing-verdict {
+  margin-top: 1.2rem;
+  padding-top: 1.1rem;
+  border-top: 1px dashed color-mix(in srgb, var(--border) 100%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.turing-verdict__head {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.turing-verdict__head--correct {
+  color: #16a34a;
+}
+.turing-verdict__head--wrong {
+  color: #dc2626;
+}
+
+.turing-verdict__tell {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: color-mix(in srgb, var(--muted-foreground) 95%, transparent);
+  margin: 0;
+}
+
+.turing-next {
+  align-self: flex-end;
+  margin-top: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  background: none;
+  color: var(--foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 40%, transparent);
+  transition: opacity 0.2s ease;
+}
+.turing-next:hover {
+  opacity: 0.7;
+}
+
+/* ── Footer strip: streak / countdown ──────────────────────── */
+
+.turing-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--muted-foreground) 85%, transparent);
+}
+
+.turing-strip strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+/* ── Result screen ─────────────────────────────────────────── */
+
+.turing-score {
+  font-size: clamp(3.4rem, 12vw, 5.4rem);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.turing-grid {
+  display: flex;
+  gap: 0.45rem;
+  margin: 1.2rem 0 0.4rem;
+}
+
+.turing-grid__cell {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+}
+
+.turing-grid__cell--hit {
+  background: color-mix(in srgb, #16a34a 18%, transparent);
+  border: 1px solid color-mix(in srgb, #16a34a 55%, transparent);
+  color: #16a34a;
+}
+
+.turing-grid__cell--miss {
+  background: color-mix(in srgb, #dc2626 14%, transparent);
+  border: 1px solid color-mix(in srgb, #dc2626 50%, transparent);
+  color: #dc2626;
+}
+
+.turing-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.2rem;
+  border: 1px solid color-mix(in srgb, var(--border) 100%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+  color: var(--foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  transition: border-color 0.25s ease, transform 0.18s ease;
+}
+.turing-share:hover {
+  border-color: color-mix(in srgb, var(--foreground) 45%, transparent);
+  transform: translateY(-1px);
+}
+
+.turing-copy-done {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #16a34a;
+  margin-top: 0.7rem;
+}
+
+/* ── Email capture ─────────────────────────────────────────── */
+
+.turing-capture {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.turing-input {
+  flex: 1 1 200px;
+  border: 1px solid color-mix(in srgb, var(--border) 100%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--background) 65%, transparent);
+  color: var(--foreground);
+  font-size: 0.88rem;
+  padding: 0.75rem 0.9rem;
+  outline: none;
+  transition: border-color 0.25s ease;
+}
+.turing-input:focus {
+  border-color: color-mix(in srgb, var(--foreground) 50%, transparent);
+}
+.turing-input::placeholder {
+  color: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
+}
+
+.turing-skip {
+  border: none;
+  background: none;
+  color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+.turing-skip:hover {
+  color: var(--foreground);
+}
+
+.turing-error {
+  font-size: 0.78rem;
+  color: #dc2626;
+  margin-top: 0.6rem;
+}
+
+/* ── Boot lines ────────────────────────────────────────────── */
+
+.turing-boot {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  line-height: 2.1;
+  color: color-mix(in srgb, var(--muted-foreground) 90%, transparent);
+  white-space: pre-wrap;
+}
+
+.turing-boot__caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  vertical-align: -0.15em;
+  background: var(--foreground);
+  animation: turing-blink 0.9s steps(1) infinite;
+}
+
+@keyframes turing-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.turing-fade-in {
+  animation: turing-fade 0.5s ease both;
+}
+
+@keyframes turing-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.turing-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--muted-foreground) 85%, transparent);
+  padding: 2rem 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Homepage CTA band
+   ══════════════════════════════════════════════════════════════ */
+
+.turing-cta-band {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(4rem, 10vw, 7rem) 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.turing-cta-band__title {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.02;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.turing-cta-band__body {
+  max-width: 34rem;
+  color: color-mix(in srgb, var(--muted-foreground) 95%, transparent);
+  line-height: 1.7;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .turing-choices {
+    grid-template-columns: 1fr;
+  }
+  .turing-panel {
+    padding: 1.15rem 1.1rem;
+  }
+}

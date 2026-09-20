@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const SECTIONS = [
   { label: "Origin",        glyph: "01" },
@@ -46,6 +47,15 @@ export default function HoloNav({ onNavigate }: { onNavigate: (index: number) =>
             <span className="holo-nav__link-label">{s.label}</span>
           </button>
         ))}
+
+        <div className="holo-nav__divider" />
+
+        <div className="holo-nav__section-label">Play</div>
+
+        <Link to="/game" className="holo-nav__link" onClick={() => setOpen(false)}>
+          <span className="holo-nav__link-glyph">T</span>
+          <span className="holo-nav__link-label">Turing · Daily</span>
+        </Link>
 
         <div className="holo-nav__divider" />
 
