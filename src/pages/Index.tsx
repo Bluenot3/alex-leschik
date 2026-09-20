@@ -1,4 +1,6 @@
 import { lazy, Suspense, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import "@/game.css";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import CubeScene from "@/components/CubeScene";
 import InteractiveName from "@/components/InteractiveName";
@@ -455,7 +457,31 @@ export default function Index() {
         </Artifact>
 
 
-        <CrypticDivider lines={4} label="// on the level, on the square" />
+        <CrypticDivider lines={3} label="// turing // daily" />
+
+        <section className="turing-cta-band">
+          <span className="tag-label">Daily transmission</span>
+          <h2 className="turing-cta-band__title display-heading">
+            CAN YOU TELL
+            <br />
+            THE MACHINE
+            <br />
+            FROM THE HUMAN?
+          </h2>
+          <p className="turing-cta-band__body">
+            One puzzle a day. Five short texts — some written by a person, some by a machine.
+            Read closely, call each one, and keep your streak. Built by the founder of the first
+            youth AI literacy program in U.S. history.
+          </p>
+          <Link to="/game" className="cta-btn">
+            Play today's puzzle
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
+              <path d="M1 6h10M6 1l5 5-5 5" />
+            </svg>
+          </Link>
+        </section>
+
+        <CrypticDivider lines={3} label="// on the level, on the square" />
 
         <div className="relative">
           <CrypticBackground rows={10} speed={110} opacity={0.05} />
