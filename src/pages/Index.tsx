@@ -18,6 +18,7 @@ import BootSequence from "@/components/BootSequence";
 import LiveMetricsTicker from "@/components/LiveMetricsTicker";
 import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
+import ForwardPass from "@/components/ForwardPass";
 import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
@@ -169,6 +170,9 @@ export default function Index() {
 
       {/* Reading-position hairline */}
       <ScrollProgress />
+
+      {/* Opus 5.5 · Forward Pass — causal map of the live page */}
+      <ForwardPass />
 
       {/* Viewport corner indicators */}
       <div className="viewport-corners" aria-hidden="true">

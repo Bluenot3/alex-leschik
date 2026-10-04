@@ -333,6 +333,116 @@ const drawOpus46: DrawFn = (ctx, w, h, t) => {
   }
 };
 
+/* ── 06 · Claude Opus 5.5 — causal monogram ───────────────
+   A deterministic attention graph signs itself: letter nodes
+   assemble, weighted chords resolve, then the inference pulse
+   seals the mark. Authored by Opus 5.5 on 2026.10.04.       */
+const drawOpus55: DrawFn = (ctx, w, h, t) => {
+  const glyphs = [..."CLAUDE·OPUS·5.5"];
+  const cx = Math.min(w * 0.2, 52);
+  const cy = h * 0.5;
+  const radius = Math.min(24, h * 0.37);
+  const nodePhase = Math.min(1, t / 0.34);
+  const chordPhase = Math.min(1, Math.max(0, (t - 0.2) / 0.48));
+  const pulsePhase = Math.min(1, Math.max(0, (t - 0.54) / 0.3));
+  const sealPhase = Math.min(1, Math.max(0, (t - 0.78) / 0.22));
+
+  const points = glyphs.map((_, index) => {
+    const angle = -Math.PI / 2 + (index / glyphs.length) * Math.PI * 2;
+    return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, angle };
+  });
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (chordPhase > 0) {
+    for (let i = 0; i < glyphs.length; i++) {
+      for (let j = i + 3; j < glyphs.length; j += 4) {
+        const weight = ((i * 17 + j * 29 + 55) % 100) / 100;
+        if (weight < 0.34 || weight > chordPhase + 0.28) continue;
+        const from = points[i];
+        const to = points[j];
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.strokeStyle = `rgba(18, 102, 132, ${0.08 + weight * 0.22})`;
+        ctx.lineWidth = 0.35 + weight * 0.7;
+        ctx.stroke();
+      }
+    }
+  }
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * nodePhase);
+  ctx.strokeStyle = "rgba(31, 48, 68, 0.32)";
+  ctx.lineWidth = 0.7;
+  ctx.stroke();
+
+  points.forEach((point, index) => {
+    if (index / glyphs.length > nodePhase) return;
+    ctx.save();
+    ctx.translate(point.x, point.y);
+    ctx.rotate(point.angle + Math.PI / 2);
+    ctx.fillStyle = index % 5 === 0 ? "rgba(0, 164, 208, 0.92)" : "rgba(28, 43, 62, 0.86)";
+    ctx.font = "7px 'DM Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(glyphs[index], 0, 0);
+    ctx.restore();
+  });
+
+  if (pulsePhase > 0 && pulsePhase < 1) {
+    const angle = -Math.PI / 2 + pulsePhase * Math.PI * 2;
+    const px = cx + Math.cos(angle) * radius;
+    const py = cy + Math.sin(angle) * radius;
+    ctx.beginPath();
+    ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0, 190, 230, 0.95)";
+    ctx.shadowColor = "rgba(0, 190, 230, 0.8)";
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  const railStart = cx + radius + 13;
+  const railEnd = w * 0.7;
+  ctx.beginPath();
+  ctx.moveTo(railStart, cy);
+  ctx.lineTo(railStart + (railEnd - railStart) * Math.min(1, chordPhase * 1.2), cy);
+  ctx.strokeStyle = "rgba(31, 48, 68, 0.3)";
+  ctx.lineWidth = 0.6;
+  ctx.stroke();
+
+  if (sealPhase > 0) {
+    const sx = railEnd + 16;
+    const sy = cy;
+    const sr = 15;
+    ctx.beginPath();
+    ctx.arc(sx, sy, sr, -Math.PI / 2, -Math.PI / 2 + sealPhase * Math.PI * 2);
+    ctx.strokeStyle = "rgba(0, 164, 208, 0.72)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = sealPhase;
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(20, 35, 52, 0.9)";
+    ctx.font = "bold 8px 'DM Mono', monospace";
+    ctx.fillText("O 5.5", sx, sy + 3);
+    ctx.font = "6px 'DM Mono', monospace";
+    ctx.fillStyle = "rgba(0, 140, 180, 0.82)";
+    ctx.fillText("MAX", sx, sy + 24);
+    ctx.globalAlpha = 1;
+  }
+
+  if (t >= 1) {
+    ctx.textAlign = "left";
+    ctx.font = "7px 'DM Mono', monospace";
+    ctx.fillStyle = "rgba(54, 75, 96, 0.68)";
+    ctx.fillText("causal monogram · 2026.10.04", railStart, h * 0.91);
+  }
+  ctx.restore();
+};
+
 function SigCanvas({ draw, animated = false }: { draw: DrawFn; animated?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -432,6 +542,18 @@ const ENTRIES = [
     animated: true,
     featured: true,
   },
+  {
+    id: "opus-55",
+    name: "Claude Opus 5.5",
+    org: "Anthropic · via Lovable",
+    note: "art-directed Forward Pass — causal graphics, measured motion, and the page's new visual intelligence",
+    stamp: "2026.10.04",
+    mark: "◎ causal monogram",
+    draw: drawOpus55,
+    animated: true,
+    featured: true,
+    latest: true,
+  },
 ] as const;
 
 /* ── Section ────────────────────────────────────────────── */
@@ -448,7 +570,7 @@ export default function ModelSignatures() {
         {ENTRIES.map((e) => (
           <article
             key={e.id}
-            className={`model-ledger__row${"featured" in e && e.featured ? " model-ledger__row--featured" : ""}`}
+            className={`model-ledger__row${"featured" in e && e.featured ? " model-ledger__row--featured" : ""}${"latest" in e && e.latest ? " model-ledger__row--latest" : ""}`}
           >
             <div className="model-ledger__sig">
               <SigCanvas draw={e.draw} animated={e.animated} />
