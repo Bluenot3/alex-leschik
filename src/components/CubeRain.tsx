@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
+import { useInView } from "@/hooks/useInView";
 
 function getCount() {
   if (typeof window === "undefined") return 40;
@@ -155,6 +156,7 @@ function Scene({ progressRef }: { progressRef: React.RefObject<number> }) {
 
 export default function CubeRain() {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const { ref: visibilityRef, inView } = useInView<HTMLDivElement>({ rootMargin: "180px 0px" });
   const progressRef = useRef(0);
   const [localProgress, setLocalProgress] = useState(0);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -182,12 +184,20 @@ export default function CubeRain() {
   if (localProgress <= 0) return <div ref={wrapRef} className="cube-rain-wrap" />;
 
   return (
-    <div ref={wrapRef} className="cube-rain-wrap" style={{ opacity: Math.min(1, localProgress * 3) }}>
+    <div
+      ref={(node) => {
+        wrapRef.current = node;
+        visibilityRef.current = node;
+      }}
+      className="cube-rain-wrap"
+      style={{ opacity: Math.min(1, localProgress * 3) }}
+    >
       <Canvas
         camera={{ position: [0, -1, 10], fov: 48 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         style={{ background: "transparent" }}
         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+        frameloop={inView ? "always" : "never"}
       >
         <Scene progressRef={progressRef} />
       </Canvas>
