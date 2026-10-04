@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
+import { useInView } from "@/hooks/useInView";
 
 type MouseState = { x: number; y: number; over: boolean };
 
@@ -189,6 +190,8 @@ function GlassShape({ mouse }: { mouse: { current: MouseState } }) {
 
 export default function GlassCube() {
   const mouseRef = useRef<MouseState>({ x: 0, y: 0, over: false });
+  const { ref: visibilityRef, inView } = useInView<HTMLDivElement>({ rootMargin: "180px 0px" });
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -206,7 +209,7 @@ export default function GlassCube() {
   }, []);
 
   return (
-    <div className="glass-cube-section">
+    <div ref={visibilityRef} className="glass-cube-section">
       <div
         className="glass-cube-canvas-wrap"
         onPointerMove={handlePointerMove}
@@ -215,7 +218,8 @@ export default function GlassCube() {
       >
         <Canvas
           camera={{ position: [0, 0, 5.5], fov: 45 }}
-          dpr={[1, 1.5]}
+          dpr={isMobile ? [1, 1.15] : [1, 1.5]}
+          frameloop={inView ? "always" : "never"}
           gl={{
             antialias: false,
             alpha: true,

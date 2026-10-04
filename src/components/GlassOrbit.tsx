@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
+import { useInView } from "@/hooks/useInView";
 
 /* ── Center logo plane ── */
 function CenterLogo() {
@@ -161,11 +162,15 @@ function Orbiter({
 
 /* ── Main export ── */
 export default function GlassOrbit() {
+  const { ref: visibilityRef, inView } = useInView<HTMLDivElement>({ rootMargin: "180px 0px" });
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   return (
-    <div className="glass-orbit-section">
+    <div ref={visibilityRef} className="glass-orbit-section">
       <Canvas
         camera={{ position: [0, 0.5, 8], fov: 40 }}
-        dpr={[1, 1.5]}
+        dpr={isMobile ? [1, 1.15] : [1, 1.5]}
+        frameloop={inView ? "always" : "never"}
         gl={{
           antialias: true,
           alpha: true,

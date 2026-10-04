@@ -46,6 +46,9 @@
     --cryptic-cool: 205 88% 62%;
     --cryptic-warm: 25 95% 58%;
     --cryptic-violet: 255 72% 66%;
+    --forward-ink: 215 30% 22%;
+    --forward-signal: 194 88% 42%;
+    --forward-active: 25 95% 58%;
     --card-border-accent: rgba(255, 255, 255, 0.8);
     --hairline: 0.5px;
     --ui-inset: 2rem;
