@@ -19,6 +19,7 @@ import LiveMetricsTicker from "@/components/LiveMetricsTicker";
 import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
 import ForwardPass from "@/components/ForwardPass";
+import TopologyField from "@/components/TopologyField";
 import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
@@ -203,6 +204,7 @@ export default function Index() {
 
       <div className="relative z-[1]">
         <section id="s0" data-scroll-section className="hero-poster">
+          <TopologyField />
           <CrypticBackground rows={12} speed={180} opacity={0.07} />
 
           <div className="hero-poster__content">
