@@ -28,6 +28,15 @@ Deno.serve(async (req) => {
     if (!userData?.user) {
       return ok({ error: "Unauthorized" }, 401);
     }
+    const viewer = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: `Bearer ${token}` } } },
+    );
+    const { data: isOwner, error: roleError } = await viewer.rpc("is_admin");
+    if (roleError || isOwner !== true) {
+      return ok({ error: "Forbidden" }, 403);
+    }
 
     const { data, error } = await admin
       .from("game_plays")
