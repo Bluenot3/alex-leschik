@@ -29,9 +29,11 @@ interface CubeSceneProps {
   rotation: { rx: number; ry: number };
   editMode?: boolean;
   shifted?: boolean;
+  /** Hero has scrolled away: the cube bows out instead of floating over content. */
+  retired?: boolean;
 }
 
-export default function CubeScene({ rotation, editMode = false, shifted = false }: CubeSceneProps) {
+export default function CubeScene({ rotation, editMode = false, shifted = false, retired = false }: CubeSceneProps) {
   const [faceMedia, setFaceMedia] = useState<FaceMedia[]>(
     DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }))
   );
@@ -44,11 +46,11 @@ export default function CubeScene({ rotation, editMode = false, shifted = false 
       const { data } = await supabase.from("portfolio_images").select("*");
       if (data && data.length > 0) {
         const newMedia: FaceMedia[] = DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }));
-        data.forEach((row: any) => {
+        data.forEach((row) => {
           const { data: { publicUrl } } = supabase.storage
             .from("portfolio")
             .getPublicUrl(row.storage_path);
-          const mediaType: "image" | "video" = (row as any).media_type === "video" ? "video" : "image";
+          const mediaType: "image" | "video" = row.media_type === "video" ? "video" : "image";
           newMedia[row.face_index] = {
             url: publicUrl,
             type: mediaType,
@@ -104,7 +106,10 @@ export default function CubeScene({ rotation, editMode = false, shifted = false 
 
   return (
     <>
-      <div className={`cube-scene ${shifted ? "cube-scene--shifted" : ""}`}>
+      <div
+        className={`cube-scene ${shifted ? "cube-scene--shifted" : ""} ${retired ? "cube-scene--retired" : ""}`}
+        aria-hidden={retired || undefined}
+      >
         <div
           className="cube"
           style={{ transform: `rotateX(${rotation.rx}deg) rotateY(${rotation.ry}deg)` }}

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useLayoutEffect } from "react";
+import { prefersReducedMotion, subscribeTick } from "@/hooks/useRafTicker";
 import {
   clearParticleCaches,
   getParticleTemplate,
@@ -171,9 +172,12 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const parts     = useRef<Particles>(EMPTY);
   const rawMouse  = useRef({ x: -9999, y: -9999 });
   const sMouse    = useRef({ x: -9999, y: -9999 });
-  const raf       = useRef(0);
   const dpr       = useRef(1);
   const t0        = useRef(performance.now());
+  const reduced   = useRef(prefersReducedMotion());
+  const renderRef = useRef<(now: number) => void>(() => {});
+  /* The name is gone once the hero transition completes — stop simulating. */
+  const visible   = scrollProgress < TRANSITION_END;
 
   /* ── Scroll opacity/transform — direct DOM write ── */
   useEffect(() => {
@@ -211,6 +215,15 @@ export default function InteractiveName({ scrollProgress }: Props) {
 
     parts.current = spawnFromTemplate(getParticleTemplate(0, w, h), w, h);
     t0.current    = performance.now();
+
+    /* Reduced motion: no fly-in — settle at home and paint one still. */
+    if (reduced.current) {
+      const p = parts.current;
+      p.x.set(p.homeX);
+      p.y.set(p.homeY);
+      p.alpha.fill(1);
+      requestAnimationFrame(() => renderRef.current(performance.now()));
+    }
   }, []);
 
   /* ─────────────────────────────────────────────────────
@@ -219,7 +232,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
   const render = useCallback((now: number) => {
     const canvas = canvasRef.current;
     const trail  = trailRef.current;
-    if (!canvas) { raf.current = requestAnimationFrame(render); return; }
+    if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     const d   = dpr.current;
 
@@ -250,7 +263,11 @@ export default function InteractiveName({ scrollProgress }: Props) {
     const my = sMouse.current.y;
 
     /* ── 4. Per-frame wave scalars (4 trig calls total — zero in hot loop) ── */
-    const morphE   = 1 - Math.pow(Math.max(0, 1 - (now - t0.current) / 500), 3);
+    /* Clamp the intro clock: a rebuild landing mid-frame (fonts ready, resize)
+       can stamp t0 after this frame's timestamp, and an unclamped ease then
+       drives alpha far negative — the name stayed invisible for seconds. */
+    const intro    = reduced.current ? 1 : Math.min(1, Math.max(0, (now - t0.current) / 500));
+    const morphE   = 1 - Math.pow(1 - intro, 3);
     const wvXsin   = Math.sin(now * WAVE_FREQ_X) * WAVE_AMP;
     const wvXcos   = Math.cos(now * WAVE_FREQ_X) * WAVE_AMP;
     const wvYsin   = Math.sin(now * WAVE_FREQ_Y) * WAVE_AMP;
@@ -361,17 +378,31 @@ export default function InteractiveName({ scrollProgress }: Props) {
       tc.clearRect(0, 0, trail.width, trail.height);
       tc.drawImage(canvas, 0, 0);
     }
-
-    raf.current = requestAnimationFrame(render);
   }, []);
 
   /* ── Lifecycle ── */
   useLayoutEffect(() => {
     rebuild();
-    raf.current = requestAnimationFrame(render);
-    window.addEventListener("resize", rebuild);
-    return () => { cancelAnimationFrame(raf.current); window.removeEventListener("resize", rebuild); };
-  }, [rebuild, render]);
+    let resizeFrame = 0;
+    const onResize = () => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(rebuild);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(resizeFrame);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [rebuild]);
+
+  renderRef.current = render;
+
+  /* Shared page clock while the name is on screen; parked once it fades.
+     Reduced motion paints its still from rebuild() instead. */
+  useEffect(() => {
+    if (!visible || reduced.current) return;
+    return subscribeTick((now) => render(now));
+  }, [visible, render]);
 
   useEffect(() => {
     if (!("fonts" in document)) return;

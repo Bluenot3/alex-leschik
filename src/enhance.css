@@ -2032,3 +2032,72 @@
   .hero-poster__signal { padding: 0.75rem 0.35rem; }
   .hero-poster__signal-label { font-size: 9px; line-height: 1.5; }
 }
+
+/* ═══ Stabilization — fixed layers never sit on top of reading content ═══ */
+
+/* The hero cube bows out once the hero scrolls away (and returns on the way
+   back); visibility flips after the fade so it stops costing paint. */
+.cube-scene {
+  transition:
+    transform 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.9s ease,
+    visibility 0s linear 0s;
+}
+.cube-scene.cube-scene--retired {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(10vw) translateY(-12vh) scale(0.4);
+  transition:
+    transform 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.55s ease,
+    visibility 0s linear 0.55s;
+}
+
+/* Section caption: a compact engraved label above the ticker instead of
+   display type drifting over cards and copy. */
+.face-caption {
+  bottom: calc(var(--ui-inset) + 2.4rem);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: hsl(var(--background) / 0.55);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: inset 0 0 0 1px hsl(var(--foreground) / 0.06);
+}
+.face-caption-num {
+  margin: 0;
+  font-size: 0.52rem;
+  letter-spacing: 0.24em;
+}
+.face-caption-name {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.38em;
+  line-height: 1;
+  color: hsl(var(--foreground) / 0.62);
+}
+@media (max-width: 768px) {
+  .face-caption {
+    display: none;
+  }
+}
+
+/* Owner's cube-edit toggle: a quiet dot, label on hover — not a 220px slab. */
+.hud-icon-btn.upload-panel {
+  min-width: 0;
+  padding: 0.55rem;
+  border-radius: 999px;
+  bottom: auto;
+  box-shadow: inset 0 0 0 1px hsl(var(--foreground) / 0.08);
+}
+.hud-icon-btn.upload-panel:hover {
+  padding: 0.55rem 0.8rem;
+}
+@media (pointer: coarse) {
+  .hud-icon-btn.upload-panel {
+    opacity: 0.55;
+  }
+}

@@ -1,6 +1,7 @@
 import { useRef, useMemo, useCallback } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
+import { RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
+import StudioEnvironment from "@/components/StudioEnvironment";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 import { useInView } from "@/hooks/useInView";
@@ -235,7 +236,7 @@ export default function GlassCube() {
           <pointLight position={[3, 2, 3]} intensity={3.5} color="#90c4ff" />
           <pointLight position={[-3, -2, -3]} intensity={2.5} color="#ffb0d0" />
           <pointLight position={[0, 3, -2]} intensity={2} color="#ffd080" />
-          <Environment preset="city" />
+          <StudioEnvironment />
           <GlassShape mouse={mouseRef} />
           <SatelliteSphere offset={0} speed={0.55} radius={2.1} size={0.21} color="#e4f2ff" mouse={mouseRef} />
           <SatelliteSphere offset={Math.PI * 0.7} speed={0.42} radius={1.95} size={0.15} color="#fff0e0" mouse={mouseRef} />

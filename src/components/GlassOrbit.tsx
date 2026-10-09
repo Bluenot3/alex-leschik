@@ -1,6 +1,7 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
+import { RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
+import StudioEnvironment from "@/components/StudioEnvironment";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 import { useInView } from "@/hooks/useInView";
@@ -188,7 +189,7 @@ export default function GlassOrbit() {
         <pointLight position={[-4, -3, -3]} intensity={3} color="#ffb0e0" />
         <pointLight position={[0, 5, 0]} intensity={2.5} color="#ffe0a0" />
         <pointLight position={[0, -5, 0]} intensity={1.5} color="#a0ffcc" />
-        <Environment preset="city" />
+        <StudioEnvironment />
 
         <CentralSphere />
 
