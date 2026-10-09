@@ -1,6 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import HoloSigilField from "@/components/zengen/HoloSigilField";
+import { useInView } from "@/hooks/useInView";
+import { prefersReducedMotion, useRafTicker } from "@/hooks/useRafTicker";
 import {
   fetchCollections,
   fetchImagePage,
@@ -179,23 +181,19 @@ function Orbit({
   images, onOpen,
 }: { images: ZenGenImage[]; onOpen: (i: number) => void }) {
   const ring = useMemo(() => images.slice(0, 16), [images]);
-  const [angle, setAngle] = useState(0);
   const [held, setHeld] = useState(false);
-  const raf = useRef(0);
+  const angle = useRef(0);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const { ref: orbitRef, inView } = useInView<HTMLDivElement>({ rootMargin: "120px 0px" });
 
-  useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || held || ring.length === 0) return;
-    let last = performance.now();
-    const tick = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      setAngle((a) => a + dt * 9);
-      raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, [held, ring.length]);
+  /* Spin on the shared clock while visible; transform written directly. */
+  useRafTicker(
+    (_now, dt) => {
+      angle.current += Math.min(0.05, dt / 1000) * 9;
+      if (stageRef.current) stageRef.current.style.transform = `rotateX(-9deg) rotateY(${angle.current.toFixed(2)}deg)`;
+    },
+    inView && !held && ring.length > 0 && !prefersReducedMotion(),
+  );
 
   if (ring.length === 0) return null;
   const step = 360 / ring.length;
@@ -205,12 +203,13 @@ function Orbit({
 
   return (
     <div
+      ref={orbitRef}
       className="zg-orbit"
       onMouseEnter={() => setHeld(true)}
       onMouseLeave={() => setHeld(false)}
     >
       <HoloSigilField intensity={1.15} className="zg-orbit__field" />
-      <div className="zg-orbit__stage" style={{ transform: `rotateX(-9deg) rotateY(${angle}deg)` }}>
+      <div ref={stageRef} className="zg-orbit__stage" style={{ transform: "rotateX(-9deg) rotateY(0deg)" }}>
         {ring.map((img, i) => (
           <button
             key={img.id}

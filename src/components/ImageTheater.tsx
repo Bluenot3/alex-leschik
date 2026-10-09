@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useInView } from "@/hooks/useInView";
+import { prefersReducedMotion, useRafTicker } from "@/hooks/useRafTicker";
 
 import zenInfrastructure from "@/assets/zen-infrastructure.jpg";
 import zenLedger        from "@/assets/zen-ledger.jpg";
@@ -40,40 +42,36 @@ function RunningGlyphs({ count = 28 }: { count?: number }) {
     }))
   );
 
-  useEffect(() => {
-    let frame = 0;
-    let raf: number;
-    const tick = () => {
-      frame++;
-      const t = frame * 0.016;
-      slotRef.current.forEach((slot, i) => {
-        const el = spanRefs.current[i];
-        if (!el) return;
-        const wave = Math.sin(t * 2.2 - i * 0.32) * 0.5 + 0.5;
-        if (slot.locked) {
-          slot.lockFor--;
-          if (slot.lockFor <= 0) { slot.locked = false; el.style.textShadow = ""; }
-          el.style.color = `rgba(0,212,255,${(0.72 + wave * 0.28).toFixed(3)})`;
-          return;
-        }
-        slot.idx += slot.speed;
-        if (slot.idx >= SIGIL_POOL.length) slot.idx -= SIGIL_POOL.length;
-        if (frame % 2 === 0) el.textContent = SIGIL_POOL[Math.floor(slot.idx)];
-        el.style.color = `rgba(160,200,255,${(0.14 + wave * 0.20).toFixed(3)})`;
-        if (Math.random() < 0.005) {
-          slot.locked  = true;
-          slot.lockFor = 30 + Math.floor(Math.random() * 50);
-          el.style.textShadow = "0 0 7px rgba(0,212,255,0.65), 0 0 18px rgba(0,212,255,0.22)";
-        }
-      });
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [count]);
+  /* Runs on the shared page clock, and only while the strip is on screen. */
+  const frameRef = useRef(0);
+  const { ref: stripRef, inView } = useInView<HTMLDivElement>({ rootMargin: "100px 0px" });
+  useRafTicker(() => {
+    const frame = ++frameRef.current;
+    const t = frame * 0.016;
+    slotRef.current.forEach((slot, i) => {
+      const el = spanRefs.current[i];
+      if (!el) return;
+      const wave = Math.sin(t * 2.2 - i * 0.32) * 0.5 + 0.5;
+      if (slot.locked) {
+        slot.lockFor--;
+        if (slot.lockFor <= 0) { slot.locked = false; el.style.textShadow = ""; }
+        el.style.color = `rgba(0,212,255,${(0.72 + wave * 0.28).toFixed(3)})`;
+        return;
+      }
+      slot.idx += slot.speed;
+      if (slot.idx >= SIGIL_POOL.length) slot.idx -= SIGIL_POOL.length;
+      if (frame % 2 === 0) el.textContent = SIGIL_POOL[Math.floor(slot.idx)];
+      el.style.color = `rgba(160,200,255,${(0.14 + wave * 0.20).toFixed(3)})`;
+      if (Math.random() < 0.005) {
+        slot.locked  = true;
+        slot.lockFor = 30 + Math.floor(Math.random() * 50);
+        el.style.textShadow = "0 0 7px rgba(0,212,255,0.65), 0 0 18px rgba(0,212,255,0.22)";
+      }
+    });
+  }, inView && !prefersReducedMotion());
 
   return (
-    <div className="image-theater__sigils" aria-hidden>
+    <div ref={stripRef} className="image-theater__sigils" aria-hidden>
       {Array.from({ length: count }, (_, i) => (
         <span key={i} ref={el => { spanRefs.current[i] = el; }} className="image-theater__sigil">
           {SIGIL_POOL[Math.floor(slotRef.current[i].idx)]}
