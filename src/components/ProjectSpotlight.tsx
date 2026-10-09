@@ -1,67 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { ExternalLink, Pencil, X } from "lucide-react";
-
-/* ──────────────────────────────────────────────────────────────────
-   Helper: convert hex → "r, g, b" string for use in rgba()
-   ────────────────────────────────────────────────────────────────── */
-function hexToRgb(hex: string): string {
-  const c = hex.replace("#", "");
-  const r = parseInt(c.slice(0, 2), 16);
-  const g = parseInt(c.slice(2, 4), 16);
-  const b = parseInt(c.slice(4, 6), 16);
-  return `${r}, ${g}, ${b}`;
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   Static Preview
-   ────────────────────────────────────────────────────────────────── */
-
-function getPreviewStyle(tag: string): { bg: string; accent: string; glow: string } {
-  const t = tag.toLowerCase();
-  if (t.includes("ai") || t.includes("prompt") || t.includes("sparklab"))
-    return { bg: "linear-gradient(135deg,#04101f 0%,#072842 50%,#040e1c 100%)", accent: "#4fc3f7", glow: "rgba(79,195,247,0.15)" };
-  if (t.includes("blockchain") || t.includes("web3") || t.includes("near"))
-    return { bg: "linear-gradient(135deg,#06081e 0%,#0c1140 50%,#05071a 100%)", accent: "#818cf8", glow: "rgba(129,140,248,0.15)" };
-  if (t.includes("zen") || t.includes("literacy") || t.includes("education") || t.includes("pioneer"))
-    return { bg: "linear-gradient(135deg,#0e0520 0%,#1a0840 50%,#09031a 100%)", accent: "#c084fc", glow: "rgba(192,132,252,0.15)" };
-  if (t.includes("healthcare") || t.includes("medical") || t.includes("clinical") || t.includes("hipaa"))
-    return { bg: "linear-gradient(135deg,#021a10 0%,#053320 50%,#021410 100%)", accent: "#34d399", glow: "rgba(52,211,153,0.15)" };
-  if (t.includes("creative") || t.includes("generative") || t.includes("animation"))
-    return { bg: "linear-gradient(135deg,#1a0800 0%,#361500 50%,#150600 100%)", accent: "#fb923c", glow: "rgba(251,146,60,0.15)" };
-  if (t.includes("simulation") || t.includes("physics"))
-    return { bg: "linear-gradient(135deg,#020810 0%,#051628 50%,#03090e 100%)", accent: "#60a5fa", glow: "rgba(96,165,250,0.15)" };
-  if (t.includes("commerce") || t.includes("local") || t.includes("baker"))
-    return { bg: "linear-gradient(135deg,#1a0510 0%,#330a1e 50%,#150410 100%)", accent: "#f472b6", glow: "rgba(244,114,182,0.15)" };
-  if (t.includes("publication") || t.includes("weekly"))
-    return { bg: "linear-gradient(135deg,#100e06 0%,#231e08 50%,#0e0c05 100%)", accent: "#fbbf24", glow: "rgba(251,191,36,0.15)" };
-  if (t.includes("visual") || t.includes("media"))
-    return { bg: "linear-gradient(135deg,#080410 0%,#140820 50%,#06030e 100%)", accent: "#a78bfa", glow: "rgba(167,139,250,0.15)" };
-  return { bg: "linear-gradient(135deg,#080c14 0%,#0f1828 50%,#060a10 100%)", accent: "#94a3b8", glow: "rgba(148,163,184,0.1)" };
-}
-
-function StaticPreview({ project }: { project: ProjectData }) {
-  const { bg, accent } = getPreviewStyle(project.tag);
-  let hostname = project.url;
-  try { hostname = new URL(project.url).hostname; } catch { /* noop */ }
-  return (
-    <div className="static-preview" style={{ background: bg }}>
-      <div className="static-preview__grid" style={{ "--sp-accent": accent } as React.CSSProperties} />
-      <div className="static-preview__content">
-        <div className="static-preview__domain" style={{ color: accent }}>{hostname}</div>
-        <div className="static-preview__title" style={{ color: accent }}>{project.title}</div>
-        <div className="static-preview__mock-ui" style={{ color: accent }}>
-          <div className="static-preview__mock-nav"><span /><span /><span /><span /></div>
-          <div className="static-preview__mock-hero" />
-          <div className="static-preview__mock-cards"><div /><div /><div /></div>
-        </div>
-      </div>
-      <div className="static-preview__live" style={{ color: accent }}>
-        <span className="static-preview__live-dot" style={{ background: accent }} />
-        LIVE
-      </div>
-    </div>
-  );
-}
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { ArrowUpRight, Pencil, X } from "lucide-react";
+import FoilCanvas from "@/foil/FoilCanvas";
+import { getFoilEngine, type RendererStatus } from "@/foil/engine";
+import { prefersReducedMotion } from "@/hooks/useRafTicker";
+import "@/foil/vault.css";
 
 /* ──────────────────────────────────────────────────────────────────
    Data
@@ -74,6 +16,32 @@ export interface ProjectData {
   tag: string;
   stats?: { num: string; label: string }[];
 }
+
+/** Each plate's live engraving (scene) and foil ink, by portfolio slot. */
+const PLATES: { scene: string; accent: string }[] = [
+  { scene: "pioneer", accent: "#59c3ff" },
+  { scene: "dmv", accent: "#6ee7b7" },
+  { scene: "near", accent: "#9b8cff" },
+  { scene: "parks", accent: "#86d9a8" },
+  { scene: "spark", accent: "#ffb86b" },
+  { scene: "gallery", accent: "#f2a7c3" },
+  { scene: "stem", accent: "#8fb4ff" },
+  { scene: "medcode", accent: "#5eead4" },
+  { scene: "cipher", accent: "#ff8fa3" },
+  { scene: "terminal", accent: "#7ef0c2" },
+  { scene: "planet", accent: "#b69cff" },
+  { scene: "proto", accent: "#67e8f9" },
+  { scene: "weekly", accent: "#f5d06f" },
+  { scene: "forge", accent: "#fb9a6b" },
+  { scene: "lens", accent: "#c4b5fd" },
+  { scene: "gravity", accent: "#60a5fa" },
+  { scene: "toon", accent: "#fda4af" },
+  { scene: "chronos", accent: "#93c5fd" },
+  { scene: "deadline", accent: "#fbbf24" },
+  { scene: "baker", accent: "#fcd34d" },
+];
+
+const FEATURED = 2;
 
 const ALL_PROJECTS: ProjectData[] = [
   {
@@ -218,20 +186,35 @@ const GLYPHS = "01アイウエオカキクケコ∷∵∴⊕⊗※÷≈≡∞";
 const LS_KEY = "spotlight_projects_edits";
 
 function scrambleText(text: string, progress: number): string {
-  return text.split("").map((ch, i) => {
-    if (ch === " ") return " ";
-    return progress > i / text.length ? ch : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-  }).join("");
+  return text
+    .split("")
+    .map((ch, i) => {
+      if (ch === " ") return " ";
+      return progress > i / text.length ? ch : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+    })
+    .join("");
 }
 
 function loadEdits(): Record<number, Partial<ProjectData>> {
-  try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+  } catch {
+    return {};
+  }
 }
 function saveEdits(edits: Record<number, Partial<ProjectData>>) {
-  localStorage.setItem(LS_KEY, JSON.stringify(edits));
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(edits));
+  } catch {
+    /* storage unavailable — edits stay in memory */
+  }
 }
 function getHostname(url: string): string {
-  try { return new URL(url).hostname; } catch { return url; }
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────
@@ -239,8 +222,14 @@ function getHostname(url: string): string {
    ────────────────────────────────────────────────────────────────── */
 
 function EditModal({
-  project, onSave, onClose,
-}: { project: ProjectData; onSave: (d: Partial<ProjectData>) => void; onClose: () => void }) {
+  project,
+  onSave,
+  onClose,
+}: {
+  project: ProjectData;
+  onSave: (d: Partial<ProjectData>) => void;
+  onClose: () => void;
+}) {
   const [title, setTitle] = useState(project.title);
   const [description, setDescription] = useState(project.description);
   const [tag, setTag] = useState(project.tag);
@@ -250,14 +239,24 @@ function EditModal({
       <div className="glass-card w-[90vw] max-w-md p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <span className="tag-label">Edit Project</span>
-          <button onClick={onClose} className="cmd-close"><X className="w-3 h-3" /></button>
+          <button onClick={onClose} className="cmd-close" aria-label="Close editor">
+            <X className="w-3 h-3" />
+          </button>
         </div>
         <div className="flex flex-col gap-3">
           <input className="cmd-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
           <textarea className="cmd-textarea min-h-[60px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
           <input className="cmd-input" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Tag" />
           <input className="cmd-input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL" />
-          <button className="cmd-submit" onClick={() => { onSave({ title, description, tag, url }); onClose(); }}>Save Changes</button>
+          <button
+            className="cmd-submit"
+            onClick={() => {
+              onSave({ title, description, tag, url });
+              onClose();
+            }}
+          >
+            Save Changes
+          </button>
         </div>
       </div>
     </div>
@@ -265,131 +264,147 @@ function EditModal({
 }
 
 /* ──────────────────────────────────────────────────────────────────
-   Liquid Glass Card
+   Plate — one project, one live engraving
    ────────────────────────────────────────────────────────────────── */
 
-function GlassCard({
-  project, index, editMode, onEdit,
+function Plate({
+  project,
+  index,
+  scene,
+  accent,
+  featured,
+  editMode,
+  onEdit,
 }: {
   project: ProjectData;
   index: number;
+  scene: string;
+  accent: string;
+  featured: boolean;
   editMode: boolean;
   onEdit: () => void;
 }) {
-  /* No mousePos state — eliminates per-mousemove re-renders on 20 cards */
-  const [hovered, setHovered] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+  const frame = useRef(0);
   const [displayTitle, setDisplayTitle] = useState(project.title);
   const scrambleRef = useRef<ReturnType<typeof setInterval>>();
-
-  const { accent } = getPreviewStyle(project.tag);
-  const accentRgb = hexToRgb(accent);
+  const reduced = useRef(prefersReducedMotion());
   const hostname = getHostname(project.url);
 
-  const handleEnter = useCallback(() => {
-    setHovered(true);
-    let frame = 0;
+  useEffect(() => setDisplayTitle(project.title), [project.title]);
+  useEffect(
+    () => () => {
+      clearInterval(scrambleRef.current);
+      cancelAnimationFrame(frame.current);
+    },
+    [],
+  );
+
+  const onEnter = useCallback(() => {
+    if (reduced.current) return;
+    let step = 0;
     const total = 14;
     clearInterval(scrambleRef.current);
     scrambleRef.current = setInterval(() => {
-      frame++;
-      setDisplayTitle(scrambleText(project.title, frame / total));
-      if (frame >= total) { setDisplayTitle(project.title); clearInterval(scrambleRef.current); }
+      step++;
+      setDisplayTitle(scrambleText(project.title, step / total));
+      if (step >= total) {
+        setDisplayTitle(project.title);
+        clearInterval(scrambleRef.current);
+      }
     }, 32);
   }, [project.title]);
 
-  const handleLeave = useCallback(() => {
-    setHovered(false);
+  /* Pointer tilt + the foil edge catching light — CSS vars, one write per frame. */
+  const onMove = useCallback((e: PointerEvent<HTMLElement>) => {
+    if (reduced.current || e.pointerType === "touch") return;
+    const el = ref.current;
+    if (!el) return;
+    const { clientX, clientY } = e;
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
+      const r = el.getBoundingClientRect();
+      const x = (clientX - r.left) / r.width - 0.5;
+      const y = (clientY - r.top) / r.height - 0.5;
+      el.style.setProperty("--rx", `${(-y * 5).toFixed(2)}deg`);
+      el.style.setProperty("--ry", `${(x * 6).toFixed(2)}deg`);
+      el.style.setProperty("--edge", `${(Math.atan2(y, x) * (180 / Math.PI) + 90).toFixed(1)}deg`);
+      el.style.setProperty("--gx", `${((x + 0.5) * 100).toFixed(1)}%`);
+      el.style.setProperty("--gy", `${((y + 0.5) * 100).toFixed(1)}%`);
+    });
+  }, []);
+
+  const onLeave = useCallback(() => {
     clearInterval(scrambleRef.current);
     setDisplayTitle(project.title);
+    cancelAnimationFrame(frame.current);
+    const el = ref.current;
+    if (!el) return;
+    el.style.setProperty("--rx", "0deg");
+    el.style.setProperty("--ry", "0deg");
   }, [project.title]);
 
-  useEffect(() => () => clearInterval(scrambleRef.current), []);
-
-  const cssVars = {
-    "--gc-accent":     accent,
-    "--gc-accent-rgb": accentRgb,
-  } as React.CSSProperties;
+  const no = String(index + 1).padStart(2, "0");
 
   return (
-    <div
-      className={`gc-wrap${hovered ? " gc-wrap--hovered" : ""}`}
-      style={cssVars}
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-      onClick={() => window.open(project.url, "_blank", "noopener,noreferrer")}
+    <article
+      ref={ref}
+      className={`plate${featured ? " plate--featured" : ""}`}
+      style={{ "--a": accent } as CSSProperties}
+      onPointerEnter={onEnter}
+      onPointerMove={onMove}
+      onPointerLeave={onLeave}
     >
-      <div className="gc-face">
-        {/* Accent top bar */}
-        <div className="gc-face__bar" aria-hidden />
-        {/* Holographic prismatic sweep */}
-        <div className="gc-face__sweep" aria-hidden />
-        {/* Top-edge shimmer line */}
-        <div className="gc-face__shimmer" aria-hidden />
-        {/* Ambient accent glow halo */}
-        <div className="gc-face__glow" aria-hidden />
+      <div className="plate__art">
+        <FoilCanvas scene={scene} accent={accent} targetRef={ref} />
+        <span className="plate__reg plate__reg--tl" aria-hidden="true" />
+        <span className="plate__reg plate__reg--tr" aria-hidden="true" />
+        <span className="plate__reg plate__reg--bl" aria-hidden="true" />
+        <span className="plate__reg plate__reg--br" aria-hidden="true" />
+      </div>
 
-        {/* ── Main body ── */}
-        <div className="gc-face__body">
-          {/* Top row: index · tag · ext icon */}
-          <div className="gc-face__toprow">
-            <span className="gc-face__idx">{String(index + 1).padStart(2, "0")}</span>
-            <span className="gc-face__tag">{project.tag}</span>
-            <ExternalLink className="gc-face__ext" aria-hidden />
-          </div>
+      <div className="plate__body">
+        <div className="plate__meta">
+          <span className="plate__no">No. {no}</span>
+          <span className="plate__tag">{project.tag}</span>
+        </div>
 
-          {/* Title */}
-          <h3 className="gc-face__title">{displayTitle}</h3>
+        <h3 className="plate__title">
+          <a className="plate__link" href={project.url} target="_blank" rel="noopener noreferrer">
+            <span aria-hidden="true">{displayTitle}</span>
+            <span className="sr-only">
+              {project.title} (opens {hostname} in a new tab)
+            </span>
+          </a>
+        </h3>
 
-          {/* Description */}
-          <p className="gc-face__desc">{project.description}</p>
+        <p className="plate__desc">{project.description}</p>
 
-          {/* Stats */}
-          {project.stats && project.stats.length > 0 && (
-            <div className="gc-face__stats">
+        <div className="plate__foot">
+          {project.stats && project.stats.length > 0 ? (
+            <dl className="plate__stats">
               {project.stats.slice(0, 3).map((s) => (
-                <div key={s.label} className="gc-face__stat">
-                  <span className="gc-face__stat-num">{s.num}</span>
-                  <span className="gc-face__stat-label">{s.label}</span>
+                <div key={s.label} className="plate__stat">
+                  <dt>{s.label}</dt>
+                  <dd>{s.num}</dd>
                 </div>
               ))}
-            </div>
+            </dl>
+          ) : (
+            <span className="plate__domain">{hostname}</span>
           )}
+          <span className="plate__open" aria-hidden="true">
+            Open live <ArrowUpRight className="plate__open-icon" />
+          </span>
         </div>
-
-        {/* ── Hover reveal — slides up from bottom ── */}
-        <div className="gc-face__reveal">
-          <div className="gc-face__reveal-inner">
-            <span className="gc-face__domain">{hostname}</span>
-            <div className="gc-face__actions">
-              <a
-                href={project.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="gc-face__cta"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Open Live
-                <ExternalLink className="w-3 h-3" />
-              </a>
-              {editMode && (
-                <button
-                  className="gc-panel__edit"
-                  onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                >
-                  <Pencil className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Corner brackets */}
-        <span className="gc-br gc-br--tl" />
-        <span className="gc-br gc-br--tr" />
-        <span className="gc-br gc-br--bl" />
-        <span className="gc-br gc-br--br" />
       </div>
-    </div>
+
+      {editMode && (
+        <button type="button" className="plate__edit" onClick={onEdit} aria-label={`Edit ${project.title}`}>
+          <Pencil className="w-3 h-3" />
+        </button>
+      )}
+    </article>
   );
 }
 
@@ -397,9 +412,19 @@ function GlassCard({
    Main Component
    ────────────────────────────────────────────────────────────────── */
 
+const RENDERER_LABEL: Record<RendererStatus, string> = {
+  pending: "Initialising GPU",
+  webgpu: "WebGPU",
+  webgl2: "WebGL2",
+  static: "Static",
+};
+
 export default function ProjectSpotlight({ editMode = false }: { editMode?: boolean }) {
   const [edits, setEdits] = useState<Record<number, Partial<ProjectData>>>(loadEdits);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [renderer, setRenderer] = useState<RendererStatus>("pending");
+
+  useEffect(() => getFoilEngine().subscribeStatus(setRenderer), []);
 
   const projects = ALL_PROJECTS.map((p, i) => ({ ...p, ...(edits[i] || {}) }));
 
@@ -409,34 +434,43 @@ export default function ProjectSpotlight({ editMode = false }: { editMode?: bool
       setEdits(next);
       saveEdits(next);
     },
-    [edits]
+    [edits],
   );
 
   return (
-    <section className="spotlight-section">
-      {/* Header */}
-      <div className="spotlight-header">
-        <span className="tag-label">Portfolio — 50+ Projects · 5 Fortune 500 Partnerships</span>
-        <h2 className="display-heading display-lg">MY WORK</h2>
-        <p className="body-muted" style={{ maxWidth: "32rem", margin: "0.5rem auto 0" }}>
-          From the first youth AI literacy program in US history to enterprise platforms — every project ships, every line serves a purpose.
-        </p>
+    <section className="vault" aria-labelledby="vault-title">
+      <div className="vault__inner">
+        <header className="vault__head">
+          <span className="vault__eyebrow">Portfolio — 50+ Projects · 5 Fortune 500 Partnerships</span>
+          <h2 id="vault-title" className="vault__title display-heading">
+            MY WORK
+          </h2>
+          <p className="vault__lede">
+            From the first youth AI literacy program in US history to enterprise platforms — every project ships, every
+            line serves a purpose.
+          </p>
+          <div className="vault__renderer" data-state={renderer}>
+            <span className="vault__renderer-dot" aria-hidden="true" />
+            Rendered live · <strong>{RENDERER_LABEL[renderer]}</strong>
+          </div>
+        </header>
+
+        <div className="plates">
+          {projects.map((project, i) => (
+            <Plate
+              key={i}
+              project={project}
+              index={i}
+              scene={PLATES[i]?.scene ?? "pioneer"}
+              accent={PLATES[i]?.accent ?? "#59c3ff"}
+              featured={i < FEATURED}
+              editMode={editMode}
+              onEdit={() => setEditingIndex(i)}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Flat 4×5 liquid glass grid */}
-      <div className="gc-grid">
-        {projects.map((project, i) => (
-          <GlassCard
-            key={i}
-            project={project}
-            index={i}
-            editMode={editMode}
-            onEdit={() => setEditingIndex(i)}
-          />
-        ))}
-      </div>
-
-      {/* Edit modal */}
       {editingIndex !== null && (
         <EditModal
           project={projects[editingIndex]}
