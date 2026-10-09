@@ -20,7 +20,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
 import ForwardPass from "@/components/ForwardPass";
 import TopologyField from "@/components/TopologyField";
-import TreasuryField from "@/components/TreasuryField";
+import { setFieldState } from "@/foil/fieldStore";
 import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
@@ -44,6 +44,13 @@ const loadSignalConstellation = () => import("@/components/SignalConstellation")
 const loadImageTheater = () => import("@/components/ImageTheater");
 const loadArsenalShowcase = () => import("@/components/ArsenalShowcase");
 const loadZenGenGallery = () => import("@/components/ZenGenGallery");
+/* The GPU engine stays out of the first-load bundle. If its chunk can't be
+   fetched, sections fall back to their 2D glyph canvases. */
+const loadTreasuryField = () =>
+  import("@/components/TreasuryField").catch(() => {
+    setFieldState("off");
+    return { default: () => null };
+  });
 
 const GlassCube = lazy(loadGlassCube);
 const GlassOrbit = lazy(loadGlassOrbit);
@@ -58,6 +65,7 @@ const SignalConstellation = lazy(loadSignalConstellation);
 const ImageTheater = lazy(loadImageTheater);
 const ArsenalShowcase = lazy(loadArsenalShowcase);
 const ZenGenGallery = lazy(loadZenGenGallery);
+const TreasuryField = lazy(loadTreasuryField);
 
 /* Ordered roughly by scroll position — prefetched during idle time after
    first paint so scrolling never hits a chunk-loading gap. */
@@ -538,7 +546,9 @@ export default function Index() {
       {/* As above, so below. — the structure is the message */}
 
       {/* The Treasury field — page background, floating cipher glyphs, watermark seals (GPU) */}
-      <TreasuryField />
+      <Suspense fallback={null}>
+        <TreasuryField />
+      </Suspense>
 
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />
