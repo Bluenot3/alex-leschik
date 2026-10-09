@@ -2024,6 +2024,10 @@
   .topology-field { height: 350px; }
   .hero-poster { padding-top: 350px; gap: 1.75rem; padding-inline: 1.25rem; }
   .hero-poster__title { font-size: 40px; line-height: 1.05; }
+  .hero-poster__content::before {
+    inset: -0.5rem -1.25rem -1rem;
+    background: hsl(var(--background) / 0.96);
+  }
   .hero-poster__signal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
   .hero-poster__signal { padding: 0.75rem 0.35rem; }
   .hero-poster__signal-label { font-size: 9px; line-height: 1.5; }

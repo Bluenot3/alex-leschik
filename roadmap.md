@@ -6,4 +6,4 @@
 # Visible graphics enhancement
 - [x] Add a prominent engraved topology animation behind the identity, preserving all content.
 - [x] Refine hero proportions, project surfaces, and the latest signature emphasis.
-- [ ] Verify rendering, motion, and scrolling without page errors.
+- [x] Verify rendering, motion, and scrolling without page errors.
