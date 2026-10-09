@@ -31,6 +31,18 @@ export interface AttachOptions {
   accent: [number, number, number];
   target?: HTMLElement | null;
   seed?: number;
+  /** Device-pixel-ratio ceiling for this view (default 2, 1.5 on low-power). */
+  maxDpr?: number;
+  /** Ceiling on the WebGL2 path, where each frame is blitted (large views). */
+  glMaxDpr?: number;
+  /** Per-frame hook to write view-specific uniforms (p0, p1, d). */
+  onFrame?: (u: Float32Array, now: number) => void;
+  /** First frame presented. */
+  onLive?: () => void;
+  /** The scene could not be compiled on this device. */
+  onFail?: () => void;
+  /** Reduced motion: return true when a fresh still is needed (e.g. on scroll). */
+  needsFrame?: () => boolean;
 }
 
 /**
@@ -117,9 +129,13 @@ class FoilEngine {
     this.diagnostics.errors.push({ scene, message });
     if (import.meta.env.DEV) console.warn(`[foil] ${scene}: ${message}`);
     this.views.forEach((v) => {
-      if (v.scene.id === scene) v.host.dataset.foil = "failed";
+      if (v.scene.id !== scene) return;
+      v.host.dataset.foil = "failed";
+      this.hooks.get(v)?.onFail?.();
     });
   };
+
+  private readonly hooks = new WeakMap<ViewState, AttachOptions>();
 
   private start() {
     if (this.starting) return this.starting;
@@ -199,7 +215,9 @@ class FoilEngine {
   }
 
   private sizeView(v: ViewState) {
-    const dprCap = this.lowPower ? 1.5 : 2;
+    const hook = this.hooks.get(v);
+    const viewCap = this.backend?.kind === "webgl2" ? hook?.glMaxDpr ?? hook?.maxDpr ?? 2 : hook?.maxDpr ?? 2;
+    const dprCap = Math.min(this.lowPower ? 1.5 : 2, viewCap);
     const dpr = Math.min(window.devicePixelRatio || 1, dprCap) * this.quality;
     const w = Math.max(1, Math.round(v.cssW * dpr));
     const h = Math.max(1, Math.round(v.cssH * dpr));
@@ -254,6 +272,7 @@ class FoilEngine {
       dirty: true,
       res: null,
     };
+    this.hooks.set(view, opts);
     this.views.add(view);
     this.byHost.set(host, view);
     this.io?.observe(host);
@@ -361,7 +380,7 @@ class FoilEngine {
         }
         return;
       }
-      if (this.reduced && v.drawn && !v.dirty) return;
+      if (this.reduced && v.drawn && !v.dirty && !this.hooks.get(v)?.needsFrame?.()) return;
       this.updateUniforms(v, now, dt, vh);
       batch.push(v);
     });
@@ -372,6 +391,7 @@ class FoilEngine {
       if (!v.drawn) {
         v.drawn = true;
         v.host.dataset.live = "1";
+        this.hooks.get(v)?.onLive?.();
       }
     }
     this.diagnostics.frames++;
@@ -420,6 +440,7 @@ class FoilEngine {
     u[17] = v.accent[1];
     u[18] = v.accent[2];
     u[19] = 1;
+    this.hooks.get(v)?.onFrame?.(u, now);
   }
 }
 

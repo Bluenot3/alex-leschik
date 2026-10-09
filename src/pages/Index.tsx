@@ -20,6 +20,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
 import ForwardPass from "@/components/ForwardPass";
 import TopologyField from "@/components/TopologyField";
+import TreasuryField from "@/components/TreasuryField";
 import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
@@ -535,6 +536,9 @@ export default function Index() {
     <div className="relative portfolio-shell" data-sigil="ordo-ab-chao">
       <h1 className="sr-only">Alex Leschik — Founder of ZEN AI Co. Creator of the first youth AI literacy program in U.S. history.</h1>
       {/* As above, so below. — the structure is the message */}
+
+      {/* The Treasury field — page background, floating cipher glyphs, watermark seals (GPU) */}
+      <TreasuryField />
 
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />

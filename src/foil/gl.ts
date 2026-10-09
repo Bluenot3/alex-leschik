@@ -1,4 +1,4 @@
-import { GLSL_HEADER, GLSL_MAIN, GLSL_VERTEX, LIBRARY, POST } from "./library";
+import { GLSL_HEADER, GLSL_MAIN, GLSL_VERTEX, LIBRARY, postFor } from "./library";
 import { GLSL_BRIDGE, wgslToGlsl } from "./translate";
 import { ATLAS_SIZE } from "./atlas";
 import { UNIFORM_BYTES, type FoilBackend, type FoilScene, type ViewState } from "./types";
@@ -23,7 +23,7 @@ export function glslFragment(scene: FoilScene) {
     "#version 300 es\nprecision highp float;\nprecision highp int;\n" +
     GLSL_BRIDGE +
     GLSL_HEADER +
-    wgslToGlsl(LIBRARY + scene.code + POST) +
+    wgslToGlsl(LIBRARY + scene.code + postFor(scene)) +
     GLSL_MAIN
   );
 }

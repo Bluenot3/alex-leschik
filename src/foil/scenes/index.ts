@@ -19,6 +19,7 @@ import { toon } from "./toon";
 import { chronos } from "./chronos";
 import { deadline } from "./deadline";
 import { baker } from "./baker";
+import { field } from "./field";
 
 /** Every portfolio plate, in portfolio order. */
 const ORDER: FoilScene[] = [
@@ -44,7 +45,10 @@ const ORDER: FoilScene[] = [
   baker,
 ];
 
-const SCENES: Record<string, FoilScene> = Object.fromEntries(ORDER.map((s) => [s.id, s]));
+/** Page-level systems that are not portfolio plates. */
+const SYSTEM: FoilScene[] = [field];
+
+const SCENES: Record<string, FoilScene> = Object.fromEntries([...ORDER, ...SYSTEM].map((s) => [s.id, s]));
 
 export function getScene(id: string): FoilScene | undefined {
   return SCENES[id];
@@ -52,4 +56,8 @@ export function getScene(id: string): FoilScene | undefined {
 
 export function allScenes(): FoilScene[] {
   return ORDER;
+}
+
+export function systemScenes(): FoilScene[] {
+  return SYSTEM;
 }

@@ -335,6 +335,21 @@ fn shade(px: vec2f) -> vec4f {
 }
 `;
 
+/** Pass-through post for full-page fields: scene() is the final colour. */
+export const POST_RAW = /* wgsl */ `
+fn shade(px: vec2f) -> vec4f {
+  let uv: vec2f = px / u.res.xy;
+  let p: vec2f = vec2f((px.x - 0.5 * u.res.x) / u.res.y, (0.5 * u.res.y - px.y) / u.res.y);
+  var c: vec3f = scene(uv, p);
+  c += vec3f((h21(px + vec2f(fract(tnow() * 7.3) * 97.0, 0.0)) - 0.5) / 255.0);
+  return vec4f(sat3(c), 1.0);
+}
+`;
+
+export function postFor(scene: { post?: "plate" | "raw" }) {
+  return scene.post === "raw" ? POST_RAW : POST;
+}
+
 export const WGSL_ENTRY = /* wgsl */ `
 @vertex fn vsMain(@builtin(vertex_index) vi: u32) -> @builtin(position) vec4f {
   let x: f32 = f32((vi << 1u) & 2u);

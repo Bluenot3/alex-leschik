@@ -34,6 +34,25 @@ function similarity(a: Set<string>, b: Set<string>) {
   return shared / Math.sqrt(a.size * b.size);
 }
 
+/* innerText forces layout and serializes the whole section — do it once per
+   element, not on every re-measure. */
+const sectionText = new WeakMap<HTMLElement, { words: number; tokens: Set<string>; label: string }>();
+
+function readSection(element: HTMLElement, index: number) {
+  const cached = sectionText.get(element);
+  if (cached) return cached;
+  const text = element.innerText || "";
+  const heading = element.querySelector<HTMLElement>("h1, h2, h3, [class*='title']");
+  const entry = {
+    words: text.trim() ? text.trim().split(/\s+/).length : 0,
+    tokens: new Set(tokenize(text).slice(0, 96)),
+    label: (heading?.innerText || `SECTION ${String(index + 1).padStart(2, "0")}`).replace(/\s+/g, " ").trim().slice(0, 24),
+  };
+  // Lazy sections arrive empty first; only cache once they have content.
+  if (entry.words > 0) sectionText.set(element, entry);
+  return entry;
+}
+
 function readToken(style: CSSStyleDeclaration, name: string, fallback: string) {
   const value = style.getPropertyValue(name).trim();
   return value ? `hsl(${value})` : fallback;
@@ -46,6 +65,7 @@ export default function ForwardPass() {
   const scanRef = useRef(0);
   const lastPaintRef = useRef(0);
   const sizeRef = useRef({ width: 0, height: 0, dpr: 1 });
+  const colorsRef = useRef({ ink: "hsl(215 25% 12%)", signal: "hsl(196 88% 45%)", warm: "hsl(25 95% 58%)" });
   const reduced = useMemo(() => prefersReducedMotion(), []);
 
   const measure = useCallback(() => {
@@ -65,21 +85,14 @@ export default function ForwardPass() {
       document.querySelectorAll<HTMLElement>("main section, .portfolio-shell section, [data-scroll-section]"),
     ).filter((element, index, all) => all.indexOf(element) === index && element.offsetHeight > 80);
 
-    sectionsRef.current = nodes.map((element, index) => {
-      const text = element.innerText || "";
-      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-      const heading = element.querySelector<HTMLElement>("h1, h2, h3, [class*='title']");
-      return {
-        element,
-        index,
-        words,
-        tokens: new Set(tokenize(text).slice(0, 96)),
-        label: (heading?.innerText || `SECTION ${String(index + 1).padStart(2, "0")}`)
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 24),
-      };
-    });
+    sectionsRef.current = nodes.map((element, index) => ({ element, index, ...readSection(element, index) }));
+
+    const style = getComputedStyle(document.documentElement);
+    colorsRef.current = {
+      ink: readToken(style, "--forward-ink", "hsl(215 25% 12%)"),
+      signal: readToken(style, "--forward-signal", "hsl(196 88% 45%)"),
+      warm: readToken(style, "--forward-active", "hsl(25 95% 58%)"),
+    };
   }, []);
 
   useEffect(() => {
@@ -119,10 +132,7 @@ export default function ForwardPass() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
-    const style = getComputedStyle(document.documentElement);
-    const ink = readToken(style, "--forward-ink", "hsl(215 25% 12%)");
-    const signal = readToken(style, "--forward-signal", "hsl(196 88% 45%)");
-    const warm = readToken(style, "--forward-active", "hsl(25 95% 58%)");
+    const { ink, signal, warm } = colorsRef.current;
     const mobile = width < 760;
     const railX = mobile ? 9 : 25;
     const rightX = width - 24;

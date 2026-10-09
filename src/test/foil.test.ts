@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { stripComments, wgslToGlsl, TranslateError } from "@/foil/translate";
 import { LIBRARY, POST } from "@/foil/library";
-import { allScenes } from "@/foil/scenes";
+import { allScenes, systemScenes } from "@/foil/scenes";
 import { DATA_FLOATS } from "@/foil/types";
 import { GLYPH_TABLE, missingGlyphs } from "@/foil/atlas";
 
@@ -66,18 +66,19 @@ fn g() { }`);
   });
 
   it("translates the shared library and every scene", () => {
-    for (const scene of allScenes()) {
+    for (const scene of [...allScenes(), ...systemScenes()]) {
       expect(() => wgslToGlsl(LIBRARY + scene.code + POST), scene.id).not.toThrow();
     }
   });
 });
 
 describe("foil scenes", () => {
-  const scenes = allScenes();
+  const plates = allScenes();
+  const scenes = [...plates, ...systemScenes()];
 
   it("covers every portfolio plate exactly once", () => {
-    expect(scenes).toHaveLength(20);
-    expect(new Set(scenes.map((s) => s.id)).size).toBe(20);
+    expect(plates).toHaveLength(20);
+    expect(new Set(scenes.map((s) => s.id)).size).toBe(scenes.length);
   });
 
   it("never declares identifiers reserved by WGSL or GLSL", () => {

@@ -2101,3 +2101,24 @@
     opacity: 0.55;
   }
 }
+
+/* ═══ Treasury field — one GPU layer under the whole page ═══ */
+.treasury-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  contain: strict;
+}
+.treasury-field .foil-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.treasury-field[data-live] .foil-canvas {
+  opacity: 1;
+}

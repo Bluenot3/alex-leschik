@@ -1,11 +1,11 @@
 /// <reference types="@webgpu/types" />
-import { LIBRARY, POST, WGSL_ENTRY, WGSL_HEADER } from "./library";
+import { LIBRARY, WGSL_ENTRY, WGSL_HEADER, postFor } from "./library";
 import { ATLAS_SIZE } from "./atlas";
 import { UNIFORM_BYTES, type FoilBackend, type FoilScene, type ViewState } from "./types";
 
 /** Full WGSL module for a scene (shared header, library, scene, post, entry points). */
 export function wgslModule(scene: FoilScene) {
-  return WGSL_HEADER + LIBRARY + scene.code + POST + WGSL_ENTRY;
+  return WGSL_HEADER + LIBRARY + scene.code + postFor(scene) + WGSL_ENTRY;
 }
 
 interface PipeEntry {

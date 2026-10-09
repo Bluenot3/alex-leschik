@@ -6,6 +6,11 @@ export interface FoilScene {
   still?: number;
   /** Fills the 128-float static data block (u.d) once per view. */
   data?: (d: Float32Array) => void;
+  /**
+   * "plate" (default) composites over the engraved foil substrate with the
+   * minting intro; "raw" outputs scene() as-is (full-page fields).
+   */
+  post?: "plate" | "raw";
 }
 
 export const UNIFORM_FLOATS = (7 + 32) * 4;
