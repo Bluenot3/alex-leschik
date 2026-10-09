@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791505019492,
+      "tag": "0000_protect_owner_content_and_subscriber_data",
+      "breakpoints": true
+    }
+  ]
+}
