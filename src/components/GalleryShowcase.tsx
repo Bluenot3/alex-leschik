@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useInView } from "@/hooks/useInView";
 import { Play, Code, ExternalLink } from "lucide-react";
 
 interface GalleryItem {
@@ -18,18 +19,26 @@ export default function GalleryShowcase() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  /* The section mounts early (idle time) for every visitor; the live-update
+     socket, which only matters while the owner adds items, opens once the
+     section is actually near the screen. */
+  const { ref, inView: near } = useInView<HTMLDivElement>({ rootMargin: "800px 0px", once: true });
+
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from("gallery_items")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (data) setItems(data as GalleryItem[]);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase
-        .from("gallery_items")
-        .select("*")
-        .order("sort_order", { ascending: true });
-      if (data) setItems(data as GalleryItem[]);
-      setLoading(false);
-    };
     load();
+  }, [load]);
 
+  useEffect(() => {
+    if (!near) return;
     const channel = supabase
       .channel("gallery-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "gallery_items" }, () => {
@@ -38,39 +47,34 @@ export default function GalleryShowcase() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [near, load]);
 
   const getPublicUrl = (path: string) => {
     const { data } = supabase.storage.from("portfolio").getPublicUrl(path);
     return data.publicUrl;
   };
 
+  /* One root for every state, so the in-view observer keeps its element. */
+  let content: ReactNode;
+
   /* One placeholder card: the archive is small, and a taller skeleton would
      collapse (and shift the page) when the real items arrive. */
   if (loading) {
-    return (
-      <div className="gallery-showcase">
-        <div className="gallery-grid">
-          <div className="gallery-card gallery-skeleton" />
-        </div>
+    content = (
+      <div className="gallery-grid">
+        <div className="gallery-card gallery-skeleton" />
       </div>
     );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="gallery-showcase">
-        <div className="gallery-empty">
-          <span className="font-mono text-[0.6rem] tracking-widest uppercase text-muted-foreground/50">
-            No items yet — use the command panel to add content
-          </span>
-        </div>
+  } else if (items.length === 0) {
+    content = (
+      <div className="gallery-empty">
+        <span className="font-mono text-[0.6rem] tracking-widest uppercase text-muted-foreground/50">
+          No items yet — use the command panel to add content
+        </span>
       </div>
     );
-  }
-
-  return (
-    <div className="gallery-showcase">
+  } else {
+    content = (
       <div className="gallery-grid">
         {items.map((item, i) => (
           <div
@@ -156,6 +160,12 @@ export default function GalleryShowcase() {
           </div>
         ))}
       </div>
+    );
+  }
+
+  return (
+    <div ref={ref} className="gallery-showcase">
+      {content}
     </div>
   );
 }
