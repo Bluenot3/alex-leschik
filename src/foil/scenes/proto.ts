@@ -115,6 +115,7 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   c += (mix(u.accent.rgb, vec3f(0.6, 1.0, 0.85), 0.4) * screenPx * 0.7 + silver() * screenTxt + holo(foilPhase(p, 3.0)) * glare) * rendered;
   c += vec3f(0.0) * shadow + holo(foilPhase(p, 2.0) + 0.2) * sweepGlow * 0.8;
   c += silver() * (tags * 0.7 + conceptLbl * 0.7) + ink * micro * 0.4;
+  c += zenStamp(p);
   return c;
 }
 `,

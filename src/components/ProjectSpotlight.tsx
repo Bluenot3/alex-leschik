@@ -21,7 +21,7 @@ export interface ProjectData {
 const PLATES: { scene: string; accent: string }[] = [
   { scene: "pioneer", accent: "#59c3ff" },
   { scene: "dmv", accent: "#6ee7b7" },
-  { scene: "near", accent: "#9b8cff" },
+  { scene: "near", accent: "#4ee6ad" },
   { scene: "parks", accent: "#86d9a8" },
   { scene: "spark", accent: "#ffb86b" },
   { scene: "gallery", accent: "#f2a7c3" },

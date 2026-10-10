@@ -141,6 +141,7 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   c += vec3f(1.0, 0.45, 0.48) * heart * (0.6 + beat * 0.6) + silver() * bpmD * 0.85;
   c += ink * table + mix(phos, vec3f(1.0), 0.4) * hot * (0.8 + beat * 0.3) + phos * (sel * 0.7 + selGlow);
   c += silver() * (headLbl * 0.7 + lock * 0.75 + lockLbl * 0.6) + ink * micro * 0.4;
+  c += zenStamp(p);
   return c;
 }
 `,

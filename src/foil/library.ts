@@ -27,6 +27,12 @@ struct Uniforms {
 @group(0) @binding(0) var<uniform> u: Uniforms;
 @group(0) @binding(1) var atlasTex: texture_2d<f32>;
 @group(0) @binding(2) var atlasSmp: sampler;
+@group(0) @binding(3) var imgTex: texture_2d_array<f32>;
+@group(0) @binding(4) var imgSmp: sampler;
+
+/* Per-view image layers (premultiplied RGBA, mipmapped, uv y down). */
+fn imgLod(uv: vec2f, layer: i32, lod: f32) -> vec4f { return textureSampleLevel(imgTex, imgSmp, uv, layer, lod); }
+fn imgGrad(uv: vec2f, layer: i32, gx: vec2f, gy: vec2f) -> vec4f { return textureSampleGrad(imgTex, imgSmp, uv, layer, gx, gy); }
 `;
 
 export const GLSL_HEADER = /* glsl */ `
@@ -41,16 +47,27 @@ layout(std140) uniform UBlock {
   vec4 d[32];
 } u;
 uniform highp sampler2D atlasTex;
+uniform highp sampler2DArray imgTex;
 out vec4 fragColor;
+
+vec4 imgLod(vec2 uv, int layer, float lod) { return textureLod(imgTex, vec3(uv, float(layer)), lod); }
+vec4 imgGrad(vec2 uv, int layer, vec2 gx, vec2 gy) { return textureGrad(imgTex, vec3(uv, float(layer)), gx, gy); }
 `;
 
 export const LIBRARY = /* wgsl */ `
 const PI: f32 = 3.14159265;
 const TAU: f32 = 6.28318531;
-const ATLAS: f32 = 1024.0;
+const ATLAS_W: f32 = 1024.0;
+const ATLAS_H: f32 = 2048.0;
 const GCELL: f32 = 64.0;
 const GRAD: f32 = 10.0;
 const MAPRAD: f32 = 48.0;
+const WORLDRAD: f32 = 16.0;
+const LCELL: f32 = 256.0;
+const LOGORAD: f32 = 24.0;
+const LOGO_ZEN: i32 = 0;
+const LOGO_BGC: i32 = 1;
+const LOGO_NEAR: i32 = 2;
 
 fn tnow() -> f32 { return u.time.x; }
 fn pxs() -> f32 { return 1.0 / u.res.y; }
@@ -210,7 +227,7 @@ fn glyphD(code: i32, q: vec2f) -> f32 {
   let col: f32 = f32(code % 16);
   let row: f32 = f32(code / 16);
   let qc: vec2f = clamp(q, vec2f(0.0), vec2f(1.0));
-  let a: vec2f = (vec2f(col, row) + qc) * (GCELL / ATLAS);
+  let a: vec2f = (vec2f(col, row) + qc) * vec2f(GCELL / ATLAS_W, GCELL / ATLAS_H);
   let v: f32 = textureSampleLevel(atlasTex, atlasSmp, a, 0.0).r;
   let outside: f32 = length(q - qc);
   return (0.5 - v) * 2.0 * GRAD / GCELL + outside;
@@ -287,9 +304,69 @@ fn digitCov(p: vec2f, origin: vec2f, size: f32, digit: i32, weight: f32) -> f32 
 fn mapD(q: vec2f) -> f32 {
   // q: map-local 0..1 (y down) → signed distance in map-width units, negative inside
   let qc: vec2f = clamp(q, vec2f(0.0), vec2f(1.0));
-  let a: vec2f = vec2f(qc.x, 0.5 + qc.y * 0.5);
+  let a: vec2f = vec2f(qc.x, (512.0 + qc.y * 512.0) / ATLAS_H);
   let v: f32 = textureSampleLevel(atlasTex, atlasSmp, a, 0.0).r;
-  return (0.5 - v) * 2.0 * MAPRAD / ATLAS + length((q - qc) * vec2f(1.0, 0.5));
+  return (0.5 - v) * 2.0 * MAPRAD / ATLAS_W + length((q - qc) * vec2f(1.0, 0.5));
+}
+
+/* ── World land (equirectangular) ──
+   ll = (lon, lat) in degrees → signed distance in map-width units
+   (1.0 = 360°), negative on land. */
+fn worldD(ll: vec2f) -> f32 {
+  let qx: f32 = fract(ll.x / 360.0 + 0.5);
+  let qy: f32 = clamp(0.5 - ll.y / 180.0, 0.0, 1.0);
+  let ay: f32 = clamp(1024.0 + qy * 512.0, 1024.5, 1535.5) / ATLAS_H;
+  let v: f32 = textureSampleLevel(atlasTex, atlasSmp, vec2f(qx, ay), 0.0).r;
+  return (0.5 - v) * 2.0 * WORLDRAD / ATLAS_W;
+}
+/* Unit-sphere direction (y up, z toward lon 0 / lat 0) → (lon, lat) degrees. */
+fn lonLat(n: vec3f) -> vec2f {
+  return vec2f(atan2(n.x, n.z), asin(clamp(n.y, -1.0, 1.0))) * (180.0 / PI);
+}
+fn sphereDir(ll: vec2f) -> vec3f {
+  let r: vec2f = ll * (PI / 180.0);
+  return vec3f(cos(r.y) * sin(r.x), sin(r.y), cos(r.y) * cos(r.x));
+}
+
+/* ── Brand marks (256 px cells) ──
+   q cell-local 0..1 (y down) → signed distance in cell units, negative inside. */
+fn logoD(slot: i32, q: vec2f) -> f32 {
+  let qc: vec2f = clamp(q, vec2f(0.0), vec2f(1.0));
+  let cx: f32 = f32(slot % 4);
+  let cy: f32 = f32(slot / 4);
+  let a: vec2f = vec2f((cx + qc.x) * LCELL / ATLAS_W, (1536.0 + (cy + qc.y) * LCELL) / ATLAS_H);
+  let v: f32 = textureSampleLevel(atlasTex, atlasSmp, a, 0.0).r;
+  return (0.5 - v) * 2.0 * LOGORAD / LCELL + length(q - qc);
+}
+/* Mark distance in p-units: centre c, cell size s (p-units). */
+fn logoDist(slot: i32, p: vec2f, c: vec2f, s: f32) -> f32 {
+  let q: vec2f = vec2f((p.x - c.x) / s + 0.5, (c.y - p.y) / s + 0.5);
+  return logoD(slot, q) * s;
+}
+fn logoCov(slot: i32, p: vec2f, c: vec2f, s: f32) -> f32 {
+  return saturate(0.5 - logoDist(slot, p, c, s) / pxs());
+}
+
+/* The ZEN seal (radius r): twin rings around a counter-turning guilloche
+   band and the Z mark. Returns (ink coverage, glow). */
+fn zenSeal(p: vec2f, c: vec2f, r: f32) -> vec2f {
+  let d: vec2f = p - c;
+  let rr: f32 = length(d);
+  let a: f32 = atan2(d.y, d.x);
+  let px: f32 = pxs();
+  let rings: f32 = lineCov(abs(rr - r) / px, 0.6) + lineCov(abs(rr - r * 0.8) / px, 0.35);
+  let w1: f32 = r * 0.9 + r * 0.045 * sin(a * 18.0 + tnow() * 0.25);
+  let w2: f32 = r * 0.9 + r * 0.045 * sin(a * 18.0 + PI - tnow() * 0.25);
+  let guil: f32 = (lineCov(abs(rr - w1) / px, 0.3) + lineCov(abs(rr - w2) / px, 0.3)) * step(rr, r);
+  let mark: f32 = logoCov(LOGO_ZEN, p, c, r * 1.12);
+  let glow: f32 = exp(-max(rr - r, 0.0) / (r * 0.35)) * 0.22;
+  return vec2f(saturate(rings + guil * 0.7 + mark), glow);
+}
+/* ZEN's issuer stamp in a plate's lower-right corner. */
+fn zenStamp(p: vec2f) -> vec3f {
+  let s: vec2f = zenSeal(p, vec2f(aspect() * 0.5 - 0.085, -0.37), 0.046);
+  let foil: vec3f = mix(silver(), holo(foilPhase(p, 2.0) + 0.2), 0.5);
+  return foil * s.x * 0.85 + u.accent.rgb * s.y;
 }
 `;
 
@@ -346,8 +423,25 @@ fn shade(px: vec2f) -> vec4f {
 }
 `;
 
-export function postFor(scene: { post?: "plate" | "raw" }) {
-  return scene.post === "raw" ? POST_RAW : POST;
+/**
+ * Transparent post for floating artifacts (the hero cube): scene() returns
+ * premultiplied RGBA and the canvas composites over the page.
+ */
+export const POST_ALPHA = /* wgsl */ `
+fn shade(px: vec2f) -> vec4f {
+  let uv: vec2f = px / u.res.xy;
+  let p: vec2f = vec2f((px.x - 0.5 * u.res.x) / u.res.y, (0.5 * u.res.y - px.y) / u.res.y);
+  let c: vec4f = scene(uv, p);
+  let a: f32 = saturate(c.a);
+  let n: f32 = (h21(px + vec2f(fract(tnow() * 7.3) * 97.0, 0.0)) - 0.5) / 255.0;
+  return vec4f(clamp(c.rgb + vec3f(n * a), vec3f(0.0), vec3f(a)), a);
+}
+`;
+
+export function postFor(scene: { post?: "plate" | "raw" | "alpha" }) {
+  if (scene.post === "raw") return POST_RAW;
+  if (scene.post === "alpha") return POST_ALPHA;
+  return POST;
 }
 
 export const WGSL_ENTRY = /* wgsl */ `

@@ -1,19 +1,37 @@
+import worldUrl from "./assets/world-land.png";
+import zenLogoUrl from "./assets/logo-zen.png";
+import bgcLogoUrl from "./assets/logo-bgc.png";
+
 /**
- * Signed-distance atlas, generated at idle time (no binary assets, no
- * requests). 1024 × 1024, one 8-bit channel:
+ * Signed-distance atlas, generated at idle time. 1024 × 2048, one 8-bit
+ * channel:
  *
- *   rows   0–511  128 glyph cells (16 × 8, 64 px) — DM Mono microprint
- *   rows 512–1023 contiguous U.S. silhouette, Albers equal-area
+ *   rows    0–511  128 glyph cells (16 × 8, 64 px) — DM Mono microprint
+ *   rows  512–1023 contiguous U.S. silhouette, Albers equal-area
+ *   rows 1024–1535 world land, equirectangular (Natural Earth 1:50m)
+ *   rows 1536–2047 brand marks, 256 px cells (see LOGO)
  *
  * Distances come from the Felzenszwalb–Huttenlocher exact Euclidean
- * transform with sub-pixel edge seeding, so glyphs stay crisp from 6 px
- * microprint up to display sizes.
+ * transform with sub-pixel edge seeding, so glyphs and marks stay crisp from
+ * 6 px microprint up to display sizes. Brand masks are tiny 4-bit coverage
+ * PNGs: the ZEN and Boys & Girls Clubs marks are lifted from the owner's
+ * certificate artwork, the NEAR mark is Simple Icons' path (CC0).
  */
 
-export const ATLAS_SIZE = 1024;
+export const ATLAS_W = 1024;
+export const ATLAS_H = 2048;
 export const GLYPH_CELL = 64;
 export const GLYPH_RADIUS = 10;
 export const MAP_RADIUS = 48;
+export const WORLD_RADIUS = 16;
+export const LOGO_CELL = 256;
+export const LOGO_RADIUS = 24;
+
+/** Brand-mark slots in the atlas (logoD / logoCov in the shader library). */
+export const LOGO = { zen: 0, bgc: 1, near: 2 } as const;
+
+const NEAR_PATH =
+  "M21.443 0c-.89 0-1.714.46-2.18 1.218l-5.017 7.448a.533.533 0 0 0 .792.7l4.938-4.282a.2.2 0 0 1 .334.151v13.41a.2.2 0 0 1-.354.128L5.03.905A2.555 2.555 0 0 0 3.078 0h-.521A2.557 2.557 0 0 0 0 2.557v18.886a2.557 2.557 0 0 0 4.736 1.338l5.017-7.448a.533.533 0 0 0-.792-.7l-4.938 4.283a.2.2 0 0 1-.333-.152V5.352a.2.2 0 0 1 .354-.128l14.924 17.87c.486.574 1.2.905 1.952.906h.521A2.558 2.558 0 0 0 24 21.445V2.557A2.558 2.558 0 0 0 21.443 0Z";
 
 export const GLYPH_TABLE =
   " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~" +
@@ -146,12 +164,25 @@ function edt2d(grid: Float64Array, w: number, h: number) {
   }
 }
 
-/** Coverage (0..1 alpha) → encoded SDF bytes written into `out` at row offset. */
-function encodeSdf(alpha: Uint8ClampedArray, w: number, h: number, radius: number, out: Uint8Array, rowOffset: number) {
+/**
+ * Coverage → encoded SDF bytes, written into the atlas at (x0, y0).
+ * `channel` picks the RGBA component holding coverage (3 = alpha for canvas
+ * drawing, 0 = red for grey mask images).
+ */
+function encodeSdf(
+  rgba: Uint8ClampedArray,
+  w: number,
+  h: number,
+  radius: number,
+  out: Uint8Array,
+  x0: number,
+  y0: number,
+  channel = 3,
+) {
   const outer = new Float64Array(w * h);
   const inner = new Float64Array(w * h);
   for (let i = 0; i < w * h; i++) {
-    const a = alpha[i * 4 + 3] / 255;
+    const a = rgba[i * 4 + channel] / 255;
     if (a >= 0.999) {
       outer[i] = 0;
       inner[i] = INF;
@@ -166,10 +197,14 @@ function encodeSdf(alpha: Uint8ClampedArray, w: number, h: number, radius: numbe
   }
   edt2d(outer, w, h);
   edt2d(inner, w, h);
-  for (let i = 0; i < w * h; i++) {
-    const sd = Math.sqrt(outer[i]) - Math.sqrt(inner[i]);
-    const v = 0.5 - sd / (2 * radius);
-    out[rowOffset * w + i] = Math.max(0, Math.min(255, Math.round(v * 255)));
+  for (let y = 0; y < h; y++) {
+    const row = (y0 + y) * ATLAS_W + x0;
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      const sd = Math.sqrt(outer[i]) - Math.sqrt(inner[i]);
+      const v = 0.5 - sd / (2 * radius);
+      out[row + x] = Math.max(0, Math.min(255, Math.round(v * 255)));
+    }
   }
 }
 
@@ -195,7 +230,7 @@ async function ensureFont() {
 
 function drawGlyphs(): Uint8ClampedArray {
   const canvas = document.createElement("canvas");
-  canvas.width = ATLAS_SIZE;
+  canvas.width = ATLAS_W;
   canvas.height = 512;
   const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
   ctx.fillStyle = "#fff";
@@ -207,7 +242,7 @@ function drawGlyphs(): Uint8ClampedArray {
     const row = Math.floor(i / 16);
     ctx.fillText(ch, col * GLYPH_CELL + GLYPH_CELL / 2, row * GLYPH_CELL + 44);
   });
-  return ctx.getImageData(0, 0, ATLAS_SIZE, 512).data;
+  return ctx.getImageData(0, 0, ATLAS_W, 512).data;
 }
 
 function drawMap(): Uint8ClampedArray {
@@ -227,18 +262,78 @@ function drawMap(): Uint8ClampedArray {
   return ctx.getImageData(0, 0, MAP_W, MAP_H).data;
 }
 
+/** A coverage mask image (grey PNG) scaled into a w × h canvas; null if it can't load. */
+async function loadMask(url: string, w: number, h: number): Promise<Uint8ClampedArray | null> {
+  try {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = url;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, w, h);
+    return ctx.getImageData(0, 0, w, h).data;
+  } catch {
+    return null;
+  }
+}
+
+/** The NEAR mark from its 24-unit SVG path, centred in a logo cell. */
+function drawNear(): Uint8ClampedArray {
+  const canvas = document.createElement("canvas");
+  canvas.width = LOGO_CELL;
+  canvas.height = LOGO_CELL;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  const pad = 30;
+  const s = (LOGO_CELL - pad * 2) / 24;
+  ctx.setTransform(s, 0, 0, s, pad, pad);
+  ctx.fillStyle = "#fff";
+  ctx.fill(new Path2D(NEAR_PATH));
+  return ctx.getImageData(0, 0, LOGO_CELL, LOGO_CELL).data;
+}
+
+const WORLD_Y = 1024;
+const LOGO_Y = 1536;
+
+function logoOrigin(slot: number): [number, number] {
+  return [(slot % 4) * LOGO_CELL, LOGO_Y + Math.floor(slot / 4) * LOGO_CELL];
+}
+
 let atlasPromise: Promise<Uint8Array<ArrayBuffer>> | null = null;
 
-/** Builds (once) and returns the 1024² R8 atlas. */
+/** Builds (once) and returns the 1024 × 2048 R8 atlas. */
 export function buildAtlas(): Promise<Uint8Array<ArrayBuffer>> {
   if (!atlasPromise) {
     atlasPromise = (async () => {
-      const out = new Uint8Array(ATLAS_SIZE * ATLAS_SIZE);
+      const out = new Uint8Array(ATLAS_W * ATLAS_H);
+      // Brand masks download while the glyphs are being distance-transformed.
+      const masks = Promise.all([
+        loadMask(worldUrl, 1024, 512),
+        loadMask(zenLogoUrl, LOGO_CELL, LOGO_CELL),
+        loadMask(bgcLogoUrl, LOGO_CELL, LOGO_CELL),
+      ]);
       await ensureFont();
       await idle();
-      encodeSdf(drawGlyphs(), ATLAS_SIZE, 512, GLYPH_RADIUS, out, 0);
+      encodeSdf(drawGlyphs(), ATLAS_W, 512, GLYPH_RADIUS, out, 0, 0);
       await idle();
-      encodeSdf(drawMap(), MAP_W, MAP_H, MAP_RADIUS, out, 512);
+      encodeSdf(drawMap(), MAP_W, MAP_H, MAP_RADIUS, out, 0, 512);
+      const [world, zen, bgc] = await masks;
+      await idle();
+      if (world) encodeSdf(world, 1024, 512, WORLD_RADIUS, out, 0, WORLD_Y, 0);
+      await idle();
+      const logos: [number, Uint8ClampedArray | null, number][] = [
+        [LOGO.zen, zen, 0],
+        [LOGO.bgc, bgc, 0],
+        [LOGO.near, drawNear(), 3],
+      ];
+      for (const [slot, data, channel] of logos) {
+        if (!data) continue;
+        const [x0, y0] = logoOrigin(slot);
+        encodeSdf(data, LOGO_CELL, LOGO_CELL, LOGO_RADIUS, out, x0, y0, channel);
+      }
       return out;
     })();
   }

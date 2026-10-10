@@ -5,16 +5,18 @@ const TEXT = layoutText(
   {
     lanes: "SHARD 0SHARD 1SHARD 2SHARD 3",
     block: "BLOCK",
+    mark: "NEAR × ZEN AI CO",
     micro: "NEAR PROTOCOL × ZEN AI CO · SHARDED · DECENTRALIZED AI LITERACY · ",
   },
   0,
 );
-const { lanes: LANES, block: BLOCK, micro: MICRO } = TEXT.at;
+const { lanes: LANES, block: BLOCK, mark: MARK, micro: MICRO } = TEXT.at;
 
 /**
  * NEAR Protocol × ZEN.
  * Nightshade-style sharding: chunks stream along four shard lanes, are
- * gathered into each block, and the block joins the hash-linked chain.
+ * gathered into each block, and the block joins the hash-linked chain —
+ * while NEAR's own mark assembles, block by finalized block, beside it.
  */
 export const near: FoilScene = {
   id: "near",
@@ -51,7 +53,7 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   let period: f32 = 1.2;
   let ph: f32 = fract(t / period);
   let height: f32 = floor(t / period);
-  let colX: f32 = 0.36;
+  let colX: f32 = -0.07;
   let ax: f32 = aspect() * 0.5;
   let o: vec2f = vec2f(0.016, 0.012);
 
@@ -118,8 +120,38 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   }
   let micro: f32 = textLoop(p, 0.478, 0.015, ${MICRO.start}, ${MICRO.count}, -t * 0.01, 0.0);
 
+  // NEAR's mark, assembled from finalized blocks (bottom up, a little out
+  // of order like real finality), held, then re-minted.
+  let nc: vec2f = vec2f(ax - 0.29, 0.05);
+  let ns: f32 = 0.6;
+  let nd: f32 = logoDist(LOGO_NEAR, p, nc, ns);
+  let cell: f32 = 0.0195;
+  let gq: vec2f = (p - nc) / cell;
+  let gi: vec2f = floor(gq);
+  let gf: vec2f = fract(gq) - vec2f(0.5);
+  let gcen: vec2f = nc + (gi + vec2f(0.5)) * cell;
+  let inN: f32 = step(logoDist(LOGO_NEAR, gcen, nc, ns), -cell * 0.2);
+  let build: f32 = fract(t / 14.0);
+  let order: f32 = h21(gi + vec2f(31.0, 7.0)) * 0.35 + (gcen.y - nc.y + 0.25) * 1.1;
+  let since: f32 = build * 1.4 - order;
+  let placed: f32 = step(0.0, since) * (1.0 - sstep(0.93, 1.0, build));
+  let pop: f32 = exp(-max(since, 0.0) * 30.0) * placed;
+  let bxd: f32 = sdBox(gf, vec2f(0.36)) * cell;
+  let mosaic: f32 = saturate(0.5 - bxd / pxs()) * inN * placed;
+  let mosaicEdge: f32 = lineCov(abs(bxd) / pxs(), 0.3) * inN * placed;
+  let ghost: f32 = lineCov(abs(bxd) / pxs(), 0.22) * inN * (1.0 - placed) * 0.3;
+  let outline: f32 = stroke(nd, 0.55) + stroke(nd - 0.012, 0.3) * 0.5;
+  let mosaicTone: f32 = engrave(p.x * 0.5 + p.y, 0.005, 0.5);
+  let markTxt: f32 = textRun(p, vec2f(nc.x - 0.135, nc.y - 0.27), 0.024, ${MARK.start}, ${MARK.count}, 0.1);
+  let zs: vec2f = zenSeal(p, vec2f(nc.x + 0.185, nc.y - 0.258), 0.026);
+
   let ink: vec3f = inkCol(p, 1.6);
   var c: vec3f = mix(ink, silver(), 0.25) * (edges * 1.25 + faces * 0.8 + lines * 0.6 + colLine * 0.7);
+  let mint: vec3f = mix(u.accent.rgb, vec3f(0.85, 1.0, 0.95), 0.35);
+  c += mix(mint, holo(foilPhase(p, 2.0) + 0.3), 0.3) * (mosaic * (0.35 + 0.4 * mosaicTone) + mosaicEdge * 0.7 + ghost);
+  c += vec3f(1.0, 1.0, 0.95) * pop * inN * 0.9;
+  c += mix(silver(), mint, 0.4) * outline * 0.85;
+  c += silver() * markTxt * 0.85 + mix(silver(), holo(foilPhase(p, 2.0)), 0.4) * zs.x * 0.8;
   c += holo(foilPhase(p, 2.4) + 0.1) * (sweep * 1.2 + glow * 1.1 + fresh * 0.9);
   c += mix(u.accent.rgb, vec3f(1.0), 0.45) * (digits * 0.95 + hexG * 0.6);
   c += silver() * (blockLabel + laneLabels) * 0.6 + ink * micro * 0.4;

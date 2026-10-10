@@ -118,6 +118,7 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   c += keyCol * pointer + silver() * (plain * 0.85 + labels * 0.55 + keyD * 0.8);
   c += holo(foilPhase(p, 2.0) + f32(shift) * 0.04) * cipherRow * 1.1;
   c += ink * micro * 0.4;
+  c += zenStamp(p);
   return c;
 }
 `,

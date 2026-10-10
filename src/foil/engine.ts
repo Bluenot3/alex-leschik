@@ -9,6 +9,8 @@ import {
   type FoilBackend,
   type FoilDiagnostics,
   type FoilScene,
+  type LayerSource,
+  type LayerSpec,
   type ViewState,
 } from "./types";
 
@@ -43,6 +45,8 @@ export interface AttachOptions {
   onFail?: () => void;
   /** Reduced motion: return true when a fresh still is needed (e.g. on scroll). */
   needsFrame?: () => boolean;
+  /** Reserve an image array for this view; fill it with setLayer(). */
+  layers?: LayerSpec;
 }
 
 /**
@@ -208,6 +212,7 @@ class FoilEngine {
       this.sizeView(v);
       this.backend.attach(v);
       if (this.backend.eagerCompile) this.backend.prepare(v.scene);
+      v.layerSrc.forEach((src, i) => src && this.backend?.writeLayer(v, i, src));
       v.host.dataset.foil = this.backend.kind;
     } catch {
       v.host.dataset.foil = "failed";
@@ -270,6 +275,9 @@ class FoilEngine {
       introStart: -1,
       drawn: false,
       dirty: true,
+      active: true,
+      layers: opts.layers ?? null,
+      layerSrc: [],
       res: null,
     };
     this.hooks.set(view, opts);
@@ -320,10 +328,31 @@ class FoilEngine {
     };
   }
 
+  /**
+   * Fills one image layer of the view mounted in `host` (uploaded now, or as
+   * soon as a renderer is bound — and again after device loss).
+   */
+  setLayer(host: HTMLElement, index: number, source: LayerSource | null) {
+    const v = this.byHost.get(host);
+    if (!v || !v.layers || index < 0 || index >= v.layers.count) return;
+    v.layerSrc[index] = source;
+    if (source && v.res && this.backend) this.backend.writeLayer(v, index, source);
+    v.dirty = true;
+  }
+
+  /** Pause or resume a view that stays in the viewport but is hidden by its owner. */
+  setActive(host: HTMLElement, active: boolean) {
+    const v = this.byHost.get(host);
+    if (!v || v.active === active) return;
+    v.active = active;
+    if (active) v.dirty = true;
+    this.syncLoop();
+  }
+
   private syncLoop() {
     let any = false;
     this.views.forEach((v) => {
-      if (v.visible) any = true;
+      if (v.visible && v.active) any = true;
     });
     const want = any && !!this.backend;
     if (want && !this.unsubscribe) {
@@ -371,7 +400,7 @@ class FoilEngine {
     // first, so a burst of plates never stalls the main thread.
     let compileBudget = backend.eagerCompile ? Infinity : 1;
     this.views.forEach((v) => {
-      if (!v.visible || !v.res) return;
+      if (!v.visible || !v.active || !v.res) return;
       const st = backend.status(v.scene);
       if (st !== "ready") {
         if (st === "pending" && compileBudget > 0) {

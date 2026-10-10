@@ -12,16 +12,24 @@ const CITIES: [number, number][] = [
   [-122.68, 45.52], [-122.33, 47.61],
 ];
 
+/* Credential lines follow the program's own certificate. */
 const TEXT = layoutText(
-  { label: "WASHINGTON, D.C.", micro: "ZEN AI CO · AI PIONEER PROGRAM · FIRST IN U.S. HISTORY · " },
+  {
+    label: "WASHINGTON, D.C.",
+    micro: "THE FIRST YOUTH AI LITERACY PROGRAM IN UNITED STATES HISTORY · ZEN AI CO · ",
+    cert: "ZEN AI CERTIFIED",
+    idp: "ZEN-AIL-2026-",
+    ver: "VERIFIED · ZENAI.WORLD",
+  },
   64,
 );
-const { label: LABEL, micro: MICRO } = TEXT.at;
+const { label: LABEL, micro: MICRO, cert: CERT, idp: IDP, ver: VER } = TEXT.at;
 
 /**
  * ZEN AI — the first youth AI literacy program in U.S. history.
- * An intaglio-engraved map of the lower 48: the program ignites in
- * Washington, D.C., and arcs carry it city by city across the country.
+ * An intaglio-engraved map of the lower 48: the program ignites under the
+ * ZEN seal in Washington, D.C., arcs carry it city by city, and every
+ * arrival mints a credential in the format of the program's certificate.
  */
 export const pioneer: FoilScene = {
   id: "pioneer",
@@ -112,10 +120,24 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
     blooms += stroke(dn - since * 0.28, 0.55) * arrive * exp(-since * 10.0);
   }
 
-  // D.C.: the origin seal — diamond, ring and a slow beacon.
-  let dq: vec2f = rot2(PI * 0.25) * (p - dc);
-  let diamond: f32 = stroke(sdBox(dq, vec2f(0.0105)), 0.6) + fillAA(sdBox(dq, vec2f(0.0045)));
-  let beacon: f32 = stroke(dDC - fract(t * 0.35) * 0.09, 0.5) * (1.0 - fract(t * 0.35));
+  // D.C.: the ZEN seal the program is issued under, with a slow beacon.
+  let seal: vec2f = zenSeal(p, dc, 0.036);
+  let beacon: f32 = stroke(dDC - 0.036 - fract(t * 0.35) * 0.08, 0.5) * (1.0 - fract(t * 0.35));
+
+  // Credential ticker: each arrival issues the next ID.
+  let arrivals: f32 = clamp(floor((cyc - 0.14) / 0.6 * 31.0) + 1.0, 0.0, 31.0);
+  let idn: i32 = 117 + i32(floor(t / 10.0)) * 31 + i32(arrivals);
+  let cx0: f32 = -aspect() * 0.5 + 0.05;
+  let certL: f32 = textRun(p, vec2f(cx0, -0.268), 0.025, ${CERT.start}, ${CERT.count}, 0.15);
+  let idL: f32 = textRun(p, vec2f(cx0, -0.314), 0.031, ${IDP.start}, ${IDP.count}, 0.0);
+  var idD: f32 = 0.0;
+  var pw: i32 = 10000;
+  for (var j: i32 = 0; j < 5; j++) {
+    idD += digitCov(p, vec2f(cx0 + (13.0 + f32(j)) * 0.031 * 0.6, -0.314), 0.031, (idn / pw) % 10, 0.0);
+    pw = pw / 10;
+  }
+  let verL: f32 = textRun(p, vec2f(cx0, -0.37), 0.018, ${VER.start}, ${VER.count}, 0.0);
+  let tick: f32 = exp(-fract(cyc * 31.0 / 0.6) * 6.0) * step(0.14, cyc) * step(cyc, 0.74);
 
   let label: f32 = textRun(p, dc + vec2f(0.026, 0.04), 0.024, ${LABEL.start}, ${LABEL.count}, 0.0);
   let micro: f32 = textLoop(p, -0.462, 0.017, ${MICRO.start}, ${MICRO.count}, t * 0.012, 0.0);
@@ -125,8 +147,11 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   c += holo(foilPhase(p, 2.2) + 0.25) * arcs * 1.1 * fade;
   c += vec3f(1.0, 0.95, 0.86) * (heads * 1.3 + blooms * 0.8) * fade;
   c += mix(ink, vec3f(1.0), 0.6) * nodes * 0.9;
-  c += vec3f(1.0, 0.93, 0.8) * (diamond * 1.2 + beacon * 0.7) + u.accent.rgb * exp(-dDC * 26.0) * 0.5;
+  let foil: vec3f = mix(vec3f(1.0, 0.9, 0.7), holo(foilPhase(p, 2.0) + 0.1), 0.35);
+  c += foil * seal.x * 1.1 + vec3f(1.0, 0.93, 0.8) * beacon * 0.7 + u.accent.rgb * (exp(-dDC * 26.0) * 0.5 + seal.y);
   c += silver() * label * 0.85 + ink * micro * 0.45;
+  c += vec3f(0.95, 0.82, 0.55) * certL * 0.95 + silver() * (idL * 0.8 + verL * 0.5);
+  c += mix(silver(), vec3f(1.0, 0.95, 0.8), tick) * idD * (0.8 + 0.4 * tick);
   return c;
 }
 `,

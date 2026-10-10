@@ -116,6 +116,7 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   c += phos * (caret * 0.9 + spin * 0.8) + phos * inside * 0.02;
   c += ink * panel * 0.8 + mix(vec3f(1.0, 0.86, 0.55), holo(foilPhase(p, 2.0)), 0.25) * chosenInk + silver() * nextLbl * 0.65;
   c += ink * micro * 0.4;
+  c += zenStamp(p);
   return c;
 }
 `,

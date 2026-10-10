@@ -8,10 +8,20 @@ export interface FoilScene {
   data?: (d: Float32Array) => void;
   /**
    * "plate" (default) composites over the engraved foil substrate with the
-   * minting intro; "raw" outputs scene() as-is (full-page fields).
+   * minting intro; "raw" outputs scene() as-is (full-page fields); "alpha"
+   * expects `scene() -> vec4f` (premultiplied) and renders transparent.
    */
-  post?: "plate" | "raw";
+  post?: "plate" | "raw" | "alpha";
 }
+
+/** Per-view image array (texture_2d_array), e.g. the cube's six faces. */
+export interface LayerSpec {
+  width: number;
+  height: number;
+  count: number;
+}
+
+export type LayerSource = HTMLCanvasElement | ImageBitmap;
 
 export const UNIFORM_FLOATS = (7 + 32) * 4;
 export const UNIFORM_BYTES = UNIFORM_FLOATS * 4;
@@ -47,6 +57,11 @@ export interface ViewState {
   introStart: number;
   drawn: boolean;
   dirty: boolean;
+  /** Paused by its owner (e.g. hidden by CSS while still on screen). */
+  active: boolean;
+  /** Image layers reserved for this view, and their current sources. */
+  layers: LayerSpec | null;
+  layerSrc: (LayerSource | null)[];
   /** Backend-owned resources. */
   res: unknown;
 }
@@ -61,6 +76,8 @@ export interface FoilBackend {
   status(scene: FoilScene): "pending" | "ready" | "failed";
   attach(view: ViewState): void;
   detach(view: ViewState): void;
+  /** Uploads one image layer (allocating the view's array on first use). */
+  writeLayer(view: ViewState, index: number, source: LayerSource): void;
   /** Renders every view in one submission; returns the views that were drawn. */
   render(views: ViewState[]): ViewState[];
   onLost(cb: () => void): void;

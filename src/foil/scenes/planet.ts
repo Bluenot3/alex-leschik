@@ -109,6 +109,7 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   c += silver() * moon * 0.8 + silver() * stars * 0.7;
   c += mix(sea, vec3f(1.0), 0.5) * sweepLine;
   c += silver() * (promptTxt * 0.8 + genTxt * 0.6) + ink * micro * 0.4;
+  c += zenStamp(p);
   return c;
 }
 `,

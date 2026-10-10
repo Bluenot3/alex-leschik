@@ -1,7 +1,7 @@
 /// <reference types="@webgpu/types" />
 import { LIBRARY, WGSL_ENTRY, WGSL_HEADER, postFor } from "./library";
-import { ATLAS_SIZE } from "./atlas";
-import { UNIFORM_BYTES, type FoilBackend, type FoilScene, type ViewState } from "./types";
+import { ATLAS_H, ATLAS_W } from "./atlas";
+import { UNIFORM_BYTES, type FoilBackend, type FoilScene, type LayerSource, type ViewState } from "./types";
 
 /** Full WGSL module for a scene (shared header, library, scene, post, entry points). */
 export function wgslModule(scene: FoilScene) {
@@ -17,7 +17,27 @@ interface GpuViewRes {
   ctx: GPUCanvasContext;
   ubuf: GPUBuffer;
   bind: GPUBindGroup;
+  img: GPUTexture | null;
+  levels: number;
 }
+
+/** Box-filter downsample for image mip chains (one layer, one level per pass). */
+const MIP_WGSL = /* wgsl */ `
+@group(0) @binding(0) var src: texture_2d<f32>;
+@group(0) @binding(1) var smp: sampler;
+struct VOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
+@vertex fn vs(@builtin(vertex_index) i: u32) -> VOut {
+  let x: f32 = f32((i << 1u) & 2u);
+  let y: f32 = f32(i & 2u);
+  var o: VOut;
+  o.pos = vec4f(x * 2.0 - 1.0, 1.0 - y * 2.0, 0.0, 1.0);
+  o.uv = vec2f(x, y);
+  return o;
+}
+@fragment fn fs(v: VOut) -> @location(0) vec4f { return textureSampleLevel(src, smp, v.uv, 0.0); }
+`;
+
+const mipLevels = (w: number, h: number) => Math.floor(Math.log2(Math.max(w, h))) + 1;
 
 /**
  * WebGPU path: one device drives every card. Each card owns a canvas
@@ -30,8 +50,11 @@ export class GpuBackend implements FoilBackend {
   private readonly bindLayout: GPUBindGroupLayout;
   private readonly pipeLayout: GPUPipelineLayout;
   private readonly sampler: GPUSampler;
+  private readonly imgSampler: GPUSampler;
   private readonly atlas: GPUTexture;
   private readonly atlasView: GPUTextureView;
+  private readonly emptyLayers: GPUTextureView;
+  private mip: { pipe: GPURenderPipeline; layout: GPUBindGroupLayout } | null = null;
   private readonly pipes = new Map<string, PipeEntry>();
   private lostCb: (() => void) | null = null;
   private destroyed = false;
@@ -48,6 +71,8 @@ export class GpuBackend implements FoilBackend {
         { binding: 0, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
         { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
         { binding: 2, visibility: GPUShaderStage.FRAGMENT, sampler: { type: "filtering" } },
+        { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float", viewDimension: "2d-array" } },
+        { binding: 4, visibility: GPUShaderStage.FRAGMENT, sampler: { type: "filtering" } },
       ],
     });
     this.pipeLayout = device.createPipelineLayout({ bindGroupLayouts: [this.bindLayout] });
@@ -57,13 +82,29 @@ export class GpuBackend implements FoilBackend {
       addressModeU: "clamp-to-edge",
       addressModeV: "clamp-to-edge",
     });
+    this.imgSampler = device.createSampler({
+      magFilter: "linear",
+      minFilter: "linear",
+      mipmapFilter: "linear",
+      addressModeU: "clamp-to-edge",
+      addressModeV: "clamp-to-edge",
+      maxAnisotropy: 8,
+    });
     this.atlas = device.createTexture({
       label: "foil-atlas",
-      size: [ATLAS_SIZE, ATLAS_SIZE],
+      size: [ATLAS_W, ATLAS_H],
       format: "r8unorm",
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
     });
     this.atlasView = this.atlas.createView();
+    const empty = device.createTexture({
+      label: "foil-no-layers",
+      size: [1, 1, 1],
+      format: "rgba8unorm",
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+    });
+    device.queue.writeTexture({ texture: empty }, new Uint8Array(4), { bytesPerRow: 4 }, [1, 1, 1]);
+    this.emptyLayers = empty.createView({ dimension: "2d-array" });
     device.lost.then((info) => {
       this.lost = true;
       if (!this.destroyed && info.reason !== "destroyed") this.lostCb?.();
@@ -88,7 +129,7 @@ export class GpuBackend implements FoilBackend {
   }
 
   setAtlas(data: Uint8Array<ArrayBuffer>) {
-    this.device.queue.writeTexture({ texture: this.atlas }, data, { bytesPerRow: ATLAS_SIZE }, [ATLAS_SIZE, ATLAS_SIZE]);
+    this.device.queue.writeTexture({ texture: this.atlas }, data, { bytesPerRow: ATLAS_W }, [ATLAS_W, ATLAS_H]);
   }
 
   prepare(scene: FoilScene) {
@@ -133,20 +174,93 @@ export class GpuBackend implements FoilBackend {
   attach(view: ViewState) {
     const ctx = view.canvas.getContext("webgpu");
     if (!ctx) throw new Error("webgpu context unavailable");
-    ctx.configure({ device: this.device, format: this.format, alphaMode: "opaque" });
+    const alphaMode = view.scene.post === "alpha" ? "premultiplied" : "opaque";
+    ctx.configure({ device: this.device, format: this.format, alphaMode });
     const ubuf = this.device.createBuffer({
       size: UNIFORM_BYTES,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
-    const bind = this.device.createBindGroup({
+    view.res = { ctx, ubuf, bind: this.bindFor(ubuf, this.emptyLayers), img: null, levels: 1 } satisfies GpuViewRes;
+  }
+
+  private bindFor(ubuf: GPUBuffer, layers: GPUTextureView) {
+    return this.device.createBindGroup({
       layout: this.bindLayout,
       entries: [
         { binding: 0, resource: { buffer: ubuf } },
         { binding: 1, resource: this.atlasView },
         { binding: 2, resource: this.sampler },
+        { binding: 3, resource: layers },
+        { binding: 4, resource: this.imgSampler },
       ],
     });
-    view.res = { ctx, ubuf, bind } satisfies GpuViewRes;
+  }
+
+  writeLayer(view: ViewState, index: number, source: LayerSource) {
+    const res = view.res as GpuViewRes | null;
+    const spec = view.layers;
+    if (!res || !spec || index < 0 || index >= spec.count || this.lost) return;
+    if (!res.img) {
+      res.levels = mipLevels(spec.width, spec.height);
+      res.img = this.device.createTexture({
+        label: `foil-layers:${view.scene.id}`,
+        size: [spec.width, spec.height, spec.count],
+        format: "rgba8unorm",
+        mipLevelCount: res.levels,
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+      });
+      res.bind = this.bindFor(res.ubuf, res.img.createView({ dimension: "2d-array" }));
+    }
+    this.device.queue.copyExternalImageToTexture(
+      { source, flipY: false },
+      { texture: res.img, origin: [0, 0, index], premultipliedAlpha: true },
+      [spec.width, spec.height],
+    );
+    this.buildMips(res.img, index, res.levels);
+  }
+
+  private buildMips(tex: GPUTexture, layer: number, levels: number) {
+    if (levels < 2) return;
+    if (!this.mip) {
+      const module = this.device.createShaderModule({ label: "foil-mips", code: MIP_WGSL });
+      const layout = this.device.createBindGroupLayout({
+        entries: [
+          { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+          { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: { type: "filtering" } },
+        ],
+      });
+      const pipe = this.device.createRenderPipeline({
+        label: "foil-mips",
+        layout: this.device.createPipelineLayout({ bindGroupLayouts: [layout] }),
+        vertex: { module, entryPoint: "vs" },
+        fragment: { module, entryPoint: "fs", targets: [{ format: "rgba8unorm" }] },
+        primitive: { topology: "triangle-list" },
+      });
+      this.mip = { pipe, layout };
+    }
+    const { pipe, layout } = this.mip;
+    const encoder = this.device.createCommandEncoder({ label: "foil-mips" });
+    for (let level = 1; level < levels; level++) {
+      const viewOf = (mip: number) =>
+        tex.createView({ dimension: "2d", baseMipLevel: mip, mipLevelCount: 1, baseArrayLayer: layer, arrayLayerCount: 1 });
+      const pass = encoder.beginRenderPass({
+        colorAttachments: [{ view: viewOf(level), loadOp: "clear", storeOp: "store", clearValue: { r: 0, g: 0, b: 0, a: 0 } }],
+      });
+      pass.setPipeline(pipe);
+      pass.setBindGroup(
+        0,
+        this.device.createBindGroup({
+          layout,
+          entries: [
+            { binding: 0, resource: viewOf(level - 1) },
+            { binding: 1, resource: this.sampler },
+          ],
+        }),
+      );
+      pass.draw(3);
+      pass.end();
+    }
+    this.device.queue.submit([encoder.finish()]);
   }
 
   detach(view: ViewState) {
@@ -158,6 +272,7 @@ export class GpuBackend implements FoilBackend {
       /* context already gone */
     }
     res.ubuf.destroy();
+    res.img?.destroy();
     view.res = null;
   }
 
@@ -176,7 +291,7 @@ export class GpuBackend implements FoilBackend {
             view: res.ctx.getCurrentTexture().createView(),
             loadOp: "clear",
             storeOp: "store",
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+            clearValue: { r: 0, g: 0, b: 0, a: view.scene.post === "alpha" ? 0 : 1 },
           },
         ],
       });

@@ -1,7 +1,7 @@
 import { GLSL_HEADER, GLSL_MAIN, GLSL_VERTEX, LIBRARY, postFor } from "./library";
 import { GLSL_BRIDGE, wgslToGlsl } from "./translate";
-import { ATLAS_SIZE } from "./atlas";
-import { UNIFORM_BYTES, type FoilBackend, type FoilScene, type ViewState } from "./types";
+import { ATLAS_H, ATLAS_W } from "./atlas";
+import { UNIFORM_BYTES, type FoilBackend, type FoilScene, type LayerSource, type ViewState } from "./types";
 
 const COMPLETION_STATUS_KHR = 0x91b1;
 
@@ -15,6 +15,7 @@ interface ProgEntry {
 interface GlViewRes {
   ctx: CanvasRenderingContext2D;
   ubo: WebGLBuffer;
+  img: WebGLTexture | null;
 }
 
 /** GLSL source for a scene: the same portable WGSL, translated. */
@@ -43,6 +44,7 @@ export class GlBackend implements FoilBackend {
   private parallel: boolean;
   private atlas: WebGLTexture | null = null;
   private atlasData: Uint8Array<ArrayBuffer> | null = null;
+  private emptyLayers: WebGLTexture | null = null;
   private readonly progs = new Map<string, ProgEntry>();
   private readonly views = new Set<ViewState>();
   private lost = false;
@@ -60,6 +62,7 @@ export class GlBackend implements FoilBackend {
       this.lost = true;
       this.progs.clear();
       this.atlas = null;
+      this.emptyLayers = null;
     });
     canvas.addEventListener("webglcontextrestored", () => {
       this.lost = false;
@@ -67,7 +70,11 @@ export class GlBackend implements FoilBackend {
       if (this.atlasData) this.setAtlas(this.atlasData);
       this.views.forEach((v) => {
         const res = v.res as GlViewRes | null;
-        if (res) res.ubo = this.makeUbo();
+        if (res) {
+          res.ubo = this.makeUbo();
+          res.img = null;
+          v.layerSrc.forEach((src, i) => src && this.writeLayer(v, i, src));
+        }
         v.dirty = true;
       });
     });
@@ -77,12 +84,14 @@ export class GlBackend implements FoilBackend {
     const canvas = document.createElement("canvas");
     canvas.width = 2;
     canvas.height = 2;
+    // Alpha so transparent scenes (the hero cube) blit with their coverage;
+    // opaque scenes simply write a = 1.
     const gl = canvas.getContext("webgl2", {
-      alpha: false,
+      alpha: true,
       antialias: false,
       depth: false,
       stencil: false,
-      premultipliedAlpha: false,
+      premultipliedAlpha: true,
       preserveDrawingBuffer: false,
       powerPreference: "default",
     });
@@ -104,12 +113,46 @@ export class GlBackend implements FoilBackend {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, ATLAS_SIZE, ATLAS_SIZE, 0, gl.RED, gl.UNSIGNED_BYTE, data);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, ATLAS_W, ATLAS_H, 0, gl.RED, gl.UNSIGNED_BYTE, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     this.atlas = tex;
+  }
+
+  private empty() {
+    if (this.emptyLayers) return this.emptyLayers;
+    const gl = this.gl;
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex);
+    gl.texImage3D(gl.TEXTURE_2D_ARRAY, 0, gl.RGBA8, 1, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    this.emptyLayers = tex;
+    return tex;
+  }
+
+  writeLayer(view: ViewState, index: number, source: LayerSource) {
+    const res = view.res as GlViewRes | null;
+    const spec = view.layers;
+    if (!res || !spec || index < 0 || index >= spec.count || this.lost) return;
+    const gl = this.gl;
+    if (!res.img) {
+      res.img = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D_ARRAY, res.img);
+      const levels = Math.floor(Math.log2(Math.max(spec.width, spec.height))) + 1;
+      gl.texStorage3D(gl.TEXTURE_2D_ARRAY, levels, gl.RGBA8, spec.width, spec.height, spec.count);
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+    gl.bindTexture(gl.TEXTURE_2D_ARRAY, res.img);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, index, spec.width, spec.height, 1, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
+    view.dirty = true;
   }
 
   prepare(scene: FoilScene) {
@@ -154,6 +197,7 @@ export class GlBackend implements FoilBackend {
     gl.uniformBlockBinding(program, block, 0);
     gl.useProgram(program);
     gl.uniform1i(gl.getUniformLocation(program, "atlasTex"), 0);
+    gl.uniform1i(gl.getUniformLocation(program, "imgTex"), 1);
     entry.status = "ready";
   }
 
@@ -167,15 +211,18 @@ export class GlBackend implements FoilBackend {
   }
 
   attach(view: ViewState) {
-    const ctx = view.canvas.getContext("2d", { alpha: false });
+    const ctx = view.canvas.getContext("2d", { alpha: view.scene.post === "alpha" });
     if (!ctx) throw new Error("2d context unavailable");
-    view.res = { ctx, ubo: this.makeUbo() } satisfies GlViewRes;
+    view.res = { ctx, ubo: this.makeUbo(), img: null } satisfies GlViewRes;
     this.views.add(view);
   }
 
   detach(view: ViewState) {
     const res = view.res as GlViewRes | null;
-    if (res && !this.lost) this.gl.deleteBuffer(res.ubo);
+    if (res && !this.lost) {
+      this.gl.deleteBuffer(res.ubo);
+      if (res.img) this.gl.deleteTexture(res.img);
+    }
     this.views.delete(view);
     view.res = null;
   }
@@ -203,9 +250,13 @@ export class GlBackend implements FoilBackend {
       if (!entry?.program || entry.status !== "ready" || !res || view.pxW < 2 || view.pxH < 2) continue;
       gl.viewport(0, 0, view.pxW, view.pxH);
       gl.useProgram(entry.program);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D_ARRAY, res.img ?? this.empty());
+      gl.activeTexture(gl.TEXTURE0);
       gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, res.ubo);
       gl.bufferSubData(gl.UNIFORM_BUFFER, 0, view.uniforms);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (view.scene.post === "alpha") res.ctx.clearRect(0, 0, view.pxW, view.pxH);
       res.ctx.drawImage(this.canvas, 0, H - view.pxH, view.pxW, view.pxH, 0, 0, view.pxW, view.pxH);
       drawn.push(view);
     }

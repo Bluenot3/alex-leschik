@@ -106,6 +106,7 @@ fn scene(uv: vec2f, p: vec2f) -> vec3f {
   c += holo(foilPhase(p, 2.0) + 0.3) * cylinder * 0.7;
   c += mix(u.accent.rgb, vec3f(1.0), 0.45) * fan * 0.9 + silver() * subs * 0.85;
   c += ink * micro * 0.4;
+  c += zenStamp(p);
   return c;
 }
 `,
