@@ -2122,3 +2122,79 @@
 .treasury-field[data-live] .foil-canvas {
   opacity: 1;
 }
+
+/* ═══ Hero vault — the GPU crystal cube ═══ */
+
+/* Same footprint as the CSS cube; the canvas overhangs it so the rotated
+   silhouette, bevels and shadow never clip. */
+.cube.cube--vault {
+  transform: none;
+  transform-style: flat;
+}
+.cube-vault {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 175%;
+  height: 175%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.cube-vault > .foil-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.cube-vault[data-live] > .foil-canvas {
+  opacity: 1;
+}
+
+/* A face with no upload yet (CSS fallback and the owner's upload panel):
+   an engraved navy plate with the ZEN mark — never a stand-in photo. */
+.cube-face-seal {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, hsl(212 60% 70% / 0.07) 0 1px, transparent 1px 7px),
+    radial-gradient(circle at 50% 45%, #16264a 0%, #0b1530 55%, #060b18 100%);
+}
+.cube-face-seal::after {
+  content: "";
+  position: absolute;
+  inset: 30%;
+  background: url("./assets/zz-logo.png") center / contain no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.72;
+}
+
+/* ═══ Visual Arsenal — GPU stage ═══ */
+.theater-stage {
+  position: absolute;
+  inset: 0;
+}
+.theater-stage > .foil-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.theater-stage[data-live] > .foil-canvas {
+  opacity: 1;
+}
+/* A cinematic window on larger screens: the stage shows each image whole,
+   so it gets real height instead of a cropped strip. */
+@media (min-width: 900px) {
+  .image-theater__feature {
+    max-width: 1180px;
+    margin: 0 auto;
+    height: clamp(420px, 44vw, 620px);
+  }
+}

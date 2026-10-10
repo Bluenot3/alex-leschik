@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import TheaterStage from "@/components/TheaterStage";
 import { useInView } from "@/hooks/useInView";
 import { prefersReducedMotion, useRafTicker } from "@/hooks/useRafTicker";
 
@@ -16,6 +17,7 @@ const BUILT_IN: GalleryItem[] = [
   { src: zenOverview,       label: "ZEN OVERVIEW",       sub: "Mission Map",             eager: true },
   { src: zenPartnership,    label: "ZEN PARTNERSHIP",    sub: "Strategic Network",       eager: true },
   { src: zenPioneer,        label: "ZEN PIONEER",        sub: "Education Program",       eager: true },
+  { src: "/gallery/zen-certificate.jpg", label: "ZEN AI CERTIFIED", sub: "Certificate of Achievement" },
 ];
 
 const PUBLIC_GALLERY: GalleryItem[] = [
@@ -24,7 +26,16 @@ const PUBLIC_GALLERY: GalleryItem[] = [
   { src: "/gallery/arsenal.jpg",            label: "ARSENAL",     sub: "Visual Archive"      },
   { src: "/gallery/zenai-world-tunnel.jpg", label: "ZENAI.WORLD", sub: "Market Intelligence" },
   { src: "/gallery/zenai-world-sphere.jpg", label: "ZENAI.WORLD", sub: "Neural Systems"      },
+  { src: "/gallery/zen-research-market.jpg",       label: "ZEN RESEARCH", sub: "Self-Healing Infrastructure" },
+  { src: "/gallery/zen-research-biofix.jpg",       label: "ZEN RESEARCH", sub: "Bio-Fixation Networks"       },
+  { src: "/gallery/zen-research-metamaterial.jpg", label: "ZEN RESEARCH", sub: "Metamaterial Systems"        },
+  { src: "/gallery/zen-research-selfheal.jpg",     label: "ZEN RESEARCH", sub: "Programmable Matter"         },
+  { src: "/gallery/zengen-crystal.webp",           label: "ZEN-GEN",      sub: "Crystal Render"              },
 ];
+
+/* GPU stage unless the visitor asked for the static page (?foil=off). */
+const gpuWanted = () =>
+  typeof window === "undefined" || new URLSearchParams(window.location.search).get("foil") !== "off";
 
 const ALL_ITEMS = [...BUILT_IN, ...PUBLIC_GALLERY];
 
@@ -112,6 +123,9 @@ export default function ImageTheater() {
   const [paused,    setPaused]    = useState(false);
   const [loaded,    setLoaded]    = useState(false);
   const [failedSet, setFailedSet] = useState<Set<string>>(() => new Set());
+  const [gpu,       setGpu]       = useState(gpuWanted);
+  const toImg = useCallback(() => setGpu(false), []);
+  const shown = useCallback(() => setLoaded(true), []);
   const autoRef  = useRef<ReturnType<typeof setInterval>>();
   const touchRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -196,7 +210,7 @@ export default function ImageTheater() {
       {/* ── Large feature window ── */}
       <div
         className="image-theater__feature"
-        onMouseMove={handleMouseMove}
+        onMouseMove={gpu ? undefined : handleMouseMove}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => { setPaused(false); setMouse({ x: 0.5, y: 0.5 }); }}
         onTouchStart={handleTouchStart}
@@ -211,8 +225,13 @@ export default function ImageTheater() {
         {/* Decrypting shimmer while the frame loads */}
         {!loaded && <div className="image-theater__feature-shimmer" aria-hidden />}
 
+        {/* GPU stage: each image mints in over the last (falls back to <img>) */}
+        {gpu && item && (
+          <TheaterStage src={item.src} onShown={shown} onImageError={markFailed} onFail={toImg} />
+        )}
+
         {/* Primary image — parallax on wrapper, slow Ken Burns drift on img */}
-        {item && (
+        {!gpu && item && (
           <div
             key={item.src}
             className="image-theater__feature-drift"
@@ -230,8 +249,8 @@ export default function ImageTheater() {
           </div>
         )}
 
-        {/* Scanlines overlay */}
-        <div className="image-theater__feature-scanlines" aria-hidden />
+        {/* Scanlines overlay (the GPU stage engraves its own surface) */}
+        {!gpu && <div className="image-theater__feature-scanlines" aria-hidden />}
 
         {/* Bottom label */}
         {item && (

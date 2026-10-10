@@ -20,6 +20,8 @@ import { chronos } from "./chronos";
 import { deadline } from "./deadline";
 import { baker } from "./baker";
 import { field } from "./field";
+import { cube } from "./cube";
+import { stage } from "./stage";
 
 /** Every portfolio plate, in portfolio order. */
 const ORDER: FoilScene[] = [
@@ -46,7 +48,7 @@ const ORDER: FoilScene[] = [
 ];
 
 /** Page-level systems that are not portfolio plates. */
-const SYSTEM: FoilScene[] = [field];
+const SYSTEM: FoilScene[] = [field, cube, stage];
 
 const SCENES: Record<string, FoilScene> = Object.fromEntries([...ORDER, ...SYSTEM].map((s) => [s.id, s]));
 
