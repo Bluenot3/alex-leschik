@@ -15,7 +15,8 @@ function getSharedSampleContext() {
     sharedSampleCanvas = document.createElement("canvas");
     sharedSampleCanvas.width = SAMPLE_SIZE;
     sharedSampleCanvas.height = SAMPLE_SIZE;
-    sharedSampleContext = sharedSampleCanvas.getContext("2d");
+    // Read back every frame: keep this tiny buffer on the CPU.
+    sharedSampleContext = sharedSampleCanvas.getContext("2d", { willReadFrequently: true });
   }
 
   if (!sharedSampleCanvas || !sharedSampleContext) return null;
@@ -31,6 +32,14 @@ function getSharedSampleContext() {
   sharedSampleContext.clearRect(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
   return sharedSampleContext;
 }
+
+/* A full-screen layer behind the lower half of the page. Touch screens and
+   narrow windows skip it: there the content covers it anyway, and it would
+   only cost a phone frames and battery. */
+const wanted = () =>
+  typeof window !== "undefined" &&
+  window.innerWidth >= 900 &&
+  window.matchMedia?.("(hover: hover) and (pointer: fine)").matches === true;
 
 interface FloatingMedia {
   url: string;
@@ -51,10 +60,12 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
   const imagesLoadedRef = useRef<(HTMLImageElement | HTMLVideoElement)[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [hasVideo, setHasVideo] = useState(false);
+  const [enabled] = useState(wanted);
   const progressRef = useRef(0);
 
   // Load gallery media from storage
   useEffect(() => {
+    if (!enabled) return;
     const loadMedia = async () => {
       const { data } = await supabase
         .from("gallery_items")
@@ -90,8 +101,8 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
             vid.muted = true;
             vid.loop = true;
             vid.playsInline = true;
-            vid.autoplay = true;
-            vid.play().catch(() => {});
+            // Plays only while the vortex is on screen (see below).
+            vid.preload = "metadata";
             elements.push(vid);
           } else {
             const img = new Image();
@@ -145,11 +156,20 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
         }
       });
     };
-  }, []);
+  }, [enabled]);
 
   const vortexProgress = Math.max(0, (progress - 0.4) / 0.6);
   progressRef.current = vortexProgress;
-  const isVisible = vortexProgress > 0;
+  const isVisible = enabled && vortexProgress > 0;
+
+  /* Videos decode only while the vortex is showing. */
+  useEffect(() => {
+    imagesLoadedRef.current.forEach((element) => {
+      if (!(element instanceof HTMLVideoElement)) return;
+      if (isVisible) element.play().catch(() => {});
+      else element.pause();
+    });
+  }, [isVisible, loaded]);
 
   const drawFrame = useCallback(() => {
     const canvas = canvasRef.current;

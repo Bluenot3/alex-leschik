@@ -1,5 +1,10 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { useRafTicker } from "@/hooks/useRafTicker";
+
+/* A trail follows a mouse: touch screens have none, so they skip the
+   full-screen canvas entirely. */
+const hasMouse = () =>
+  typeof window !== "undefined" && window.matchMedia?.("(hover: hover) and (pointer: fine)").matches === true;
 
 
 /* ─────────────────────────────────────────────────────
@@ -63,6 +68,9 @@ export default function CipherSmokeCursor({
   const raf        = useRef(0);
   const dpr        = useRef(1);
   const lastEmit   = useRef(0);
+  /* True while the canvas holds glyphs; an empty canvas is left alone. */
+  const inked      = useRef(false);
+  const [enabled]  = useState(hasMouse);
   const cfg        = CFG[intensity];
 
   /* ── Viewport resize ── */
@@ -70,9 +78,12 @@ export default function CipherSmokeCursor({
     const c = canvasRef.current;
     if (!c) return;
     const d = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.round(window.innerWidth * d);
+    const h = Math.round(window.innerHeight * d);
+    if (d === dpr.current && w === c.width && h === c.height) return;
     dpr.current = d;
-    c.width  = window.innerWidth  * d;
-    c.height = window.innerHeight * d;
+    c.width  = w;
+    c.height = h;
     c.style.width  = `${window.innerWidth}px`;
     c.style.height = `${window.innerHeight}px`;
   }, []);
@@ -118,13 +129,15 @@ export default function CipherSmokeCursor({
   const render = useCallback((now: number) => {
     const c = canvasRef.current;
     if (!c) return;
+    emit(now);
+    if (pool.current.length === 0 && !inked.current) return;
+
     const ctx = c.getContext("2d")!;
     const d   = dpr.current;
 
     ctx.clearRect(0, 0, c.width, c.height);
-    emit(now);
-
-    if (pool.current.length === 0) return;
+    inked.current = pool.current.length > 0;
+    if (!inked.current) return;
 
 
     ctx.save();
@@ -185,10 +198,11 @@ export default function CipherSmokeCursor({
   }, [emit]);
 
   /* Joins the shared page clock — no private rAF loop. */
-  useRafTicker(render);
+  useRafTicker(render, enabled);
 
   /* ── Lifecycle ── */
   useEffect(() => {
+    if (!enabled) return;
     resize();
 
     const onMove  = (e: MouseEvent) => {
@@ -205,8 +219,9 @@ export default function CipherSmokeCursor({
       document.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("resize",       resize);
     };
-  }, [resize]);
+  }, [resize, enabled]);
 
+  if (!enabled) return null;
 
   return (
     <canvas

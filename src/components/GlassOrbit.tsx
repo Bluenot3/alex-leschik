@@ -2,6 +2,8 @@ import { useRef, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import StudioEnvironment from "@/components/StudioEnvironment";
+import SharedTransmission from "@/components/three/SharedTransmission";
+import { GLASS, useGlass } from "@/components/three/glass";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 import { useInView } from "@/hooks/useInView";
@@ -37,6 +39,7 @@ function CenterLogo() {
 /* ── Central glass sphere with logo inside ── */
 function CentralSphere() {
   const ref = useRef<THREE.Group>(null!);
+  const glass = useGlass();
   useFrame(({ clock }) => {
     ref.current.rotation.y = clock.getElapsedTime() * 0.18;
     ref.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.28) * 0.08;
@@ -44,9 +47,10 @@ function CentralSphere() {
   return (
     <group ref={ref}>
       <CenterLogo />
-      <mesh>
+      <mesh userData={GLASS}>
         <sphereGeometry args={[1.2, 32, 32]} />
         <MeshTransmissionMaterial
+          {...glass}
           transmission={1}
           roughness={0}
           thickness={1.6}
@@ -90,6 +94,7 @@ function Orbiter({
   opacity?: number;
 }) {
   const ref = useRef<THREE.Group>(null!);
+  const glass = useGlass();
   // Pre-allocate to avoid GC pressure at 60fps
   const _vec = useMemo(() => new THREE.Vector3(), []);
 
@@ -111,6 +116,7 @@ function Orbiter({
 
   const mat = (
     <MeshTransmissionMaterial
+      {...glass}
       transmission={1}
       roughness={0}
       thickness={size * 2.2}
@@ -127,7 +133,7 @@ function Orbiter({
   );
 
   return (
-    <group ref={ref}>
+    <group ref={ref} userData={GLASS}>
       {shape === "sphere" && (
         <mesh>
           <sphereGeometry args={[size, 14, 14]} />
@@ -191,26 +197,28 @@ export default function GlassOrbit() {
         <pointLight position={[0, -5, 0]} intensity={1.5} color="#a0ffcc" />
         <StudioEnvironment />
 
-        <CentralSphere />
+        <SharedTransmission scale={isMobile ? 0.5 : 0.65} samples={isMobile ? 4 : 6}>
+          <CentralSphere />
 
-        {/* Inner ring — 3 small spheres */}
-        <Orbiter shape="sphere" radius={2.1} speed={0.55} phase={0} tiltAngle={0.15} size={0.26} ior={1.52} color="#e0f0ff" aberration={0.14} />
-        <Orbiter shape="sphere" radius={2.1} speed={0.55} phase={Math.PI * 0.66} tiltAngle={0.15} size={0.21} ior={1.62} color="#ffe8f0" aberration={0.18} />
-        <Orbiter shape="sphere" radius={2.1} speed={0.55} phase={Math.PI * 1.33} tiltAngle={0.15} size={0.23} ior={1.55} color="#f0ffe0" aberration={0.12} />
+          {/* Inner ring — 3 small spheres */}
+          <Orbiter shape="sphere" radius={2.1} speed={0.55} phase={0} tiltAngle={0.15} size={0.26} ior={1.52} color="#e0f0ff" aberration={0.14} />
+          <Orbiter shape="sphere" radius={2.1} speed={0.55} phase={Math.PI * 0.66} tiltAngle={0.15} size={0.21} ior={1.62} color="#ffe8f0" aberration={0.18} />
+          <Orbiter shape="sphere" radius={2.1} speed={0.55} phase={Math.PI * 1.33} tiltAngle={0.15} size={0.23} ior={1.55} color="#f0ffe0" aberration={0.12} />
 
-        {/* Mid ring — mixed shapes */}
-        <Orbiter shape="torus" radius={2.9} speed={0.35} phase={0.4} tiltAngle={0.55} size={0.34} ior={1.62} color="#e4ecff" aberration={0.2} opacity={0.78} />
-        <Orbiter shape="box" radius={2.7} speed={0.38} phase={Math.PI + 0.4} tiltAngle={0.45} size={0.28} ior={1.5} color="#f8f6ff" aberration={0.1} />
-        <Orbiter shape="octahedron" radius={3.0} speed={0.32} phase={Math.PI * 0.7 + 0.4} tiltAngle={0.65} size={0.22} ior={1.78} color="#ffe8f8" aberration={0.28} opacity={0.76} />
+          {/* Mid ring — mixed shapes */}
+          <Orbiter shape="torus" radius={2.9} speed={0.35} phase={0.4} tiltAngle={0.55} size={0.34} ior={1.62} color="#e4ecff" aberration={0.2} opacity={0.78} />
+          <Orbiter shape="box" radius={2.7} speed={0.38} phase={Math.PI + 0.4} tiltAngle={0.45} size={0.28} ior={1.5} color="#f8f6ff" aberration={0.1} />
+          <Orbiter shape="octahedron" radius={3.0} speed={0.32} phase={Math.PI * 0.7 + 0.4} tiltAngle={0.65} size={0.22} ior={1.78} color="#ffe8f8" aberration={0.28} opacity={0.76} />
 
-        {/* Outer ring — dramatic, slow */}
-        <Orbiter shape="tetra" radius={3.6} speed={0.22} phase={0.8} tiltAngle={1.1} size={0.28} ior={1.7} color="#f0e8ff" aberration={0.22} opacity={0.7} />
-        <Orbiter shape="sphere" radius={3.4} speed={0.25} phase={Math.PI + 0.8} tiltAngle={0.9} size={0.18} ior={1.58} color="#e8f8ff" aberration={0.15} opacity={0.72} />
-        <Orbiter shape="torus" radius={3.8} speed={0.2} phase={Math.PI * 1.5} tiltAngle={1.3} size={0.28} ior={1.65} color="#fff0e0" aberration={0.25} opacity={0.68} />
+          {/* Outer ring — dramatic, slow */}
+          <Orbiter shape="tetra" radius={3.6} speed={0.22} phase={0.8} tiltAngle={1.1} size={0.28} ior={1.7} color="#f0e8ff" aberration={0.22} opacity={0.7} />
+          <Orbiter shape="sphere" radius={3.4} speed={0.25} phase={Math.PI + 0.8} tiltAngle={0.9} size={0.18} ior={1.58} color="#e8f8ff" aberration={0.15} opacity={0.72} />
+          <Orbiter shape="torus" radius={3.8} speed={0.2} phase={Math.PI * 1.5} tiltAngle={1.3} size={0.28} ior={1.65} color="#fff0e0" aberration={0.25} opacity={0.68} />
 
-        {/* Fast micro-pieces */}
-        <Orbiter shape="octahedron" radius={1.65} speed={0.9} phase={1.2} tiltAngle={0.8} size={0.11} ior={1.85} color="#ffffff" aberration={0.38} opacity={0.75} />
-        <Orbiter shape="tetra" radius={1.7} speed={0.85} phase={Math.PI + 1.2} tiltAngle={1.0} size={0.09} ior={1.9} color="#e8e8ff" aberration={0.42} opacity={0.7} />
+          {/* Fast micro-pieces */}
+          <Orbiter shape="octahedron" radius={1.65} speed={0.9} phase={1.2} tiltAngle={0.8} size={0.11} ior={1.85} color="#ffffff" aberration={0.38} opacity={0.75} />
+          <Orbiter shape="tetra" radius={1.7} speed={0.85} phase={Math.PI + 1.2} tiltAngle={1.0} size={0.09} ior={1.9} color="#e8e8ff" aberration={0.42} opacity={0.7} />
+        </SharedTransmission>
       </Canvas>
       <div className="glass-orbit-label">
         <span className="glass-orbit-label-dot" />

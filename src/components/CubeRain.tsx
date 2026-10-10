@@ -2,13 +2,17 @@ import { useRef, useEffect, useMemo, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import StudioEnvironment from "@/components/StudioEnvironment";
+import SharedTransmission from "@/components/three/SharedTransmission";
+import { GLASS, useGlass } from "@/components/three/glass";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 import { useInView } from "@/hooks/useInView";
 
+const isNarrow = () => typeof window !== "undefined" && window.innerWidth < 768;
+
 function getCount() {
   if (typeof window === "undefined") return 40;
-  return window.innerWidth < 768 ? 24 : 56;
+  return isNarrow() ? 24 : 56;
 }
 
 interface CubeData {
@@ -31,6 +35,7 @@ function BlastCube({
 }) {
   const groupRef = useRef<THREE.Group>(null!);
   const smoothP = useRef(0);
+  const glass = useGlass();
 
   useFrame((state, delta) => {
     if (!groupRef.current) return;
@@ -85,8 +90,9 @@ function BlastCube({
         />
       </mesh>
       {/* Glass cube shell */}
-      <RoundedBox args={[0.45, 0.45, 0.2]} radius={0.05} smoothness={8} renderOrder={1}>
+      <RoundedBox args={[0.45, 0.45, 0.2]} radius={0.05} smoothness={8} renderOrder={1} userData={GLASS}>
         <MeshTransmissionMaterial
+          {...glass}
           transmission={0.95}
           roughness={0.02}
           thickness={0.4}
@@ -148,9 +154,11 @@ function Scene({ progressRef }: { progressRef: React.RefObject<number> }) {
       <directionalLight position={[3, 6, 5]} intensity={1.2} />
       <pointLight position={[0, 2, 6]} intensity={0.8} color="#88ccff" />
       <StudioEnvironment />
-      {cubes.map((c, i) => (
-        <BlastCube key={i} data={c} progressRef={progressRef} texture={texture} />
-      ))}
+      <SharedTransmission scale={isNarrow() ? 0.45 : 0.6} samples={isNarrow() ? 3 : 5}>
+        {cubes.map((c, i) => (
+          <BlastCube key={i} data={c} progressRef={progressRef} texture={texture} />
+        ))}
+      </SharedTransmission>
     </>
   );
 }

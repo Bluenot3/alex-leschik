@@ -64,31 +64,25 @@ export function useScrollEngine(sectionCount: number) {
   }, [sectionCount]);
 
   useEffect(() => {
-    const resize = () => {
-      const h = document.documentElement.scrollHeight;
-      const vh = window.innerHeight;
-      maxScrollRef.current = Math.max(1, h - vh);
-      buildSectionTops();
-    };
-
-    const onScroll = () => {
-      tgtRef.current = Math.max(0, Math.min(1, window.scrollY / maxScrollRef.current));
-    };
-
-    // No custom wheel handler — use native scroll for reliability
+    /* The loop runs only while the smoothed progress is catching up with the
+       scroll position, and parks once it has settled: a still page costs
+       nothing. Scroll, resize and layout changes wake it. */
+    let running = false;
 
     const frame = (now: number) => {
       if (document.hidden) {
-        lastNowRef.current = now;
-        frameRef.current = requestAnimationFrame(frame);
+        running = false;
         return;
       }
 
-      const dt = Math.min((now - lastNowRef.current) / 1000, 0.05);
+      // A frame can be stamped slightly before the wake that requested it.
+      const dt = Math.max(0, Math.min((now - lastNowRef.current) / 1000, 0.05));
       lastNowRef.current = now;
 
       smoothRef.current += (tgtRef.current - smoothRef.current) * (1 - Math.exp(-dt * 14));
       smoothRef.current = Math.max(0, Math.min(1, smoothRef.current));
+      const settled = Math.abs(tgtRef.current - smoothRef.current) < 0.0002;
+      if (settled) smoothRef.current = tgtRef.current;
 
       const si = sectionIndexFromScroll(window.scrollY);
       const rotation = getCubeRotation(smoothRef.current);
@@ -96,8 +90,8 @@ export function useScrollEngine(sectionCount: number) {
       setState((prev) => {
         if (
           prev.currentSection === si &&
-          Math.abs(prev.progress - tgtRef.current) < 0.0015 &&
-          Math.abs(prev.smoothProgress - smoothRef.current) < 0.0015 &&
+          Math.abs(prev.progress - tgtRef.current) < (settled ? 1e-6 : 0.0015) &&
+          Math.abs(prev.smoothProgress - smoothRef.current) < (settled ? 1e-6 : 0.0015) &&
           Math.abs(prev.cubeRotation.rx - rotation.rx) < 0.2 &&
           Math.abs(prev.cubeRotation.ry - rotation.ry) < 0.2
         ) {
@@ -112,12 +106,43 @@ export function useScrollEngine(sectionCount: number) {
         };
       });
 
+      if (settled) {
+        running = false;
+        return;
+      }
       frameRef.current = requestAnimationFrame(frame);
     };
+
+    const wake = () => {
+      if (running) return;
+      running = true;
+      lastNowRef.current = performance.now();
+      frameRef.current = requestAnimationFrame(frame);
+    };
+
+    const resize = () => {
+      const h = document.documentElement.scrollHeight;
+      const vh = window.innerHeight;
+      maxScrollRef.current = Math.max(1, h - vh);
+      buildSectionTops();
+      wake();
+    };
+
+    const onScroll = () => {
+      tgtRef.current = Math.max(0, Math.min(1, window.scrollY / maxScrollRef.current));
+      wake();
+    };
+
+    const onVisible = () => {
+      if (!document.hidden) wake();
+    };
+
+    // No custom wheel handler — use native scroll for reliability
 
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisible);
 
     const ro = new ResizeObserver(() => {
       resize();
@@ -126,11 +151,10 @@ export function useScrollEngine(sectionCount: number) {
     });
     ro.observe(document.documentElement);
 
-    frameRef.current = requestAnimationFrame(frame);
-
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisible);
       ro.disconnect();
       cancelAnimationFrame(frameRef.current);
     };

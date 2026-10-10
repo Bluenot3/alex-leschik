@@ -2,6 +2,8 @@ import { useRef, useMemo, useCallback } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
 import StudioEnvironment from "@/components/StudioEnvironment";
+import SharedTransmission from "@/components/three/SharedTransmission";
+import { GLASS, useGlass } from "@/components/three/glass";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 import { useInView } from "@/hooks/useInView";
@@ -49,6 +51,7 @@ function SatelliteSphere({
   const ref = useRef<THREE.Mesh>(null!);
   // Store the base (non-pushed) position each frame for lerp source
   const basePos = useRef(new THREE.Vector3());
+  const glass = useGlass();
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime() * speed + offset;
@@ -70,9 +73,10 @@ function SatelliteSphere({
   });
 
   return (
-    <mesh ref={ref}>
+    <mesh ref={ref} userData={GLASS}>
       <sphereGeometry args={[size, 16, 16]} />
       <MeshTransmissionMaterial
+        {...glass}
         transmission={1}
         roughness={0}
         thickness={size * 3}
@@ -102,6 +106,7 @@ function SatelliteShard({
   mouse: { current: MouseState };
 }) {
   const ref = useRef<THREE.Mesh>(null!);
+  const glass = useGlass();
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime() * speed + offset;
@@ -129,9 +134,10 @@ function SatelliteShard({
   });
 
   return (
-    <mesh ref={ref}>
+    <mesh ref={ref} userData={GLASS}>
       <octahedronGeometry args={[0.16, 0]} />
       <MeshTransmissionMaterial
+        {...glass}
         transmission={1}
         roughness={0}
         thickness={0.3}
@@ -151,6 +157,7 @@ function SatelliteShard({
 
 function GlassShape({ mouse }: { mouse: { current: MouseState } }) {
   const groupRef = useRef<THREE.Group>(null!);
+  const glass = useGlass();
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -168,8 +175,9 @@ function GlassShape({ mouse }: { mouse: { current: MouseState } }) {
   return (
     <group ref={groupRef}>
       <PhotoPlane />
-      <RoundedBox args={[2.2, 2.2, 1.1]} radius={0.28} smoothness={12} renderOrder={1}>
+      <RoundedBox args={[2.2, 2.2, 1.1]} radius={0.28} smoothness={12} renderOrder={1} userData={GLASS}>
         <MeshTransmissionMaterial
+          {...glass}
           transmission={1}
           roughness={0}
           thickness={1.6}
@@ -237,12 +245,14 @@ export default function GlassCube() {
           <pointLight position={[-3, -2, -3]} intensity={2.5} color="#ffb0d0" />
           <pointLight position={[0, 3, -2]} intensity={2} color="#ffd080" />
           <StudioEnvironment />
-          <GlassShape mouse={mouseRef} />
-          <SatelliteSphere offset={0} speed={0.55} radius={2.1} size={0.21} color="#e4f2ff" mouse={mouseRef} />
-          <SatelliteSphere offset={Math.PI * 0.7} speed={0.42} radius={1.95} size={0.15} color="#fff0e0" mouse={mouseRef} />
-          <SatelliteSphere offset={Math.PI * 1.4} speed={0.48} radius={2.0} size={0.13} color="#f0e4ff" mouse={mouseRef} />
-          <SatelliteShard offset={0.9} speed={0.65} radius={1.75} mouse={mouseRef} />
-          <SatelliteShard offset={Math.PI + 0.9} speed={0.5} radius={1.9} mouse={mouseRef} />
+          <SharedTransmission scale={isMobile ? 0.5 : 0.65} samples={isMobile ? 4 : 6}>
+            <GlassShape mouse={mouseRef} />
+            <SatelliteSphere offset={0} speed={0.55} radius={2.1} size={0.21} color="#e4f2ff" mouse={mouseRef} />
+            <SatelliteSphere offset={Math.PI * 0.7} speed={0.42} radius={1.95} size={0.15} color="#fff0e0" mouse={mouseRef} />
+            <SatelliteSphere offset={Math.PI * 1.4} speed={0.48} radius={2.0} size={0.13} color="#f0e4ff" mouse={mouseRef} />
+            <SatelliteShard offset={0.9} speed={0.65} radius={1.75} mouse={mouseRef} />
+            <SatelliteShard offset={Math.PI + 0.9} speed={0.5} radius={1.9} mouse={mouseRef} />
+          </SharedTransmission>
         </Canvas>
       </div>
       <div className="glass-cube-label">

@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
+import { ARCHIVE } from "@/lib/archive";
 
 const HREF = "https://arsenal.world";
 
 interface CardDef {
+  /** A 960-pixel copy: the tiles never draw wider than that. */
   src:    string;
   label:  string;
   sub:    string;
@@ -13,29 +15,29 @@ interface CardDef {
 const CARDS: CardDef[] = [
   /* Hero — tall left column */
   {
-    src: "/gallery/arsenal.jpg",
+    src: ARCHIVE.arsenal.md,
     label: "ARSENAL", sub: "COMMAND CENTER",
     accent: "206 92% 60%",
     hero: true,
   },
   /* 2 × 2 right grid */
   {
-    src: "/gallery/zen-weekly-fresco.jpg",
+    src: ARCHIVE.weeklyFresco.md,
     label: "ZEN WEEKLY", sub: "CITY NETWORKS",
     accent: "128 80% 56%",
   },
   {
-    src: "/gallery/zen-weekly-city.jpg",
+    src: ARCHIVE.weeklyCity.md,
     label: "ZEN WEEKLY", sub: "DIGITAL FRONTIER",
     accent: "128 80% 56%",
   },
   {
-    src: "/gallery/zen-weekly-mosaic.jpg",
+    src: ARCHIVE.weeklyMosaic.md,
     label: "ZEN WEEKLY", sub: "MOSAIC ARCHIVE",
     accent: "281 82% 68%",
   },
   {
-    src: "/gallery/zen-weekly-world.jpg",
+    src: ARCHIVE.weeklyWorld.md,
     label: "ZEN WEEKLY", sub: "WORLD SYSTEM",
     accent: "352 88% 64%",
   },

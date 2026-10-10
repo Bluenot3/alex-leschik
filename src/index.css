@@ -86,11 +86,24 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* The page wash as its own fixed layer: `background-attachment: fixed` on
+     the body forces a repaint of the whole page on every scroll frame. */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    height: 100lvh;
+    z-index: -2;
+    pointer-events: none;
     background-image:
       radial-gradient(circle at 20% 20%, hsl(var(--cryptic-cool) / 0.08), transparent 26%),
       radial-gradient(circle at 78% 12%, hsl(var(--cryptic-violet) / 0.08), transparent 24%),
       linear-gradient(180deg, #f8fafc 0%, #f3f6fb 42%, #f7f7f4 100%);
-    background-attachment: fixed;
   }
 
   ::selection {
@@ -3673,11 +3686,6 @@
   100% { transform: translateX(280%) skewX(-12deg); }
 }
 
-@keyframes holo-standby-pulse {
-  0%, 100% { opacity: 0.2; transform: scale(0.85); }
-  50%       { opacity: 0.9; transform: scale(1.15); }
-}
-
 @keyframes holo-panel-in {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -3833,40 +3841,69 @@
   z-index: 1;
 }
 
-/* ── Standby state ── */
-.holo-panel__standby {
+/* ── Poster: the video's frame until the visitor presses play ── */
+.holo-panel__poster {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0.75rem;
-  background: radial-gradient(ellipse at 50% 50%,
-    #080816 0%,
-    #030308 60%,
-    #020205 100%
-  );
   z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: #03030a;
+  cursor: pointer;
 }
 
-.holo-panel__standby-ring {
+.holo-panel__thumb {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: saturate(0.7) contrast(1.06) brightness(0.8);
+  transform: scale(1.02);
+  transition: filter 0.5s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.holo-panel__play {
   position: absolute;
-  width: 48px;
-  height: 48px;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  margin: -29px 0 0 -29px;
   border-radius: 50%;
-  border: 1px solid rgba(100,150,255,0.15);
-  box-shadow: 0 0 24px rgba(100,140,255,0.1), inset 0 0 24px rgba(100,140,255,0.05);
-  animation: holo-standby-pulse 2.5s ease-in-out infinite;
+  border: 1px solid rgba(170, 205, 255, 0.6);
+  background: radial-gradient(circle, rgba(6, 10, 26, 0.62), rgba(6, 10, 26, 0.3));
+  box-shadow: 0 0 0 6px rgba(120, 170, 255, 0.08), 0 0 28px rgba(100, 160, 255, 0.35);
+  display: grid;
+  place-items: center;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
-.holo-panel__standby-glyph {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  color: rgba(120,160,255,0.3);
-  text-shadow: 0 0 20px rgba(100,150,255,0.4);
-  animation: holo-standby-pulse 2.5s ease-in-out infinite;
-  z-index: 1;
+.holo-panel__play::before {
+  content: "";
+  margin-left: 4px;
+  border-left: 14px solid rgba(225, 238, 255, 0.95);
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+}
+
+.holo-panel__poster:hover .holo-panel__thumb,
+.holo-panel__poster:focus-visible .holo-panel__thumb {
+  filter: saturate(1) contrast(1.02) brightness(0.96);
+  transform: scale(1.045);
+}
+
+.holo-panel__poster:hover .holo-panel__play,
+.holo-panel__poster:focus-visible .holo-panel__play {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 8px rgba(120, 170, 255, 0.12), 0 0 40px rgba(110, 170, 255, 0.55);
+}
+
+.holo-panel__poster:focus-visible {
+  outline: 2px solid rgba(140, 190, 255, 0.9);
+  outline-offset: -2px;
 }
 
 /* ── Overlays on screen ── */
@@ -4502,8 +4539,17 @@
 /* Scanning line that sweeps down the panel */
 .boot-seq__scanline {
   position: absolute;
-  left: 0; right: 0;
-  height: 1px;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 6;
+}
+/* The sweep moves by transform (the panel's own height), never by `top`,
+   so it costs no layout per frame. */
+.boot-seq__scanline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -4511,16 +4557,14 @@
     rgba(0,212,255,0.45) 50%,
     rgba(0,212,255,0.28) 75%,
     transparent 100%
-  );
-  pointer-events: none;
-  z-index: 6;
+  ) top / 100% 1px no-repeat;
   animation: boot-scanline 2.8s ease-in-out infinite;
 }
 @keyframes boot-scanline {
-  0%   { top: 0%;   opacity: 0; }
+  0%   { transform: translateY(0);    opacity: 0; }
   4%   { opacity: 1; }
   96%  { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  100% { transform: translateY(100%); opacity: 0; }
 }
 
 /* Status percentage in titlebar */

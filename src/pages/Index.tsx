@@ -11,6 +11,7 @@ import CrypticDivider from "@/components/CrypticDivider";
 import CrypticBackground from "@/components/CrypticBackground";
 import LazySection from "@/components/LazySection";
 import Artifact from "@/components/Artifact";
+import FounderCredential from "@/components/FounderCredential";
 
 import SocialLinks from "@/components/SocialLinks";
 import CipherSmokeCursor from "@/components/CipherSmokeCursor";
@@ -19,7 +20,6 @@ import LiveMetricsTicker from "@/components/LiveMetricsTicker";
 import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
 import ForwardPass from "@/components/ForwardPass";
-import TopologyField from "@/components/TopologyField";
 import { setFieldState } from "@/foil/fieldStore";
 import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
@@ -68,7 +68,9 @@ const ZenGenGallery = lazy(loadZenGenGallery);
 const TreasuryField = lazy(loadTreasuryField);
 
 /* Ordered roughly by scroll position — prefetched during idle time after
-   first paint so scrolling never hits a chunk-loading gap. */
+   first paint so scrolling never hits a chunk-loading gap. The three.js
+   scenes (a ~250 KB library) are fetched only once the reader nears the lab
+   (see their `prefetch`), never during a phone's first seconds. */
 const CHUNK_PRELOADERS = [
   loadImageVortex,
   loadSignalConstellation,
@@ -78,10 +80,7 @@ const CHUNK_PRELOADERS = [
   loadArsenalShowcase,
   loadZenGenGallery,
   loadGalleryShowcase,
-  loadGlassOrbit,
-  loadGlassCube,
   loadAZ1Logo3D,
-  loadCubeRain,
   loadScrollGallery,
 ];
 
@@ -114,7 +113,6 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
   return (
     <div className="relative z-[1]">
       <section id="s0" data-scroll-section className="hero-poster">
-        <TopologyField />
         <CrypticBackground rows={12} speed={180} opacity={0.07} />
 
         <div className="hero-poster__content">
@@ -225,7 +223,7 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
           </p>
         </div>
 
-        <Artifact minHeight={400} lead="eager" guard={false}>
+        <Artifact minHeight={400} lead="eager" idle guard={false}>
           <SignalConstellation onExploreWork={() => scrollToSection(3)} />
         </Artifact>
       </section>
@@ -259,28 +257,33 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
         </ScrollSection>
       </div>
 
-      <Artifact className="relative" minHeight="80vh" lead="far" label="spotlight offline">
+      <Artifact className="relative" minHeight="80vh" lead="far" idle label="spotlight offline">
         <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
         <ProjectSpotlight editMode={editMode} />
       </Artifact>
 
+      <CrypticDivider lines={3} label="// under seal" />
+
+      {/* The founder's poster as a holographic credential */}
+      <FounderCredential />
+
       <CrypticDivider lines={4} label="// as seen, as spoken" />
 
-      <Artifact className="relative" minHeight={500} lead="eager" guard={false}>
+      <Artifact className="relative" minHeight={500} lead="eager" idle guard={false}>
         <CrypticBackground rows={8} speed={140} opacity={0.04} />
         <MediaRoom />
       </Artifact>
 
       <CrypticDivider lines={4} label="// the eye keeps records" />
 
-      <Artifact className="relative" minHeight={640} lead="far" guard={false}>
+      <Artifact className="relative" minHeight={640} lead="far" idle guard={false}>
         <CrypticBackground rows={8} speed={130} opacity={0.04} />
         <ImageTheater />
       </Artifact>
 
       <CrypticDivider lines={3} label="// arsenal.world" />
 
-      <Artifact className="relative" minHeight={680} lead="far" guard={false}>
+      <Artifact className="relative" minHeight={680} lead="far" idle guard={false}>
         <CrypticBackground rows={10} speed={115} opacity={0.05} />
         <ArsenalShowcase />
       </Artifact>
@@ -288,7 +291,7 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
       <CrypticDivider lines={4} label="// zen-gen online" />
 
       {/* Generative archive — owner-fed, four ways to read it */}
-      <Artifact className="relative" minHeight="90vh" lead="far" label="archive offline">
+      <Artifact className="relative" minHeight="90vh" lead="far" idle label="archive offline">
         <ZenGenGallery />
       </Artifact>
 
@@ -316,6 +319,7 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
         className="relative z-[1] py-16 px-6 md:px-12 lg:px-20"
         minHeight={400}
         lead="far"
+        idle
         guard={false}
       >
         <GalleryShowcase />
@@ -325,7 +329,7 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
         <div className="artifact-lab__grid">
           <div className="artifact-lab__item artifact-lab__item--wide">
             <div className="artifact-lab__label">Glass system · orbital field</div>
-            <Artifact className="relative z-[1]" minHeight={520} lead="near" label="orbital field offline">
+            <Artifact className="relative z-[1]" minHeight={520} lead="near" prefetch={loadGlassOrbit} label="orbital field offline">
               <GlassOrbit />
             </Artifact>
           </div>
@@ -336,6 +340,7 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
               className="relative z-[1] flex items-center justify-center py-12"
               minHeight={300}
               lead="near"
+              prefetch={loadGlassCube}
               label="glass artifact offline"
             >
               <GlassCube />
@@ -356,7 +361,7 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
 
           <div className="artifact-lab__item artifact-lab__item--wide">
             <div className="artifact-lab__label">Generative field</div>
-            <Artifact className="relative z-[1]" minHeight={400} lead="near" label="generative field offline">
+            <Artifact className="relative z-[1]" minHeight={400} lead="near" prefetch={loadCubeRain} label="generative field offline">
               <CubeRain />
             </Artifact>
           </div>
@@ -367,7 +372,7 @@ const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }
 
       <CrypticDivider lines={3} label="// let there be light" />
 
-      <Artifact className="relative" minHeight={640} lead="far" guard={false}>
+      <Artifact className="relative" minHeight={640} lead="far" idle guard={false}>
         <CrypticBackground rows={8} speed={125} opacity={0.04} />
         <ScrollGallery />
       </Artifact>

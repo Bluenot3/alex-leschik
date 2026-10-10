@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { prefersReducedMotion, useRafTicker } from "@/hooks/useRafTicker";
 
 /**
  * Real-feel boot sequence:
@@ -72,8 +73,20 @@ function tokClass(c?: Tok["c"]) {
   }
 }
 
+/* Once per browser session: a reload or a return visit goes straight to the
+   page. Reduced motion skips the typed boot entirely. */
+const SEEN_KEY = "alex-boot-seen";
+function shouldBoot() {
+  if (typeof window === "undefined" || prefersReducedMotion()) return false;
+  try {
+    return sessionStorage.getItem(SEEN_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
 export default function BootSequence() {
-  const [gone, setGone] = useState(false);
+  const [gone, setGone] = useState(() => !shouldBoot());
   const [exiting, setExiting] = useState(false);
   // Per-line revealed character count
   const [revealed, setRevealed] = useState<number[]>(() => SCRIPT.map(() => 0));
@@ -83,10 +96,17 @@ export default function BootSequence() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const panelRef  = useRef<HTMLDivElement>(null);
-  const rafRef    = useRef<number>(0);
+  const drawRef   = useRef<(now: number) => void>(() => {});
+  const stopRef   = useRef(false);
 
   /* ── Track real app readiness ── */
   useEffect(() => {
+    if (gone) return;
+    try {
+      sessionStorage.setItem(SEEN_KEY, "1");
+    } catch {
+      /* private mode: the boot simply shows again next time */
+    }
     let cancelled = false;
     // Minimum on-screen time so the boot doesn't flash
     const minTimer = setTimeout(() => !cancelled && setMinElapsed(true), 900);
@@ -96,7 +116,7 @@ export default function BootSequence() {
       // give one frame + idle so first paints land
       requestAnimationFrame(() => requestAnimationFrame(() => {
         if ("requestIdleCallback" in window) {
-          (window as any).requestIdleCallback(markReady, { timeout: 600 });
+          window.requestIdleCallback(markReady, { timeout: 600 });
         } else {
           setTimeout(markReady, 120);
         }
@@ -113,15 +133,22 @@ export default function BootSequence() {
       clearTimeout(minTimer);
       clearTimeout(hardCap);
     };
+    // Runs once: `gone` only starts true when the boot is skipped.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ── Exit when both: app ready AND min display time elapsed ── */
   useEffect(() => {
-    if (!appReady || !minElapsed || exiting) return;
-    setExiting(true);
-    const t = setTimeout(() => setGone(true), 520);
+    if (appReady && minElapsed) setExiting(true);
+  }, [appReady, minElapsed]);
+
+  /* ── Unmount once the fade-out has played (0.7s in CSS) ── */
+  useEffect(() => {
+    if (!exiting) return;
+    stopRef.current = true;
+    const t = setTimeout(() => setGone(true), 720);
     return () => clearTimeout(t);
-  }, [appReady, minElapsed, exiting]);
+  }, [exiting]);
 
   /* ── Dither background ── */
   useEffect(() => {
@@ -137,8 +164,11 @@ export default function BootSequence() {
 
     const resize = () => {
       const r = panel.getBoundingClientRect();
-      W = Math.round(r.width);
-      H = Math.round(r.height);
+      const w = Math.round(r.width);
+      const h = Math.round(r.height);
+      if (w === W && h === H) return;
+      W = w;
+      H = h;
       canvas.width = W;
       canvas.height = H;
       cw = Math.ceil(W / CELL);
@@ -147,8 +177,8 @@ export default function BootSequence() {
     resize();
     window.addEventListener("resize", resize);
 
-    let t0 = performance.now();
-    const draw = (now: number) => {
+    const t0 = performance.now();
+    drawRef.current = (now: number) => {
       const t = (now - t0) * 0.001;
       ctx.clearRect(0, 0, W, H);
       // Multi-source interference field — two drifting "emitters" + flow band
@@ -194,15 +224,17 @@ export default function BootSequence() {
           }
         }
       }
-      rafRef.current = requestAnimationFrame(draw);
     };
-    rafRef.current = requestAnimationFrame(draw);
 
     return () => {
       window.removeEventListener("resize", resize);
-      cancelAnimationFrame(rafRef.current);
+      drawRef.current = () => {};
     };
   }, [gone]);
+
+  /* The dither joins the shared page clock at ~30 fps and stops the moment
+     the boot starts to fade. */
+  useRafTicker((now) => drawRef.current(now), !gone && !exiting, 33);
 
   /* ── Type-on engine ── */
   useEffect(() => {
@@ -211,14 +243,14 @@ export default function BootSequence() {
     let i = 0;
 
     const runLine = async () => {
-      while (!cancelled && i < SCRIPT.length) {
+      while (!cancelled && !stopRef.current && i < SCRIPT.length) {
         const line = SCRIPT[i];
         const total = line.toks.reduce((sum, tk) => sum + tk.t.length, 0);
         const cps = (line.cps ?? 230) * 4.2;
         const stepMs = Math.max(8, 1000 / cps);
         setActiveIdx(i);
         for (let r = 1; r <= total; r++) {
-          if (cancelled) return;
+          if (cancelled || stopRef.current) return;
           const idx = i;
           const val = r;
           setRevealed(prev => {

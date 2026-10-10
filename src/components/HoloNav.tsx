@@ -22,7 +22,14 @@ export default function HoloNav({ onNavigate }: { onNavigate: (index: number) =>
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 400);
+    // Only a crossing of the threshold touches React state.
+    let shown = false;
+    const onScroll = () => {
+      const next = window.scrollY > 400;
+      if (next === shown) return;
+      shown = next;
+      setVisible(next);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);

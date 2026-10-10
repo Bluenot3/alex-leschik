@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 const VIDEOS = [
   { id: "qAh2e9zl7vs", network: "TRT World",   label: "Alexander Leschik — AI Education Interview",  type: "interview" },
@@ -11,38 +11,20 @@ const VIDEOS = [
   { id: "02Ol3p5sdic", network: "Client Work", label: "Generative Video — Client Production",         type: "work" },
 ];
 
+/**
+ * One broadcast screen. It shows the video's poster frame and loads the
+ * YouTube player only when the visitor presses play: eight live players
+ * would stream and decode eight videos at once (and stall a phone).
+ */
 function HoloPanel({
   videoId, network, label, type, index,
 }: {
   videoId: string; network: string; label: string; type: string; index: number;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-
-    const io = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setActive(true); io.disconnect(); } },
-      { rootMargin: "200px 0px", threshold: 0 }
-    );
-    io.observe(el);
-
-    // Fallback: mount iframe after staggered delay regardless of scroll position
-    const timer = setTimeout(() => setActive(true), 2000 + index * 300);
-
-    return () => { io.disconnect(); clearTimeout(timer); };
-  }, [index]);
-
-  // mute=1 required for autoplay to work in most browsers
-  const src = active
-    ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=0`
-    : "";
+  const [playing, setPlaying] = useState(false);
 
   return (
     <div
-      ref={wrapRef}
       className="holo-panel-wrap"
       style={{ animationDelay: `${(index % 4) * 0.1}s` }}
     >
@@ -57,25 +39,42 @@ function HoloPanel({
         <div className="holo-panel__hud">
           <span className="holo-panel__network">{network}</span>
           <span className="holo-panel__type">{type === "interview" ? "◈ LIVE BROADCAST" : "◈ PRODUCTION"}</span>
-          <span className={`holo-panel__dot ${active ? "holo-panel__dot--live" : ""}`} />
+          <span className={`holo-panel__dot ${playing ? "holo-panel__dot--live" : ""}`} />
         </div>
 
         <div className="holo-panel__screen-wrap">
           <div className="holo-panel__screen">
-            {src ? (
+            {playing ? (
               <iframe
-                src={src}
+                src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
                 title={label}
                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
+                referrerPolicy="strict-origin-when-cross-origin"
                 className="holo-panel__iframe"
               />
             ) : (
-              <div className="holo-panel__standby">
-                <div className="holo-panel__standby-ring" />
-                <span className="holo-panel__standby-glyph">◈</span>
-              </div>
+              <button
+                type="button"
+                className="holo-panel__poster"
+                onClick={() => setPlaying(true)}
+                aria-label={`Play: ${label} (${network})`}
+              >
+                <img
+                  src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+                  alt=""
+                  width={480}
+                  height={360}
+                  loading="lazy"
+                  decoding="async"
+                  className="holo-panel__thumb"
+                  // An unreachable thumbnail leaves the dark screen, not a broken icon.
+                  onError={(e) => {
+                    e.currentTarget.style.visibility = "hidden";
+                  }}
+                />
+                <span className="holo-panel__play" aria-hidden />
+              </button>
             )}
             <div className="holo-panel__scanlines" />
             <div className="holo-panel__shimmer" />

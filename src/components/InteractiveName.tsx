@@ -193,14 +193,22 @@ export default function InteractiveName({ scrollProgress }: Props) {
   }, [scrollProgress]);
 
   /* ── Build particle arrays + create trail canvas ── */
-  const rebuild = useCallback(() => {
+  const built = useRef({ w: 0, h: 0, d: 0 });
+  const rebuild = useCallback((force = false) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const d = Math.min(window.devicePixelRatio || 1, 2);
-    dpr.current = d;
-    const rect = canvas.parentElement!.getBoundingClientRect();
-    const w = rect.width, h = rect.height;
+    // Layout size, not the on-screen rect: the layer scales away as the page
+    // scrolls, and the canvas must keep its full resolution.
+    const box = canvas.parentElement!;
+    const w = box.offsetWidth, h = box.offsetHeight;
     if (w < 4 || h < 4) return;
+    /* Phones fire resize whenever the toolbar slides; the name's box does
+       not change then, and rebuilding would replay the fly-in mid-scroll. */
+    const b = built.current;
+    if (!force && b.w === w && b.h === h && b.d === d) return;
+    built.current = { w, h, d };
+    dpr.current = d;
 
     canvas.width  = w * d;
     canvas.height = h * d;
@@ -386,7 +394,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
     let resizeFrame = 0;
     const onResize = () => {
       cancelAnimationFrame(resizeFrame);
-      resizeFrame = requestAnimationFrame(rebuild);
+      resizeFrame = requestAnimationFrame(() => rebuild());
     };
     window.addEventListener("resize", onResize);
     return () => {
@@ -407,7 +415,7 @@ export default function InteractiveName({ scrollProgress }: Props) {
   useEffect(() => {
     if (!("fonts" in document)) return;
     let dead = false;
-    document.fonts.ready.then(() => { if (!dead) { clearParticleCaches(); rebuild(); } });
+    document.fonts.ready.then(() => { if (!dead) { clearParticleCaches(); rebuild(true); } });
     return () => { dead = true; };
   }, [rebuild]);
 

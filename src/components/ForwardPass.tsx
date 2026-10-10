@@ -1,5 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { prefersReducedMotion, useRafTicker } from "@/hooks/useRafTicker";
+
+/* The map reads the page against a pointer; on touch screens and narrow
+   windows it is skipped (its rail would only crowd the content). */
+const wanted = () =>
+  typeof window !== "undefined" &&
+  window.innerWidth >= 900 &&
+  window.matchMedia?.("(hover: hover) and (pointer: fine)").matches === true;
 
 type Point = { x: number; y: number };
 type SectionDatum = {
@@ -67,6 +74,11 @@ export default function ForwardPass() {
   const sizeRef = useRef({ width: 0, height: 0, dpr: 1 });
   const colorsRef = useRef({ ink: "hsl(215 25% 12%)", signal: "hsl(196 88% 45%)", warm: "hsl(25 95% 58%)" });
   const reduced = useMemo(() => prefersReducedMotion(), []);
+  const [enabled] = useState(wanted);
+  /* Repaint only after scroll, pointer or layout changes, and while the scan
+     line is still easing; a still page leaves the canvas untouched. */
+  const dirtyRef = useRef(true);
+  const settledRef = useRef(false);
 
   const measure = useCallback(() => {
     const canvas = canvasRef.current;
@@ -75,11 +87,15 @@ export default function ForwardPass() {
     const width = window.innerWidth;
     const height = window.innerHeight;
     const dpr = Math.min(window.devicePixelRatio || 1, width < 768 ? 1.25 : 1.6);
-    sizeRef.current = { width, height, dpr };
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    const prev = sizeRef.current;
+    if (prev.width !== width || prev.height !== height || prev.dpr !== dpr) {
+      sizeRef.current = { width, height, dpr };
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+    }
+    dirtyRef.current = true;
 
     const nodes = Array.from(
       document.querySelectorAll<HTMLElement>("main section, .portfolio-shell section, [data-scroll-section]"),
@@ -96,32 +112,44 @@ export default function ForwardPass() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     measure();
     pointerRef.current = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
     let resizeFrame = 0;
-    const onResize = () => {
+    const remeasure = () => {
       cancelAnimationFrame(resizeFrame);
       resizeFrame = requestAnimationFrame(measure);
     };
     const onPointer = (event: PointerEvent) => {
-      if (event.pointerType !== "touch") pointerRef.current = { x: event.clientX, y: event.clientY };
+      if (event.pointerType === "touch") return;
+      pointerRef.current = { x: event.clientX, y: event.clientY };
+      dirtyRef.current = true;
+    };
+    const onScroll = () => {
+      dirtyRef.current = true;
     };
 
-    window.addEventListener("resize", onResize, { passive: true });
+    window.addEventListener("resize", remeasure, { passive: true });
     window.addEventListener("pointermove", onPointer, { passive: true });
-    const refresh = window.setInterval(measure, 2400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    // Sections mount and grow as the page streams in: re-read them then.
+    const grow = new ResizeObserver(remeasure);
+    grow.observe(document.body);
     return () => {
       cancelAnimationFrame(resizeFrame);
-      window.clearInterval(refresh);
-      window.removeEventListener("resize", onResize);
+      grow.disconnect();
+      window.removeEventListener("resize", remeasure);
       window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("scroll", onScroll);
     };
-  }, [measure]);
+  }, [measure, enabled]);
 
   useRafTicker((now, deltaMs) => {
+    if (!dirtyRef.current && settledRef.current) return;
     if (now - lastPaintRef.current < (reduced ? 250 : 34)) return;
     lastPaintRef.current = now;
+    dirtyRef.current = false;
 
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -151,6 +179,7 @@ export default function ForwardPass() {
     const targetScan = active ? Math.max(18, Math.min(height - 18, active.rect.top)) : height * 0.5;
     const damping = reduced ? 1 : 1 - Math.exp(-deltaMs / 95);
     scanRef.current += (targetScan - scanRef.current) * damping;
+    settledRef.current = Math.abs(targetScan - scanRef.current) < 0.3;
 
     ctx.save();
     ctx.globalAlpha = 0.2;
@@ -249,7 +278,8 @@ export default function ForwardPass() {
     ctx.lineTo(width, scanRef.current);
     ctx.stroke();
     ctx.restore();
-  }, true, 0);
+  }, enabled, 0);
 
+  if (!enabled) return null;
   return <canvas ref={canvasRef} className="forward-pass" aria-hidden="true" />;
 }

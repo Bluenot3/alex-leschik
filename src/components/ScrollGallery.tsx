@@ -1,33 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ARCHIVE, type ArchiveImage } from "@/lib/archive";
 
-import zenInfrastructure from "@/assets/zen-infrastructure.jpg";
-import zenLedger         from "@/assets/zen-ledger.jpg";
-import zenOverview       from "@/assets/zen-overview.jpg";
-import zenPartnership    from "@/assets/zen-partnership.jpg";
-import zenPioneer        from "@/assets/zen-pioneer.jpg";
+interface SgItem { img: ArchiveImage; label: string; sub: string; }
 
-interface SgItem { src: string; label: string; sub: string; }
-
-/* Built-in assets first (always loads) — public gallery appended when images are dropped in */
+/* Cards draw the 960-pixel copies; the lightbox opens the originals. */
 const ITEMS: SgItem[] = [
-  { src: zenInfrastructure, label: "ZEN INFRASTRUCTURE", sub: "Platform Architecture" },
-  { src: zenLedger,         label: "ZEN LEDGER",         sub: "Financial Systems"     },
-  { src: zenOverview,       label: "ZEN OVERVIEW",       sub: "Mission Map"           },
-  { src: zenPartnership,    label: "ZEN PARTNERSHIP",    sub: "Strategic Network"     },
-  { src: zenPioneer,        label: "ZEN PIONEER",        sub: "Education Program"     },
-  /* ── Drop images in public/gallery/ and they appear automatically ── */
-  { src: "/gallery/arsenal.jpg",            label: "ARSENAL",     sub: "Visual Archive"       },
-  { src: "/gallery/zenai-world-tunnel.jpg", label: "ZENAI.WORLD", sub: "Spatial Experience"   },
-  { src: "/gallery/zenai-world-sphere.jpg", label: "ZENAI.WORLD", sub: "Global Constellation" },
-  { src: "/gallery/zen-weekly-fresco.jpg",  label: "ZEN WEEKLY",  sub: "Cultural Record"      },
-  { src: "/gallery/zen-weekly-city.jpg",    label: "ZEN WEEKLY",  sub: "Digital Frontier"     },
-  { src: "/gallery/zen-certificate.jpg",           label: "ZEN AI CERTIFIED", sub: "Certificate of Achievement"  },
-  { src: "/gallery/zen-research-market.jpg",       label: "ZEN RESEARCH",     sub: "Self-Healing Infrastructure" },
-  { src: "/gallery/zen-research-biofix.jpg",       label: "ZEN RESEARCH",     sub: "Bio-Fixation Networks"       },
-  { src: "/gallery/zen-research-metamaterial.jpg", label: "ZEN RESEARCH",     sub: "Metamaterial Systems"        },
-  { src: "/gallery/zen-research-selfheal.jpg",     label: "ZEN RESEARCH",     sub: "Programmable Matter"         },
-  { src: "/gallery/zengen-crystal.webp",           label: "ZEN-GEN",          sub: "Crystal Render"              },
+  { img: ARCHIVE.infrastructure,       label: "ZEN INFRASTRUCTURE", sub: "Platform Architecture"       },
+  { img: ARCHIVE.ledger,               label: "ZEN LEDGER",         sub: "Financial Systems"           },
+  { img: ARCHIVE.overview,             label: "ZEN OVERVIEW",       sub: "Mission Map"                 },
+  { img: ARCHIVE.partnership,          label: "ZEN PARTNERSHIP",    sub: "Strategic Network"           },
+  { img: ARCHIVE.pioneer,              label: "ZEN PIONEER",        sub: "Education Program"           },
+  { img: ARCHIVE.arsenal,              label: "ARSENAL",            sub: "Visual Archive"              },
+  { img: ARCHIVE.worldTunnel,          label: "ZENAI.WORLD",        sub: "Spatial Experience"          },
+  { img: ARCHIVE.worldSphere,          label: "ZENAI.WORLD",        sub: "Global Constellation"        },
+  { img: ARCHIVE.weeklyFresco,         label: "ZEN WEEKLY",         sub: "Cultural Record"             },
+  { img: ARCHIVE.weeklyCity,           label: "ZEN WEEKLY",         sub: "Digital Frontier"            },
+  { img: ARCHIVE.certificate,          label: "ZEN AI CERTIFIED",   sub: "Certificate of Achievement"  },
+  { img: ARCHIVE.researchMarket,       label: "ZEN RESEARCH",       sub: "Self-Healing Infrastructure" },
+  { img: ARCHIVE.researchBiofix,       label: "ZEN RESEARCH",       sub: "Bio-Fixation Networks"       },
+  { img: ARCHIVE.researchMetamaterial, label: "ZEN RESEARCH",       sub: "Metamaterial Systems"        },
+  { img: ARCHIVE.researchSelfheal,     label: "ZEN RESEARCH",       sub: "Programmable Matter"         },
+  { img: ARCHIVE.zengenCrystal,        label: "ZEN-GEN",            sub: "Crystal Render"              },
 ];
 
 /* ── Individual card with scroll reveal + pointer tilt ──── */
@@ -95,7 +89,7 @@ function SgCard({
       <div className="sg-card__tilt">
         {!ok && <span className="sg-card__shimmer" aria-hidden />}
         <img
-          src={item.src}
+          src={item.img.md}
           alt={item.label}
           className={`sg-card__img${ok ? " sg-card__img--in" : ""}`}
           loading="lazy"
@@ -152,7 +146,7 @@ function Lightbox({
   return createPortal(
     <div className="sg-lightbox" role="dialog" aria-modal="true" aria-label={item.label} onClick={onClose}>
       <figure className="sg-lightbox__stage" onClick={e => e.stopPropagation()}>
-        <img key={item.src} src={item.src} alt={item.label} className="sg-lightbox__img" />
+        <img key={item.img.src} src={item.img.src} alt={item.label} className="sg-lightbox__img" />
         <figcaption className="sg-lightbox__meta">
           <span className="sg-lightbox__name">{item.label}</span>
           <span className="sg-lightbox__sub">{item.sub}</span>
@@ -195,7 +189,7 @@ export default function ScrollGallery() {
 
       <div className="scroll-gallery__grid">
         {ITEMS.map((item, i) => (
-          <SgCard key={item.src} item={item} index={i} onOpen={() => setOpen(i)} />
+          <SgCard key={item.img.src} item={item} index={i} onOpen={() => setOpen(i)} />
         ))}
       </div>
 

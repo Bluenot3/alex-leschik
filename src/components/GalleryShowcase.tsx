@@ -45,13 +45,13 @@ export default function GalleryShowcase() {
     return data.publicUrl;
   };
 
+  /* One placeholder card: the archive is small, and a taller skeleton would
+     collapse (and shift the page) when the real items arrive. */
   if (loading) {
     return (
       <div className="gallery-showcase">
         <div className="gallery-grid">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="gallery-card gallery-skeleton" />
-          ))}
+          <div className="gallery-card gallery-skeleton" />
         </div>
       </div>
     );

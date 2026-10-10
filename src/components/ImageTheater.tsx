@@ -2,35 +2,30 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import TheaterStage from "@/components/TheaterStage";
 import { useInView } from "@/hooks/useInView";
 import { prefersReducedMotion, useRafTicker } from "@/hooks/useRafTicker";
+import { ARCHIVE, type ArchiveImage } from "@/lib/archive";
 
-import zenInfrastructure from "@/assets/zen-infrastructure.jpg";
-import zenLedger        from "@/assets/zen-ledger.jpg";
-import zenOverview      from "@/assets/zen-overview.jpg";
-import zenPartnership   from "@/assets/zen-partnership.jpg";
-import zenPioneer       from "@/assets/zen-pioneer.jpg";
-
-interface GalleryItem { src: string; label: string; sub: string; eager?: boolean; }
+interface GalleryItem { img: ArchiveImage; label: string; sub: string; eager?: boolean; }
 
 const BUILT_IN: GalleryItem[] = [
-  { src: zenInfrastructure, label: "ZEN INFRASTRUCTURE", sub: "Platform Architecture",  eager: true },
-  { src: zenLedger,         label: "ZEN LEDGER",         sub: "Financial Systems",       eager: true },
-  { src: zenOverview,       label: "ZEN OVERVIEW",       sub: "Mission Map",             eager: true },
-  { src: zenPartnership,    label: "ZEN PARTNERSHIP",    sub: "Strategic Network",       eager: true },
-  { src: zenPioneer,        label: "ZEN PIONEER",        sub: "Education Program",       eager: true },
-  { src: "/gallery/zen-certificate.jpg", label: "ZEN AI CERTIFIED", sub: "Certificate of Achievement" },
+  { img: ARCHIVE.infrastructure, label: "ZEN INFRASTRUCTURE", sub: "Platform Architecture", eager: true },
+  { img: ARCHIVE.ledger,         label: "ZEN LEDGER",         sub: "Financial Systems",      eager: true },
+  { img: ARCHIVE.overview,       label: "ZEN OVERVIEW",       sub: "Mission Map",            eager: true },
+  { img: ARCHIVE.partnership,    label: "ZEN PARTNERSHIP",    sub: "Strategic Network",      eager: true },
+  { img: ARCHIVE.pioneer,        label: "ZEN PIONEER",        sub: "Education Program",      eager: true },
+  { img: ARCHIVE.certificate,    label: "ZEN AI CERTIFIED",   sub: "Certificate of Achievement" },
 ];
 
 const PUBLIC_GALLERY: GalleryItem[] = [
-  { src: "/gallery/zen-weekly-fresco.jpg",  label: "ZEN WEEKLY",  sub: "Cultural Archive"    },
-  { src: "/gallery/zen-weekly-city.jpg",    label: "ZEN WEEKLY",  sub: "Digital Frontier"    },
-  { src: "/gallery/arsenal.jpg",            label: "ARSENAL",     sub: "Visual Archive"      },
-  { src: "/gallery/zenai-world-tunnel.jpg", label: "ZENAI.WORLD", sub: "Market Intelligence" },
-  { src: "/gallery/zenai-world-sphere.jpg", label: "ZENAI.WORLD", sub: "Neural Systems"      },
-  { src: "/gallery/zen-research-market.jpg",       label: "ZEN RESEARCH", sub: "Self-Healing Infrastructure" },
-  { src: "/gallery/zen-research-biofix.jpg",       label: "ZEN RESEARCH", sub: "Bio-Fixation Networks"       },
-  { src: "/gallery/zen-research-metamaterial.jpg", label: "ZEN RESEARCH", sub: "Metamaterial Systems"        },
-  { src: "/gallery/zen-research-selfheal.jpg",     label: "ZEN RESEARCH", sub: "Programmable Matter"         },
-  { src: "/gallery/zengen-crystal.webp",           label: "ZEN-GEN",      sub: "Crystal Render"              },
+  { img: ARCHIVE.weeklyFresco,         label: "ZEN WEEKLY",   sub: "Cultural Archive"            },
+  { img: ARCHIVE.weeklyCity,           label: "ZEN WEEKLY",   sub: "Digital Frontier"            },
+  { img: ARCHIVE.arsenal,              label: "ARSENAL",      sub: "Visual Archive"              },
+  { img: ARCHIVE.worldTunnel,          label: "ZENAI.WORLD",  sub: "Market Intelligence"         },
+  { img: ARCHIVE.worldSphere,          label: "ZENAI.WORLD",  sub: "Neural Systems"              },
+  { img: ARCHIVE.researchMarket,       label: "ZEN RESEARCH", sub: "Self-Healing Infrastructure" },
+  { img: ARCHIVE.researchBiofix,       label: "ZEN RESEARCH", sub: "Bio-Fixation Networks"       },
+  { img: ARCHIVE.researchMetamaterial, label: "ZEN RESEARCH", sub: "Metamaterial Systems"        },
+  { img: ARCHIVE.researchSelfheal,     label: "ZEN RESEARCH", sub: "Programmable Matter"         },
+  { img: ARCHIVE.zengenCrystal,        label: "ZEN-GEN",      sub: "Crystal Render"              },
 ];
 
 /* GPU stage unless the visitor asked for the static page (?foil=off). */
@@ -38,6 +33,13 @@ const gpuWanted = () =>
   typeof window === "undefined" || new URLSearchParams(window.location.search).get("foil") !== "off";
 
 const ALL_ITEMS = [...BUILT_IN, ...PUBLIC_GALLERY];
+
+/* The stage takes the original only when it is drawn wider than the
+   960-pixel copy (desktop); phones get the copy. */
+const stageUrl = (img: ArchiveImage) =>
+  typeof window !== "undefined" && Math.min(window.innerWidth, 1180) * Math.min(window.devicePixelRatio || 1, 2) > 1100
+    ? img.src
+    : img.md;
 
 /* ── Sigil cipher strip ─────────────────────────────────── */
 const SIGIL_POOL = "◈∷⊕≡∞ΣΩΔ⊗⊘⊙⊚≈◉◇✦⌘⌬⌾⟨⟩∂∇√π∫∑∏αβγδεφψλμξ∴∵≠≜⊞⊟";
@@ -128,12 +130,17 @@ export default function ImageTheater() {
   const shown = useCallback(() => setLoaded(true), []);
   const autoRef  = useRef<ReturnType<typeof setInterval>>();
   const touchRef = useRef<{ x: number; y: number } | null>(null);
+  /* The slideshow only advances (and decodes the next image) on screen. */
+  const { ref: theaterRef, inView: onScreen } = useInView<HTMLElement>({ rootMargin: "200px 0px" });
 
-  const markFailed = useCallback((src: string) => {
-    setFailedSet(prev => { const s = new Set(prev); s.add(src); return s; });
+  /* Failures are keyed by the original; the stage may report either copy. */
+  const markFailed = useCallback((url: string) => {
+    const hit = ALL_ITEMS.find(i => i.img.src === url || i.img.md === url);
+    if (!hit) return;
+    setFailedSet(prev => { const s = new Set(prev); s.add(hit.img.src); return s; });
   }, []);
 
-  const items = ALL_ITEMS.filter(item => !failedSet.has(item.src));
+  const items = ALL_ITEMS.filter(item => !failedSet.has(item.img.src));
   const n = items.length;
 
   useEffect(() => { setActive(a => (n > 0 ? Math.min(a, n - 1) : 0)); }, [n]);
@@ -142,17 +149,17 @@ export default function ImageTheater() {
   const next = useCallback(() => setActive(a => (a + 1) % n),     [n]);
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || !onScreen) return;
     autoRef.current = setInterval(next, AUTO_MS);
     return () => clearInterval(autoRef.current);
-  }, [paused, next]);
+  }, [paused, onScreen, next]);
 
   /* Warm the next slide so the crossfade never flashes an empty frame */
   useEffect(() => {
-    if (n < 2) return;
+    if (n < 2 || !onScreen) return;
     const img = new Image();
-    img.src = items[(active + 1) % n].src;
-  }, [active, n, items]);
+    img.src = stageUrl(items[(active + 1) % n].img);
+  }, [active, n, items, onScreen]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -193,7 +200,7 @@ export default function ImageTheater() {
   const py = (mouse.y - 0.5) * 20;
 
   return (
-    <section className="image-theater">
+    <section ref={theaterRef} className="image-theater">
       <div className="image-theater__hdr">
         <span className="tag-label">Visual Archive · Built in Public</span>
         <h2 className="display-heading display-lg">VISUAL<br />ARSENAL</h2>
@@ -227,24 +234,26 @@ export default function ImageTheater() {
 
         {/* GPU stage: each image mints in over the last (falls back to <img>) */}
         {gpu && item && (
-          <TheaterStage src={item.src} onShown={shown} onImageError={markFailed} onFail={toImg} />
+          <TheaterStage src={stageUrl(item.img)} onShown={shown} onImageError={markFailed} onFail={toImg} />
         )}
 
         {/* Primary image — parallax on wrapper, slow Ken Burns drift on img */}
         {!gpu && item && (
           <div
-            key={item.src}
+            key={item.img.src}
             className="image-theater__feature-drift"
             style={{ transform: `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px)` }}
           >
             <img
-              src={item.src}
+              src={item.img.md}
+              srcSet={`${item.img.md} 960w, ${item.img.src} ${item.img.w}w`}
+              sizes="(max-width: 900px) 100vw, 1180px"
               alt={item.label}
               className={`image-theater__feature-img${loaded ? " image-theater__feature-img--in" : ""}`}
               loading={item.eager ? "eager" : "lazy"}
               decoding="async"
               onLoad={() => setLoaded(true)}
-              onError={() => markFailed(item.src)}
+              onError={() => markFailed(item.img.src)}
             />
           </div>
         )}
@@ -283,12 +292,12 @@ export default function ImageTheater() {
         <div className="image-theater__thumbs">
           {items.map((it, i) => (
             <button
-              key={it.src}
+              key={it.img.src}
               className={`image-theater__thumb${i === active ? " image-theater__thumb--on" : ""}`}
               onClick={() => { setActive(i); setPaused(true); }}
               aria-label={it.label}
             >
-              <img src={it.src} alt="" loading="lazy" decoding="async" />
+              <img src={it.img.thumb} alt="" loading="lazy" decoding="async" />
               {i === active && <span className="image-theater__thumb-bar" />}
             </button>
           ))}
