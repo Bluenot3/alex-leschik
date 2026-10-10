@@ -1,6 +1,7 @@
 import { useRef, useEffect, useMemo, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { Environment, RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
+import { RoundedBox, MeshTransmissionMaterial } from "@react-three/drei";
+import StudioEnvironment from "@/components/StudioEnvironment";
 import * as THREE from "three";
 import zzLogo from "@/assets/zz-logo.png";
 import { useInView } from "@/hooks/useInView";
@@ -146,7 +147,7 @@ function Scene({ progressRef }: { progressRef: React.RefObject<number> }) {
       <directionalLight position={[-4, 10, -4]} intensity={2} />
       <directionalLight position={[3, 6, 5]} intensity={1.2} />
       <pointLight position={[0, 2, 6]} intensity={0.8} color="#88ccff" />
-      <Environment preset="city" />
+      <StudioEnvironment />
       {cubes.map((c, i) => (
         <BlastCube key={i} data={c} progressRef={progressRef} texture={texture} />
       ))}
@@ -181,8 +182,8 @@ export default function CubeRain() {
 
   progressRef.current = localProgress;
 
-  if (localProgress <= 0) return <div ref={wrapRef} className="cube-rain-wrap" />;
-
+  // One wrapper for both states: the in-view observer must be attached on the
+  // first render, or it never sees the element and the scene never animates.
   return (
     <div
       ref={(node) => {
@@ -192,15 +193,17 @@ export default function CubeRain() {
       className="cube-rain-wrap"
       style={{ opacity: Math.min(1, localProgress * 3) }}
     >
-      <Canvas
-        camera={{ position: [0, -1, 10], fov: 48 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-        style={{ background: "transparent" }}
-        dpr={isMobile ? [1, 1.25] : [1, 1.5]}
-        frameloop={inView ? "always" : "never"}
-      >
-        <Scene progressRef={progressRef} />
-      </Canvas>
+      {localProgress > 0 && (
+        <Canvas
+          camera={{ position: [0, -1, 10], fov: 48 }}
+          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+          style={{ background: "transparent" }}
+          dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+          frameloop={inView ? "always" : "never"}
+        >
+          <Scene progressRef={progressRef} />
+        </Canvas>
+      )}
     </div>
   );
 }

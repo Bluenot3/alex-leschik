@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, memo, Suspense, useCallback, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "@/game.css";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
@@ -20,6 +20,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import ModelSignatures from "@/components/ModelSignatures";
 import ForwardPass from "@/components/ForwardPass";
 import TopologyField from "@/components/TopologyField";
+import { setFieldState } from "@/foil/fieldStore";
 import SafeVisual from "@/components/SafeVisual";
 import ScrollSection, {
   RevealTag,
@@ -43,6 +44,13 @@ const loadSignalConstellation = () => import("@/components/SignalConstellation")
 const loadImageTheater = () => import("@/components/ImageTheater");
 const loadArsenalShowcase = () => import("@/components/ArsenalShowcase");
 const loadZenGenGallery = () => import("@/components/ZenGenGallery");
+/* The GPU engine stays out of the first-load bundle. If its chunk can't be
+   fetched, sections fall back to their 2D glyph canvases. */
+const loadTreasuryField = () =>
+  import("@/components/TreasuryField").catch(() => {
+    setFieldState("off");
+    return { default: () => null };
+  });
 
 const GlassCube = lazy(loadGlassCube);
 const GlassOrbit = lazy(loadGlassOrbit);
@@ -57,6 +65,7 @@ const SignalConstellation = lazy(loadSignalConstellation);
 const ImageTheater = lazy(loadImageTheater);
 const ArsenalShowcase = lazy(loadArsenalShowcase);
 const ZenGenGallery = lazy(loadZenGenGallery);
+const TreasuryField = lazy(loadTreasuryField);
 
 /* Ordered roughly by scroll position — prefetched during idle time after
    first paint so scrolling never hits a chunk-loading gap. */
@@ -90,11 +99,381 @@ const HERO_FEED = [
   "AI, automation, and Web3 systems built for schools, nonprofits, and enterprises",
 ];
 
+interface PageBodyProps {
+  editMode: boolean;
+  scrollToSection: (index: number) => void;
+  onContact: () => void;
+}
+
+/**
+ * Everything that scrolls. Memoized with stable props so the scroll engine's
+ * per-frame state (cube rotation, progress) re-renders only the fixed layers,
+ * never the twenty-odd sections below.
+ */
+const PageBody = memo(function PageBody({ editMode, scrollToSection, onContact }: PageBodyProps) {
+  return (
+    <div className="relative z-[1]">
+      <section id="s0" data-scroll-section className="hero-poster">
+        <TopologyField />
+        <CrypticBackground rows={12} speed={180} opacity={0.07} />
+
+        <div className="hero-poster__content">
+          <div className="hero-poster__eyebrow">
+            Alex Leschik <span aria-hidden="true" title="ordo ab chao">△</span> systems · software · education · creative technology
+          </div>
+
+          <div className="hero-poster__headline-block">
+            <p className="hero-poster__lead">Software architect, founder, and educator building products people rely on.</p>
+            <h2 className="hero-poster__title display-heading">
+              BUILT THE FIRST
+              <br />
+              YOUTH AI LITERACY
+              <br />
+              PROGRAM IN U.S. HISTORY
+            </h2>
+          </div>
+
+          <p className="hero-poster__body">
+            I take ideas from first sketch to shipped software that students, schools, and companies use every day —
+            AI literacy curriculum, AI applications, automation, dashboards, and credentialing systems.
+          </p>
+
+          <div className="hero-poster__actions">
+            <button type="button" className="cta-btn" onClick={() => scrollToSection(3)}>
+              Explore the work
+            </button>
+            <button type="button" className="cta-btn-muted" onClick={() => scrollToSection(2)}>
+              See how it fits together
+            </button>
+          </div>
+
+          <div className="hero-poster__signal-grid">
+            {HERO_SIGNALS.map((signal) => (
+              <div key={signal.label} className="hero-poster__signal">
+                <span className="hero-poster__signal-value">{signal.value}</span>
+                <span className="hero-poster__signal-label">{signal.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <aside className="hero-poster__transmission" aria-label="Current transmission">
+          <div className="hero-poster__transmission-head" data-marker="G">
+            <span className="hero-poster__transmission-label">Transmission</span>
+            <span className="hero-poster__transmission-live">Live</span>
+          </div>
+
+          <div className="hero-poster__transmission-grid">
+            {HERO_FEED.map((item, index) => (
+              <div key={item} className="hero-poster__transmission-item">
+                <span className="hero-poster__transmission-index">{String(index + 1).padStart(2, "0")}</span>
+                <p>{item}</p>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </section>
+
+      <CrypticDivider lines={4} label="// ordo ab chao" />
+
+      <SocialLinks />
+
+      <CrypticDivider lines={3} label="// as above, so below" />
+
+      <div className="relative">
+        <CrypticBackground rows={10} speed={112} opacity={0.05} />
+        <ScrollSection index={1} align="right" ghost="SIGNAL">
+          <RevealLine />
+          <RevealTag>01 - Signal</RevealTag>
+          <RevealHeading>
+            BUILT
+            <br />
+            TO
+            <br />
+            LAST
+          </RevealHeading>
+          <RevealBody>
+            First-of-its-kind AI literacy work, long-term institutional partnerships, and software built to hold up
+            under real users, real teams, and real growth.
+          </RevealBody>
+          <RevealStats
+            stats={[
+              { num: "1st", label: "Program of its kind in the U.S." },
+              { num: "30K", label: "Members reached nationally" },
+              { num: "7", label: "Industries worked in" },
+            ]}
+          />
+          <RevealCTA onClick={() => scrollToSection(2)}>Keep going</RevealCTA>
+        </ScrollSection>
+      </div>
+
+      <CrypticDivider lines={3} label="// solve et coagula" />
+
+      <section id="s2" data-scroll-section className="constellation-section">
+        <CrypticBackground rows={12} speed={138} opacity={0.06} />
+
+        <div className="constellation-section__header">
+          <span className="tag-label">02 - Constellation</span>
+          <h2 className="constellation-section__title display-heading">
+            EVERYTHING
+            <br />
+            CONNECTS
+          </h2>
+          <p className="constellation-section__body">
+            Every piece here shipped and is still running — youth AI literacy programs, production platforms,
+            national partnerships, and the tools built to hold them together.
+          </p>
+        </div>
+
+        <Artifact minHeight={400} lead="eager" guard={false}>
+          <SignalConstellation onExploreWork={() => scrollToSection(3)} />
+        </Artifact>
+      </section>
+
+      <CrypticDivider lines={5} label="// the third degree" />
+
+      <div className="relative">
+        <CrypticBackground rows={10} speed={118} opacity={0.05} />
+        <ScrollSection index={3} ghost="WORK">
+          <RevealLine />
+          <RevealTag>03 - Work</RevealTag>
+          <RevealHeading>
+            PRODUCTS
+            <br />
+            WITH
+            <br />
+            GRAVITY
+          </RevealHeading>
+          <RevealBody>
+            This is the proof layer — 50+ shipped projects: AI literacy infrastructure, production dashboards,
+            generative tools, automation systems, and experiments that graduated into real products.
+          </RevealBody>
+          <RevealStats
+            stats={[
+              { num: "50+", label: "Projects shipped" },
+              { num: "5", label: "Fortune 500 companies" },
+              { num: "33", label: "Systems live today" },
+            ]}
+          />
+          <RevealCTA onClick={() => scrollToSection(4)}>See the archive</RevealCTA>
+        </ScrollSection>
+      </div>
+
+      <Artifact className="relative" minHeight="80vh" lead="far" label="spotlight offline">
+        <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
+        <ProjectSpotlight editMode={editMode} />
+      </Artifact>
+
+      <CrypticDivider lines={4} label="// as seen, as spoken" />
+
+      <Artifact className="relative" minHeight={500} lead="eager" guard={false}>
+        <CrypticBackground rows={8} speed={140} opacity={0.04} />
+        <MediaRoom />
+      </Artifact>
+
+      <CrypticDivider lines={4} label="// the eye keeps records" />
+
+      <Artifact className="relative" minHeight={640} lead="far" guard={false}>
+        <CrypticBackground rows={8} speed={130} opacity={0.04} />
+        <ImageTheater />
+      </Artifact>
+
+      <CrypticDivider lines={3} label="// arsenal.world" />
+
+      <Artifact className="relative" minHeight={680} lead="far" guard={false}>
+        <CrypticBackground rows={10} speed={115} opacity={0.05} />
+        <ArsenalShowcase />
+      </Artifact>
+
+      <CrypticDivider lines={4} label="// zen-gen online" />
+
+      {/* Generative archive — owner-fed, four ways to read it */}
+      <Artifact className="relative" minHeight="90vh" lead="far" label="archive offline">
+        <ZenGenGallery />
+      </Artifact>
+
+      <CrypticDivider lines={5} label="// vitriol · the inner work" />
+
+      <div className="relative">
+        <CrypticBackground rows={10} speed={142} opacity={0.05} />
+        <ScrollSection index={4} align="right" ghost="LAB">
+          <RevealLine />
+          <RevealTag>04 - Lab</RevealTag>
+          <RevealHeading>
+            THE
+            <br />
+            LAB
+          </RevealHeading>
+          <RevealBody>
+            Outside of client work, this is where motion studies, media tools, and visual experiments live. It's the
+            reason none of the production work looks like everyone else's.
+          </RevealBody>
+          <RevealCTA onClick={() => scrollToSection(5)}>Get in touch</RevealCTA>
+        </ScrollSection>
+      </div>
+
+      <Artifact
+        className="relative z-[1] py-16 px-6 md:px-12 lg:px-20"
+        minHeight={400}
+        lead="far"
+        guard={false}
+      >
+        <GalleryShowcase />
+      </Artifact>
+
+      <section className="artifact-lab">
+        <div className="artifact-lab__grid">
+          <div className="artifact-lab__item artifact-lab__item--wide">
+            <div className="artifact-lab__label">Glass system · orbital field</div>
+            <Artifact className="relative z-[1]" minHeight={520} lead="near" label="orbital field offline">
+              <GlassOrbit />
+            </Artifact>
+          </div>
+
+          <div className="artifact-lab__item artifact-lab__item--narrow artifact-lab__item--centered">
+            <div className="artifact-lab__label">Glass artifact · v2</div>
+            <Artifact
+              className="relative z-[1] flex items-center justify-center py-12"
+              minHeight={300}
+              lead="near"
+              label="glass artifact offline"
+            >
+              <GlassCube />
+            </Artifact>
+          </div>
+
+          <div className="artifact-lab__item artifact-lab__item--narrow">
+            <div className="artifact-lab__label">Identity object</div>
+            <Artifact
+              className="relative z-[1] px-6 md:px-12 lg:px-20"
+              minHeight={300}
+              lead="near"
+              label="identity object offline"
+            >
+              <AZ1Logo3D />
+            </Artifact>
+          </div>
+
+          <div className="artifact-lab__item artifact-lab__item--wide">
+            <div className="artifact-lab__label">Generative field</div>
+            <Artifact className="relative z-[1]" minHeight={400} lead="near" label="generative field offline">
+              <CubeRain />
+            </Artifact>
+          </div>
+
+        </div>
+      </section>
+
+
+      <CrypticDivider lines={3} label="// let there be light" />
+
+      <Artifact className="relative" minHeight={640} lead="far" guard={false}>
+        <CrypticBackground rows={8} speed={125} opacity={0.04} />
+        <ScrollGallery />
+      </Artifact>
+
+
+      <CrypticDivider lines={3} label="// turing // daily" />
+
+      <section className="turing-cta-band relative z-[1]">
+        <span className="tag-label">Daily transmission</span>
+        <h2 className="turing-cta-band__title display-heading">
+          CAN YOU TELL
+          <br />
+          THE MACHINE
+          <br />
+          FROM THE HUMAN?
+        </h2>
+        <p className="turing-cta-band__body">
+          One puzzle a day. Five short texts — some written by a person, some by a machine.
+          Read closely, call each one, and keep your streak. Built by the founder of the first
+          youth AI literacy program in U.S. history.
+        </p>
+        <Link to="/game" className="cta-btn">
+          Play today's puzzle
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
+            <path d="M1 6h10M6 1l5 5-5 5" />
+          </svg>
+        </Link>
+      </section>
+
+      <CrypticDivider lines={3} label="// on the level, on the square" />
+
+      <div className="relative">
+        <CrypticBackground rows={10} speed={110} opacity={0.05} />
+        <ScrollSection index={5} align="right" ghost="CONTACT">
+          <RevealLine />
+          <RevealTag>05 - Contact</RevealTag>
+          <RevealHeading>
+            LET'S BUILD
+            <br />
+            SOMETHING
+            <br />
+            REAL
+          </RevealHeading>
+          <RevealBody>
+            If you have a problem worth solving and it needs to keep working long after launch, I'd like to hear
+            about it.
+          </RevealBody>
+
+          <div
+            data-reveal
+            className="mt-7 flex items-center gap-3 justify-end reveal reveal--step-4"
+          >
+            <button
+              type="button"
+              className="cta-btn"
+              onClick={onContact}
+            >
+              Start the conversation
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
+                <path d="M1 6h10M6 1l5 5-5 5" />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            data-reveal
+            className="mt-4 flex items-center gap-3 justify-end reveal reveal--step-5"
+          >
+
+            <button onClick={() => scrollToSection(0)} className="cta-btn-muted">
+              <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
+                <path d="M11 6H1M6 11L1 6l5-5" />
+              </svg>
+              Back to top
+            </button>
+          </div>
+        </ScrollSection>
+      </div>
+
+      <CrypticDivider lines={3} label="// the ledger remains open" />
+
+      {/* Guestbook of the LLM era — every model signs on its way out */}
+      <ModelSignatures />
+    </div>
+  );
+});
+
 export default function Index() {
   const { smoothProgress, currentSection, cubeRotation, scrollToSection } =
     useScrollEngine(SECTION_COUNT);
   const [editMode, setEditMode] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [heroGone, setHeroGone] = useState(false);
+  const openContact = useCallback(() => setContactOpen(true), []);
+
+  /* ── Retire the fixed hero cube once the hero has scrolled away, so it
+     never floats over the sections below (it returns on the way back). ── */
+  useEffect(() => {
+    const hero = document.getElementById("s0");
+    if (!hero || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setHeroGone(entry.intersectionRatio < 0.12), {
+      threshold: [0, 0.12, 0.3],
+    });
+    io.observe(hero);
+    return () => io.disconnect();
+  }, []);
 
   /* ── Idle prefetch: warm every lazy chunk after first paint ── */
   useEffect(() => {
@@ -166,6 +545,11 @@ export default function Index() {
       <h1 className="sr-only">Alex Leschik — Founder of ZEN AI Co. Creator of the first youth AI literacy program in U.S. history.</h1>
       {/* As above, so below. — the structure is the message */}
 
+      {/* The Treasury field — page background, floating cipher glyphs, watermark seals (GPU) */}
+      <Suspense fallback={null}>
+        <TreasuryField />
+      </Suspense>
+
       {/* Boot terminal overlay — first visit only */}
       <BootSequence />
 
@@ -184,7 +568,7 @@ export default function Index() {
       </div>
 
       <CipherSmokeCursor variant="pearl" intensity="cinematic" />
-      <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} />
+      <CubeScene rotation={cubeRotation} editMode={editMode} shifted={smoothProgress > 0.05} retired={heroGone && !editMode} />
       <InteractiveName scrollProgress={smoothProgress} />
 
       <Suspense fallback={null}>
@@ -202,346 +586,7 @@ export default function Index() {
       {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
       <HoloNav onNavigate={scrollToSection} />
 
-      <div className="relative z-[1]">
-        <section id="s0" data-scroll-section className="hero-poster">
-          <TopologyField />
-          <CrypticBackground rows={12} speed={180} opacity={0.07} />
-
-          <div className="hero-poster__content">
-            <div className="hero-poster__eyebrow">
-              Alex Leschik <span aria-hidden="true" title="ordo ab chao">△</span> systems · software · education · creative technology
-            </div>
-
-            <div className="hero-poster__headline-block">
-              <p className="hero-poster__lead">Software architect, founder, and educator building products people rely on.</p>
-              <h2 className="hero-poster__title display-heading">
-                BUILT THE FIRST
-                <br />
-                YOUTH AI LITERACY
-                <br />
-                PROGRAM IN U.S. HISTORY
-              </h2>
-            </div>
-
-            <p className="hero-poster__body">
-              I take ideas from first sketch to shipped software that students, schools, and companies use every day —
-              AI literacy curriculum, AI applications, automation, dashboards, and credentialing systems.
-            </p>
-
-            <div className="hero-poster__actions">
-              <button type="button" className="cta-btn" onClick={() => scrollToSection(3)}>
-                Explore the work
-              </button>
-              <button type="button" className="cta-btn-muted" onClick={() => scrollToSection(2)}>
-                See how it fits together
-              </button>
-            </div>
-
-            <div className="hero-poster__signal-grid">
-              {HERO_SIGNALS.map((signal) => (
-                <div key={signal.label} className="hero-poster__signal">
-                  <span className="hero-poster__signal-value">{signal.value}</span>
-                  <span className="hero-poster__signal-label">{signal.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <aside className="hero-poster__transmission" aria-label="Current transmission">
-            <div className="hero-poster__transmission-head" data-marker="G">
-              <span className="hero-poster__transmission-label">Transmission</span>
-              <span className="hero-poster__transmission-live">Live</span>
-            </div>
-
-            <div className="hero-poster__transmission-grid">
-              {HERO_FEED.map((item, index) => (
-                <div key={item} className="hero-poster__transmission-item">
-                  <span className="hero-poster__transmission-index">{String(index + 1).padStart(2, "0")}</span>
-                  <p>{item}</p>
-                </div>
-              ))}
-            </div>
-          </aside>
-        </section>
-
-        <CrypticDivider lines={4} label="// ordo ab chao" />
-
-        <SocialLinks />
-
-        <CrypticDivider lines={3} label="// as above, so below" />
-
-        <div className="relative">
-          <CrypticBackground rows={10} speed={112} opacity={0.05} />
-          <ScrollSection index={1} align="right" ghost="SIGNAL">
-            <RevealLine />
-            <RevealTag>01 - Signal</RevealTag>
-            <RevealHeading>
-              BUILT
-              <br />
-              TO
-              <br />
-              LAST
-            </RevealHeading>
-            <RevealBody>
-              First-of-its-kind AI literacy work, long-term institutional partnerships, and software built to hold up
-              under real users, real teams, and real growth.
-            </RevealBody>
-            <RevealStats
-              stats={[
-                { num: "1st", label: "Program of its kind in the U.S." },
-                { num: "30K", label: "Members reached nationally" },
-                { num: "7", label: "Industries worked in" },
-              ]}
-            />
-            <RevealCTA onClick={() => scrollToSection(2)}>Keep going</RevealCTA>
-          </ScrollSection>
-        </div>
-
-        <CrypticDivider lines={3} label="// solve et coagula" />
-
-        <section id="s2" data-scroll-section className="constellation-section">
-          <CrypticBackground rows={12} speed={138} opacity={0.06} />
-
-          <div className="constellation-section__header">
-            <span className="tag-label">02 - Constellation</span>
-            <h2 className="constellation-section__title display-heading">
-              EVERYTHING
-              <br />
-              CONNECTS
-            </h2>
-            <p className="constellation-section__body">
-              Every piece here shipped and is still running — youth AI literacy programs, production platforms,
-              national partnerships, and the tools built to hold them together.
-            </p>
-          </div>
-
-          <Artifact minHeight={400} lead="eager" guard={false}>
-            <SignalConstellation onExploreWork={() => scrollToSection(3)} />
-          </Artifact>
-        </section>
-
-        <CrypticDivider lines={5} label="// the third degree" />
-
-        <div className="relative">
-          <CrypticBackground rows={10} speed={118} opacity={0.05} />
-          <ScrollSection index={3} ghost="WORK">
-            <RevealLine />
-            <RevealTag>03 - Work</RevealTag>
-            <RevealHeading>
-              PRODUCTS
-              <br />
-              WITH
-              <br />
-              GRAVITY
-            </RevealHeading>
-            <RevealBody>
-              This is the proof layer — 50+ shipped projects: AI literacy infrastructure, production dashboards,
-              generative tools, automation systems, and experiments that graduated into real products.
-            </RevealBody>
-            <RevealStats
-              stats={[
-                { num: "50+", label: "Projects shipped" },
-                { num: "5", label: "Fortune 500 companies" },
-                { num: "33", label: "Systems live today" },
-              ]}
-            />
-            <RevealCTA onClick={() => scrollToSection(4)}>See the archive</RevealCTA>
-          </ScrollSection>
-        </div>
-
-        <Artifact className="relative" minHeight="80vh" lead="far" label="spotlight offline">
-          <CrypticBackground rows={15} speed={120} opacity={0.06} className="spotlight-bg" />
-          <ProjectSpotlight editMode={editMode} />
-        </Artifact>
-
-        <CrypticDivider lines={4} label="// as seen, as spoken" />
-
-        <Artifact className="relative" minHeight={500} lead="eager" guard={false}>
-          <CrypticBackground rows={8} speed={140} opacity={0.04} />
-          <MediaRoom />
-        </Artifact>
-
-        <CrypticDivider lines={4} label="// the eye keeps records" />
-
-        <Artifact className="relative" minHeight={640} lead="far" guard={false}>
-          <CrypticBackground rows={8} speed={130} opacity={0.04} />
-          <ImageTheater />
-        </Artifact>
-
-        <CrypticDivider lines={3} label="// arsenal.world" />
-
-        <Artifact className="relative" minHeight={680} lead="far" guard={false}>
-          <CrypticBackground rows={10} speed={115} opacity={0.05} />
-          <ArsenalShowcase />
-        </Artifact>
-
-        <CrypticDivider lines={4} label="// zen-gen online" />
-
-        {/* Generative archive — owner-fed, four ways to read it */}
-        <Artifact className="relative" minHeight="90vh" lead="far" label="archive offline">
-          <ZenGenGallery />
-        </Artifact>
-
-        <CrypticDivider lines={5} label="// vitriol · the inner work" />
-
-        <div className="relative">
-          <CrypticBackground rows={10} speed={142} opacity={0.05} />
-          <ScrollSection index={4} align="right" ghost="LAB">
-            <RevealLine />
-            <RevealTag>04 - Lab</RevealTag>
-            <RevealHeading>
-              THE
-              <br />
-              LAB
-            </RevealHeading>
-            <RevealBody>
-              Outside of client work, this is where motion studies, media tools, and visual experiments live. It's the
-              reason none of the production work looks like everyone else's.
-            </RevealBody>
-            <RevealCTA onClick={() => scrollToSection(5)}>Get in touch</RevealCTA>
-          </ScrollSection>
-        </div>
-
-        <Artifact
-          className="relative z-[1] py-16 px-6 md:px-12 lg:px-20"
-          minHeight={400}
-          lead="far"
-          guard={false}
-        >
-          <GalleryShowcase />
-        </Artifact>
-
-        <section className="artifact-lab">
-          <div className="artifact-lab__grid">
-            <div className="artifact-lab__item artifact-lab__item--wide">
-              <div className="artifact-lab__label">Glass system · orbital field</div>
-              <Artifact className="relative z-[1]" minHeight={520} lead="near" label="orbital field offline">
-                <GlassOrbit />
-              </Artifact>
-            </div>
-
-            <div className="artifact-lab__item artifact-lab__item--narrow artifact-lab__item--centered">
-              <div className="artifact-lab__label">Glass artifact · v2</div>
-              <Artifact
-                className="relative z-[1] flex items-center justify-center py-12"
-                minHeight={300}
-                lead="near"
-                label="glass artifact offline"
-              >
-                <GlassCube />
-              </Artifact>
-            </div>
-
-            <div className="artifact-lab__item artifact-lab__item--narrow">
-              <div className="artifact-lab__label">Identity object</div>
-              <Artifact
-                className="relative z-[1] px-6 md:px-12 lg:px-20"
-                minHeight={300}
-                lead="near"
-                label="identity object offline"
-              >
-                <AZ1Logo3D progress={Math.max(0, (smoothProgress - 0.45) / 0.2)} />
-              </Artifact>
-            </div>
-
-            <div className="artifact-lab__item artifact-lab__item--wide">
-              <div className="artifact-lab__label">Generative field</div>
-              <Artifact className="relative z-[1]" minHeight={400} lead="near" label="generative field offline">
-                <CubeRain />
-              </Artifact>
-            </div>
-
-          </div>
-        </section>
-
-
-        <CrypticDivider lines={3} label="// let there be light" />
-
-        <Artifact className="relative" minHeight={640} lead="far" guard={false}>
-          <CrypticBackground rows={8} speed={125} opacity={0.04} />
-          <ScrollGallery />
-        </Artifact>
-
-
-        <CrypticDivider lines={3} label="// turing // daily" />
-
-        <section className="turing-cta-band relative z-[1]">
-          <span className="tag-label">Daily transmission</span>
-          <h2 className="turing-cta-band__title display-heading">
-            CAN YOU TELL
-            <br />
-            THE MACHINE
-            <br />
-            FROM THE HUMAN?
-          </h2>
-          <p className="turing-cta-band__body">
-            One puzzle a day. Five short texts — some written by a person, some by a machine.
-            Read closely, call each one, and keep your streak. Built by the founder of the first
-            youth AI literacy program in U.S. history.
-          </p>
-          <Link to="/game" className="cta-btn">
-            Play today's puzzle
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
-              <path d="M1 6h10M6 1l5 5-5 5" />
-            </svg>
-          </Link>
-        </section>
-
-        <CrypticDivider lines={3} label="// on the level, on the square" />
-
-        <div className="relative">
-          <CrypticBackground rows={10} speed={110} opacity={0.05} />
-          <ScrollSection index={5} align="right" ghost="CONTACT">
-            <RevealLine />
-            <RevealTag>05 - Contact</RevealTag>
-            <RevealHeading>
-              LET'S BUILD
-              <br />
-              SOMETHING
-              <br />
-              REAL
-            </RevealHeading>
-            <RevealBody>
-              If you have a problem worth solving and it needs to keep working long after launch, I'd like to hear
-              about it.
-            </RevealBody>
-
-            <div
-              data-reveal
-              className="mt-7 flex items-center gap-3 justify-end reveal reveal--step-4"
-            >
-              <button
-                type="button"
-                className="cta-btn"
-                onClick={() => setContactOpen(true)}
-              >
-                Start the conversation
-                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
-                  <path d="M1 6h10M6 1l5 5-5 5" />
-                </svg>
-              </button>
-            </div>
-
-            <div
-              data-reveal
-              className="mt-4 flex items-center gap-3 justify-end reveal reveal--step-5"
-            >
-
-              <button onClick={() => scrollToSection(0)} className="cta-btn-muted">
-                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3">
-                  <path d="M11 6H1M6 11L1 6l5-5" />
-                </svg>
-                Back to top
-              </button>
-            </div>
-          </ScrollSection>
-        </div>
-
-        <CrypticDivider lines={3} label="// the ledger remains open" />
-
-        {/* Guestbook of the LLM era — every model signs on its way out */}
-        <ModelSignatures />
-      </div>
+      <PageBody editMode={editMode} scrollToSection={scrollToSection} onContact={openContact} />
 
       {/* Live technical metrics strip — fixed bottom */}
       <LiveMetricsTicker />

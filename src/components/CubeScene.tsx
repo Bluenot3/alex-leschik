@@ -1,15 +1,23 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { lazy, Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, X, Check } from "lucide-react";
+import { Upload, Check } from "lucide-react";
+import type { VaultProps } from "@/components/CubeVault";
 
-import cubeImg1 from "@/assets/hero-cube-1.jpg";
-import cubeImg2 from "@/assets/hero-cube-2.jpg";
-import cubeImg3 from "@/assets/hero-cube-3.jpg";
-import cubeImg4 from "@/assets/hero-cube-4.jpg";
-import cubeImg5 from "@/assets/hero-cube-5.jpg";
-import cubeImg6 from "@/assets/hero-cube-6.jpg";
+/* The GPU vault (and the foil engine it needs) loads after first paint; if
+   its chunk can't be fetched the CSS cube takes over. */
+const CubeVault = lazy(() =>
+  import("@/components/CubeVault").catch(() => ({ default: VaultUnavailable })),
+);
 
-const DEFAULT_IMAGES = [cubeImg1, cubeImg2, cubeImg3, cubeImg4, cubeImg5, cubeImg6];
+function VaultUnavailable({ onFallback }: VaultProps) {
+  useEffect(() => onFallback(), [onFallback]);
+  return null;
+}
+
+/* GPU unless the visitor asked for the static page (?foil=off). */
+const initialMode = (): "gpu" | "css" =>
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("foil") === "off" ? "css" : "gpu";
+
 const FACES = ["top", "front", "right", "back", "left", "bottom"] as const;
 const FACE_CLASSES: Record<string, string> = {
   top: "cube-face-top",
@@ -29,12 +37,16 @@ interface CubeSceneProps {
   rotation: { rx: number; ry: number };
   editMode?: boolean;
   shifted?: boolean;
+  /** Hero has scrolled away: the cube bows out instead of floating over content. */
+  retired?: boolean;
 }
 
-export default function CubeScene({ rotation, editMode = false, shifted = false }: CubeSceneProps) {
-  const [faceMedia, setFaceMedia] = useState<FaceMedia[]>(
-    DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }))
-  );
+export default function CubeScene({ rotation, editMode = false, shifted = false, retired = false }: CubeSceneProps) {
+  // Faces start empty: the owner's uploads load from storage, and until they
+  // arrive each face shows an engraved seal — never a stand-in photo.
+  const [faceMedia, setFaceMedia] = useState<(FaceMedia | null)[]>(() => FACES.map(() => null));
+  const [mode, setMode] = useState(initialMode);
+  const toCss = useCallback(() => setMode("css"), []);
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<number | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -43,12 +55,12 @@ export default function CubeScene({ rotation, editMode = false, shifted = false 
     const loadImages = async () => {
       const { data } = await supabase.from("portfolio_images").select("*");
       if (data && data.length > 0) {
-        const newMedia: FaceMedia[] = DEFAULT_IMAGES.map((url) => ({ url, type: "image" as const }));
-        data.forEach((row: any) => {
+        const newMedia: (FaceMedia | null)[] = FACES.map(() => null);
+        data.forEach((row) => {
           const { data: { publicUrl } } = supabase.storage
             .from("portfolio")
             .getPublicUrl(row.storage_path);
-          const mediaType: "image" | "video" = (row as any).media_type === "video" ? "video" : "image";
+          const mediaType: "image" | "video" = row.media_type === "video" ? "video" : "image";
           newMedia[row.face_index] = {
             url: publicUrl,
             type: mediaType,
@@ -104,37 +116,44 @@ export default function CubeScene({ rotation, editMode = false, shifted = false 
 
   return (
     <>
-      <div className={`cube-scene ${shifted ? "cube-scene--shifted" : ""}`}>
-        <div
-          className="cube"
-          style={{ transform: `rotateX(${rotation.rx}deg) rotateY(${rotation.ry}deg)` }}
-        >
-          {FACES.map((face, i) => (
-            <div key={face} className={`cube-face ${FACE_CLASSES[face]}`}>
-              {faceMedia[i].type === "video" ? (
-                <video
-                  src={faceMedia[i].url}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="cube-face-video"
-                />
-              ) : (
-                <img
-                  src={faceMedia[i].url}
-                  alt={face}
-                  width={1024}
-                  height={1024}
-                  loading={i === 0 ? undefined : "lazy"}
-                />
-              )}
-              {!editMode && (
-                <span className="cube-face-label">{face.toUpperCase()}</span>
-              )}
-            </div>
-          ))}
-        </div>
+      <div
+        className={`cube-scene ${shifted ? "cube-scene--shifted" : ""} ${retired ? "cube-scene--retired" : ""}`}
+        aria-hidden={retired || undefined}
+      >
+        {mode === "gpu" ? (
+          <div className="cube cube--vault">
+            <Suspense fallback={null}>
+              <CubeVault media={faceMedia} rotation={rotation} active={!retired} onFallback={toCss} />
+            </Suspense>
+          </div>
+        ) : (
+          <div
+            className="cube"
+            style={{ transform: `rotateX(${rotation.rx}deg) rotateY(${rotation.ry}deg)` }}
+          >
+            {FACES.map((face, i) => {
+              const m = faceMedia[i];
+              return (
+                <div key={face} className={`cube-face ${FACE_CLASSES[face]}`}>
+                  {!m ? (
+                    <div className="cube-face-seal" />
+                  ) : m.type === "video" ? (
+                    <video src={m.url} autoPlay loop muted playsInline className="cube-face-video" />
+                  ) : (
+                    <img
+                      src={m.url}
+                      alt={face}
+                      width={1024}
+                      height={1024}
+                      loading={i === 0 ? undefined : "lazy"}
+                    />
+                  )}
+                  {!editMode && <span className="cube-face-label">{face.toUpperCase()}</span>}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {editMode && (
@@ -150,19 +169,12 @@ export default function CubeScene({ rotation, editMode = false, shifted = false 
                 onClick={() => inputRefs.current[i]?.click()}
                 disabled={uploading === i}
               >
-                {faceMedia[i].type === "video" ? (
-                  <video
-                    src={faceMedia[i].url}
-                    muted
-                    playsInline
-                    className="face-thumb-img"
-                  />
+                {!faceMedia[i] ? (
+                  <div className="face-thumb-img cube-face-seal" />
+                ) : faceMedia[i]!.type === "video" ? (
+                  <video src={faceMedia[i]!.url} muted playsInline className="face-thumb-img" />
                 ) : (
-                  <img
-                    src={faceMedia[i].url}
-                    alt={face}
-                    className="face-thumb-img"
-                  />
+                  <img src={faceMedia[i]!.url} alt={face} className="face-thumb-img" />
                 )}
                 <div className="face-thumb-overlay">
                   {uploading === i ? (

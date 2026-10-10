@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRafTicker } from "@/hooks/useRafTicker";
 
 // ASCII character ramp from dark to light
 const ASCII_RAMP = " .,:;+*?%S#@";
@@ -48,7 +49,6 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaRef = useRef<FloatingMedia[]>([]);
   const imagesLoadedRef = useRef<(HTMLImageElement | HTMLVideoElement)[]>([]);
-  const rafRef = useRef<number>(0);
   const [loaded, setLoaded] = useState(false);
   const [hasVideo, setHasVideo] = useState(false);
   const progressRef = useRef(0);
@@ -194,32 +194,25 @@ export default function ImageVortex({ progress }: AsciiOrbiterProps) {
     }
   }, []);
 
+  /* Scroll changes mark the frame dirty; the shared clock repaints at most
+     ~30 fps instead of on every scroll frame (thousands of fillText calls). */
+  const dirtyRef = useRef(true);
   useEffect(() => {
-    if (isVisible) {
+    dirtyRef.current = true;
+  }, [isVisible, loaded, progress]);
+
+  useRafTicker(
+    () => {
+      if (!dirtyRef.current) return;
+      dirtyRef.current = false;
       drawFrame();
-    }
-  }, [drawFrame, isVisible, loaded, progress]);
+    },
+    isVisible && !hasVideo,
+    33,
+  );
 
-  useEffect(() => {
-    if (!isVisible || !hasVideo) {
-      cancelAnimationFrame(rafRef.current);
-      return;
-    }
-
-    let lastFrame = 0;
-
-    const loop = (now: number) => {
-      if (now - lastFrame >= 1000 / TARGET_VIDEO_FPS) {
-        drawFrame();
-        lastFrame = now;
-      }
-
-      rafRef.current = requestAnimationFrame(loop);
-    };
-
-    rafRef.current = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [drawFrame, hasVideo, isVisible]);
+  /* Video media animates on its own cadence. */
+  useRafTicker(drawFrame, isVisible && hasVideo, 1000 / TARGET_VIDEO_FPS);
 
   useEffect(() => {
     const handleResize = () => {

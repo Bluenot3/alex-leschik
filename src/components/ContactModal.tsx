@@ -29,7 +29,7 @@ export default function ContactModal({ onClose }: ContactModalProps) {
       <div className="contact-modal__panel" onClick={(e) => e.stopPropagation()}>
 
         {/* Ambient cryptic background */}
-        <CrypticBackground rows={6} speed={80} opacity={0.04} />
+        <CrypticBackground rows={6} speed={80} opacity={0.04} mode="canvas" />
 
         {/* Corner brackets */}
         <span className="tc-br tc-br--tl contact-modal__br" />

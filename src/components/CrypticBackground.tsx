@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { subscribeTick, prefersReducedMotion } from "@/hooks/useRafTicker";
+import { registerFieldRegion, subscribeFieldState, type FieldState } from "@/foil/fieldStore";
 
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*+=<>{}[]|/\\~^`.,:;!?-_∷∵∴⊕⊗※÷≈≡∞アイウエオカキクケコ";
@@ -32,14 +33,45 @@ interface Props {
   speed?: number;
   opacity?: number;
   className?: string;
+  /** "canvas" forces the 2D fallback (e.g. inside overlays above the page). */
+  mode?: "auto" | "canvas";
 }
 
-export default function CrypticBackground({
+/**
+ * Cipher glyph texture for a section. When the GPU Treasury field is up this
+ * is only a density marker — the field draws the glyphs (floating, in depth,
+ * holographic) for every section in one pass. Without a GPU it falls back to
+ * its own 2D canvas.
+ */
+export default function CrypticBackground({ mode = "auto", ...props }: Props) {
+  const [state, setState] = useState<FieldState>("pending");
+  useEffect(() => (mode === "auto" ? subscribeFieldState(setState) : undefined), [mode]);
+  if (mode === "auto" && state !== "off") return <FieldMarker {...props} />;
+  return <CanvasCryptic {...props} />;
+}
+
+function FieldMarker({ speed = 120, opacity = 0.06, className = "" }: Omit<Props, "mode">) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Same visual weight as the canvas (alpha ×6, capped, under .cryptic-bg's
+    // 0.72 opacity) and shimmer (~18% of glyphs swap per frame interval).
+    return registerFieldRegion({
+      el,
+      alpha: Math.min(0.85, opacity * 6) * 0.72,
+      rate: (0.18 * 1000) / Math.max(speed, 200),
+    });
+  }, [speed, opacity]);
+  return <div aria-hidden="true" ref={ref} className={`cryptic-bg cryptic-bg--field ${className}`} />;
+}
+
+function CanvasCryptic({
   rows = 20,
   speed = 120,
   opacity = 0.06,
   className = "",
-}: Props) {
+}: Omit<Props, "mode">) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glyphsRef = useRef<Glyph[]>([]);

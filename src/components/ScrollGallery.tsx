@@ -22,6 +22,12 @@ const ITEMS: SgItem[] = [
   { src: "/gallery/zenai-world-sphere.jpg", label: "ZENAI.WORLD", sub: "Global Constellation" },
   { src: "/gallery/zen-weekly-fresco.jpg",  label: "ZEN WEEKLY",  sub: "Cultural Record"      },
   { src: "/gallery/zen-weekly-city.jpg",    label: "ZEN WEEKLY",  sub: "Digital Frontier"     },
+  { src: "/gallery/zen-certificate.jpg",           label: "ZEN AI CERTIFIED", sub: "Certificate of Achievement"  },
+  { src: "/gallery/zen-research-market.jpg",       label: "ZEN RESEARCH",     sub: "Self-Healing Infrastructure" },
+  { src: "/gallery/zen-research-biofix.jpg",       label: "ZEN RESEARCH",     sub: "Bio-Fixation Networks"       },
+  { src: "/gallery/zen-research-metamaterial.jpg", label: "ZEN RESEARCH",     sub: "Metamaterial Systems"        },
+  { src: "/gallery/zen-research-selfheal.jpg",     label: "ZEN RESEARCH",     sub: "Programmable Matter"         },
+  { src: "/gallery/zengen-crystal.webp",           label: "ZEN-GEN",          sub: "Crystal Render"              },
 ];
 
 /* ── Individual card with scroll reveal + pointer tilt ──── */
