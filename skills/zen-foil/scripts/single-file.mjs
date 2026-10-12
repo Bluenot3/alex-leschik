@@ -84,7 +84,9 @@ const library = swap(section(read("reference/shader-library.md"), { by: 2 }), [
   ["`scripts/check.mjs` and `lintWgsl` catch it.", "`ZenFoil.lint(code)` catches it."],
   ["The exact argument and return types of all of them are in `shader-signatures.md`, generated from the source", "The exact argument and return types of all of them are in the next section"],
 ]);
-const signatures = section(read("reference/shader-signatures.md"), { by: 2 }).replace(/^Generated from the library source by .*?don't edit it by hand\. /m, "");
+const signatures = swap(section(read("reference/shader-signatures.md"), { by: 2 }).replace(/^Generated from the library source by .*?don't edit it by hand\. /m, ""), [
+  ["`shader-library.md` explains how to use these functions.", "Section 6.4 explains how to use these functions."],
+]);
 
 const doc = `---
 name: zen-foil
