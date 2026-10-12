@@ -47,13 +47,13 @@ for (const s of kit) {
       md += `| \`${name}\` | ${esc(type)}${range} | ${def} | ${esc(spec.description)} |\n`;
     }
     md += "\n";
-    // Defaults are ZEN AI Co. copy and marks: name the ones another brand must set.
-    const branded = params.filter(([, spec]) => (spec.type === "mark" && spec.default && spec.default !== "none") || /\b(ZEN|ZENAI|ARSENAL|PIONEER)\b/.test(spec.default ?? ""));
-    if (branded.length) {
-      const marks = branded.filter(([, spec]) => spec.type === "mark").length;
-      const what = marks === branded.length ? "the ZEN mark" : marks ? "ZEN AI Co. text and the ZEN mark" : "ZEN AI Co. text";
-      md += `**Other brands:** set ${branded.map(([name]) => `\`${name}\``).join(", ")}. ${branded.length === 1 ? "Its default is" : "Their defaults are"} ${what}.\n\n`;
-    }
+    // Defaults that are ZEN AI Co.'s own copy, figures or marks (flagged
+    // brand: true) are the ones another brand must set.
+    const zenText = (spec) => (spec.type === "mark" && spec.default && spec.default !== "none") || /\b(ZEN|ZENAI|ARSENAL|PIONEER)\b/.test(spec.default ?? "");
+    for (const [name, spec] of params) if (zenText(spec) && !spec.brand) console.warn(`gen-docs: ${s.id}.${name} has a ZEN default but no brand flag`);
+    const branded = params.filter(([, spec]) => spec.brand || zenText(spec));
+    if (branded.length)
+      md += `**Other brands:** set ${branded.map(([name]) => `\`${name}\``).join(", ")}. ${branded.length === 1 ? "Its default belongs" : "Their defaults belong"} to ZEN AI Co.\n\n`;
   }
 }
 

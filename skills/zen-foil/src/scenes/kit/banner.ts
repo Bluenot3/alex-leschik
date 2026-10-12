@@ -14,12 +14,12 @@ export const banner: FoilScene = {
   accent: "#8fb4ff",
   still: 5.0,
   params: {
-    mark: { type: "mark", num: 0, default: "zen", description: "End seals (none to omit)." },
+    mark: { type: "mark", brand: true, num: 0, default: "zen", description: "End seals (none to omit)." },
     strands: { type: "number", num: 1, default: "12", min: 3, max: 16, description: "Guilloche strands per rope." },
     speed: { type: "number", num: 2, default: "1", min: 0, max: 4, description: "Wave drift speed." },
-    headline: { type: "text", slot: 0, default: "AI PIONEER PROGRAM", description: "Cartouche headline." },
-    subline: { type: "text", slot: 1, default: "ZEN AI CO · AI LITERACY", description: "Line under the headline." },
-    micro: { type: "text", slot: 2, default: "ZEN AI CO · AI LITERACY · BUILT IN PUBLIC · ", description: "Edge microprint." },
+    headline: { type: "text", brand: true, slot: 0, default: "AI PIONEER PROGRAM", description: "Cartouche headline." },
+    subline: { type: "text", brand: true, slot: 1, default: "ZEN AI CO · AI LITERACY", description: "Line under the headline." },
+    micro: { type: "text", brand: true, slot: 2, default: "ZEN AI CO · AI LITERACY · BUILT IN PUBLIC · ", description: "Edge microprint." },
   },
   code: /* wgsl */ `
 /* One family of interlaced sine strands around centre line y0. Returns coverage. */

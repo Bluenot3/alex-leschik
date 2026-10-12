@@ -41,6 +41,8 @@ export interface ParamSpec {
   max?: number;
   /** One line for the docs and the lab. */
   description?: string;
+  /** Docs only: the default is ZEN AI Co. copy, data or mark, so another brand must set this param. */
+  brand?: boolean;
 }
 
 /** Image layers a view needs (a texture_2d_array the shader samples). */

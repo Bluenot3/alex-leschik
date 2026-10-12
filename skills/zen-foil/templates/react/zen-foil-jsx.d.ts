@@ -35,6 +35,8 @@ interface ZenFoilParamSpec {
   min?: number;
   max?: number;
   description?: string;
+  /** Docs only: the default is brand copy another brand must replace. */
+  brand?: boolean;
 }
 
 interface ZenFoilBehaviorContext {

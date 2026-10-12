@@ -26,6 +26,8 @@ export interface ParamSpec {
   min?: number;
   max?: number;
   description?: string;
+  /** Docs only: the default is ZEN AI Co. copy, data or mark, so another brand must set this param. */
+  brand?: boolean;
 }
 
 export interface LayerSpec {

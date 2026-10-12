@@ -29,7 +29,7 @@ Default aspect 1.6 · accent `#7cc4ff` · output `plate` (themeable)
 | `caption` | text | `VERIFIED · ZENAI.WORLD` | Small line under the serial. |
 | `eyebrow` | text | `CERTIFIED ISSUER` | Small label above the headline. |
 
-**Other brands:** set `mark`, `headline`, `micro`, `serial`, `caption`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `mark`, `headline`, `micro`, `serial`, `caption`. Their defaults belong to ZEN AI Co.
 
 ### `globe` — Engraved globe
 
@@ -56,7 +56,7 @@ Default aspect 1.6 · accent `#6ee7b7` · output `plate` (themeable)
 | `micro` | text | `ZEN AI CO · GLOBAL NETWORK · AI LITERACY WORLDWIDE · ` | Edge microprint. |
 | `stat` | text | `42 STATES · 12 COUNTRIES` | Small figure line. |
 
-**Other brands:** set `mark`, `subline`, `micro`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `origin`, `points`, `mark`, `subline`, `label`, `micro`, `stat`. Their defaults belong to ZEN AI Co.
 
 ### `usmap` — U.S. reach map
 
@@ -81,7 +81,7 @@ Default aspect 1.6 · accent `#59c3ff` · output `plate` (themeable)
 | `serial` | text | `ZEN-AIL-2026-` | Serial (prefix, when counter is on). |
 | `caption` | text | `VERIFIED · ZENAI.WORLD` | Line under the serial. |
 
-**Other brands:** set `mark`, `micro`, `headline`, `serial`, `caption`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `origin`, `points`, `mark`, `label`, `micro`, `headline`, `serial`, `caption`. Their defaults belong to ZEN AI Co.
 
 ### `banner` — Guilloche banner
 
@@ -102,7 +102,7 @@ Default aspect 4 · accent `#8fb4ff` · output `plate` (themeable)
 | `subline` | text | `ZEN AI CO · AI LITERACY` | Line under the headline. |
 | `micro` | text | `ZEN AI CO · AI LITERACY · BUILT IN PUBLIC · ` | Edge microprint. |
 
-**Other brands:** set `mark`, `headline`, `subline`, `micro`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `mark`, `headline`, `subline`, `micro`. Their defaults belong to ZEN AI Co.
 
 ### `certificate` — Certificate
 
@@ -127,7 +127,7 @@ Default aspect 1.41 · accent `#c9a45c` · output `plate` (themeable)
 | `micro` | text | `ZEN AI CO · VERIFIED CREDENTIAL · AI LITERACY · ` | Border microprint. |
 | `presented` | text | `THIS CERTIFIES THAT` | Line above the name. |
 
-**Other brands:** set `mark`, `serial`, `issuer`, `micro`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `mark`, `program`, `serial`, `issuer`, `micro`. Their defaults belong to ZEN AI Co.
 
 ### `metric` — Metric plate
 
@@ -150,7 +150,7 @@ Default aspect 1.6 · accent `#f5d06f` · output `plate` (themeable)
 | `mark` | mark | `zen` | Issuer stamp, bottom right (none to omit). |
 | `speed` | number (0–4) | `1` | Read-head speed. |
 
-**Other brands:** set `headline`, `micro`, `mark`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `value`, `label`, `delta`, `headline`, `micro`, `series`, `mark`. Their defaults belong to ZEN AI Co.
 
 ### `network` — Agent network
 
@@ -172,7 +172,7 @@ Default aspect 1.6 · accent `#67e8f9` · output `plate` (themeable)
 | `status` | text | `6 AGENTS ONLINE` | Status line, bottom left. |
 | `micro` | text | `ARSENAL.WORLD · AGENT + APP BUILDER · ZEN AI CO · ` | Microprint around the hub orbit. |
 
-**Other brands:** set `mark`, `headline`, `micro`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `mark`, `headline`, `status`, `micro`. Their defaults belong to ZEN AI Co.
 
 ### `engrave` — Image engraving
 
@@ -195,7 +195,7 @@ Default aspect 1.33 · accent `#9cc8ff` · output `plate` (themeable)
 | `subline` | text | — | Caption line. |
 | `micro` | text | `ZEN AI CO · ENGRAVED EDITION · ` | Frame microprint. |
 
-**Other brands:** set `mark`, `micro`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `mark`, `micro`. Their defaults belong to ZEN AI Co.
 
 ### `stage` — Image stage
 
@@ -215,7 +215,7 @@ Default aspect 1.78 · accent `#6ba3f5` · output `raw`
 | `top` | text | `VISUAL ARCHIVE · ZEN AI CO · BUILT IN PUBLIC · ` | Microprint along the top. |
 | `bottom` | text | `ARCHIVE OF CAMPAIGNS, INTERFACES & GENERATIVE SYSTEMS · ` | Microprint along the bottom. |
 
-**Other brands:** set `top`. Its default is ZEN AI Co. text.
+**Other brands:** set `top`, `bottom`. Their defaults belong to ZEN AI Co.
 
 ### `vault` — Crystal vault
 
@@ -237,7 +237,7 @@ Default aspect 1 · accent `#6fa3f5` · output `alpha`
 | `frame` | text | `ZEN AI CO · VISUAL ARCHIVE · ORDO AB CHAO · ` | Microprint round each face. |
 | `ring` | text | `ZEN AI CO · AUTHENTIC · ` | Microprint round the seal. |
 
-**Other brands:** set `mark`, `frame`, `ring`. Their defaults are ZEN AI Co. text and the ZEN mark.
+**Other brands:** set `mark`, `frame`, `ring`. Their defaults belong to ZEN AI Co.
 
 ### `field` — Treasury field
 
@@ -257,7 +257,7 @@ Default aspect 1.78 · accent `#5b8fd6` · output `raw`
 | `seals` | boolean | `true` | Guilloche watermark seals. |
 | `phrases` | list | `ORDO AB CHAO, AS ABOVE SO BELOW, SOLVE ET COAGULA, ANNUIT…` | Phrases that decode out of the noise (up to 8, 24 characters each). |
 
-**Other brands:** set `phrases`. Its default is ZEN AI Co. text.
+**Other brands:** set `phrases`. Its default belongs to ZEN AI Co.
 
 ## Portfolio plates (`dist/zen-foil-showcase.js`)
 

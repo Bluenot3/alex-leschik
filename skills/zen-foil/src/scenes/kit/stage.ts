@@ -32,8 +32,8 @@ export const stage: FoilScene = {
     images: { type: "list", default: "", description: "Image URLs (same-origin or CORS-enabled), shown in turn." },
     src: { type: "url", default: "", description: "Show this one image (overrides images; set it to drive the stage yourself)." },
     interval: { type: "number", default: "6", min: 2, max: 120, description: "Seconds per image." },
-    top: { type: "text", slot: 0, default: "VISUAL ARCHIVE · ZEN AI CO · BUILT IN PUBLIC · ", description: "Microprint along the top." },
-    bottom: { type: "text", slot: 1, default: "ARCHIVE OF CAMPAIGNS, INTERFACES & GENERATIVE SYSTEMS · ", description: "Microprint along the bottom." },
+    top: { type: "text", brand: true, slot: 0, default: "VISUAL ARCHIVE · ZEN AI CO · BUILT IN PUBLIC · ", description: "Microprint along the top." },
+    bottom: { type: "text", brand: true, slot: 1, default: "ARCHIVE OF CAMPAIGNS, INTERFACES & GENERATIVE SYSTEMS · ", description: "Microprint along the bottom." },
   },
   layers(_params, box) {
     const w = Math.min(2048, Math.max(512, Math.round(box.width * Math.min(box.dpr, 2))));

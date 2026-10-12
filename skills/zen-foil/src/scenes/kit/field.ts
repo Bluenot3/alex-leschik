@@ -33,7 +33,7 @@ export const field: FoilScene = {
     density: { type: "number", num: 1, default: "0.3", min: 0, max: 1, description: "Glyph density where no region says otherwise." },
     rate: { type: "number", num: 2, default: "0.9", min: 0, max: 6, description: "Shimmer rate (glyph changes per second)." },
     seals: { type: "boolean", num: 3, default: "true", description: "Guilloche watermark seals." },
-    phrases: { type: "list", default: "ORDO AB CHAO, AS ABOVE SO BELOW, SOLVE ET COAGULA, ANNUIT COEPTIS, NOVUS ORDO SECLORUM, LET THERE BE LIGHT, ZEN AI CO", description: `Phrases that decode out of the noise (up to ${PHRASES}, ${SLOT} characters each).` },
+    phrases: { type: "list", brand: true, default: "ORDO AB CHAO, AS ABOVE SO BELOW, SOLVE ET COAGULA, ANNUIT COEPTIS, NOVUS ORDO SECLORUM, LET THERE BE LIGHT, ZEN AI CO", description: `Phrases that decode out of the noise (up to ${PHRASES}, ${SLOT} characters each).` },
   },
   data(d, params) {
     const list = parseList(params.phrases).slice(0, PHRASES);

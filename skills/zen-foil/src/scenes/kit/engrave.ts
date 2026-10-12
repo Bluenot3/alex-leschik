@@ -27,13 +27,13 @@ export const engrave: FoilScene = {
   still: 4.0,
   params: {
     src: { type: "url", default: "", description: "The image (same-origin or CORS-enabled)." },
-    mark: { type: "mark", num: 0, default: "zen", description: "Corner seal (none to omit)." },
+    mark: { type: "mark", brand: true, num: 0, default: "zen", description: "Corner seal (none to omit)." },
     mode: { type: "choice", num: 1, options: ["engraved", "duotone", "reveal"], default: "reveal", description: "Rendering." },
     frame: { type: "choice", num: 2, options: ["rect", "oval", "none"], default: "rect", description: "Frame shape." },
     density: { type: "number", num: 3, default: "1", min: 0.4, max: 3, description: "Line density (higher = finer)." },
     headline: { type: "text", slot: 0, default: "", description: "Caption title (bottom)." },
     subline: { type: "text", slot: 1, default: "", description: "Caption line." },
-    micro: { type: "text", slot: 2, default: "ZEN AI CO · ENGRAVED EDITION · ", description: "Frame microprint." },
+    micro: { type: "text", brand: true, slot: 2, default: "ZEN AI CO · ENGRAVED EDITION · ", description: "Frame microprint." },
   },
   layers(_params, box) {
     const px = Math.max(box.width, box.height) * box.dpr;

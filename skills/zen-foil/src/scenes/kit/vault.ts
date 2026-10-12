@@ -61,12 +61,12 @@ export const vault: FoilScene = {
   still: 3.0,
   params: {
     images: { type: "list", default: "", description: "Up to six image/video URLs, one per face (same-origin or CORS-enabled)." },
-    mark: { type: "mark", num: 0, default: "zen", description: "Mark on the engraved seal faces." },
+    mark: { type: "mark", brand: true, num: 0, default: "zen", description: "Mark on the engraved seal faces." },
     spin: { type: "number", default: "7", min: -60, max: 60, description: "Turn speed, degrees per second." },
     tilt: { type: "number", default: "-20", min: -60, max: 60, description: "Downward view angle, degrees." },
     scrollspin: { type: "boolean", default: "false", description: "Also turn with page scroll." },
-    frame: { type: "text", slot: 0, default: "ZEN AI CO · VISUAL ARCHIVE · ORDO AB CHAO · ", description: "Microprint round each face." },
-    ring: { type: "text", slot: 1, default: "ZEN AI CO · AUTHENTIC · ", description: "Microprint round the seal." },
+    frame: { type: "text", brand: true, slot: 0, default: "ZEN AI CO · VISUAL ARCHIVE · ORDO AB CHAO · ", description: "Microprint round each face." },
+    ring: { type: "text", brand: true, slot: 1, default: "ZEN AI CO · AUTHENTIC · ", description: "Microprint round the seal." },
   },
   layers(_params, box) {
     const px = Math.max(box.width, box.height) * box.dpr;

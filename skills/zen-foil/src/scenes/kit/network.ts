@@ -24,12 +24,12 @@ export const network: FoilScene = {
   still: 5.0,
   params: {
     nodes: { type: "list", default: "RESEARCH, WRITER, ANALYST, DESIGNER, CODER, OPS", description: `Agent labels, comma separated (up to ${MAX_NODES}).` },
-    mark: { type: "mark", num: 0, default: "zen", description: "Hub mark." },
+    mark: { type: "mark", brand: true, num: 0, default: "zen", description: "Hub mark." },
     speed: { type: "number", num: 1, default: "1", min: 0, max: 4, description: "Packet speed." },
-    headline: { type: "text", slot: 0, default: "ZEN ARSENAL", description: "Title, top left." },
+    headline: { type: "text", brand: true, slot: 0, default: "ZEN ARSENAL", description: "Title, top left." },
     subline: { type: "text", slot: 1, default: "AGENTS · ORCHESTRATED", description: "Line under the title." },
-    status: { type: "text", slot: 2, default: "6 AGENTS ONLINE", description: "Status line, bottom left." },
-    micro: { type: "text", slot: 3, default: "ARSENAL.WORLD · AGENT + APP BUILDER · ZEN AI CO · ", description: "Microprint around the hub orbit." },
+    status: { type: "text", brand: true, slot: 2, default: "6 AGENTS ONLINE", description: "Status line, bottom left." },
+    micro: { type: "text", brand: true, slot: 3, default: "ARSENAL.WORLD · AGENT + APP BUILDER · ZEN AI CO · ", description: "Microprint around the hub orbit." },
   },
   data(d, params) {
     const labels = parseList(params.nodes).slice(0, MAX_NODES);
