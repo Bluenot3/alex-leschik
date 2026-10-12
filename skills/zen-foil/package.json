@@ -1,0 +1,22 @@
+{
+  "name": "zen-foil",
+  "version": "1.0.0",
+  "description": "Engraved-hologram GPU plates (WebGPU + WebGL2) for any web project: <zen-foil> web component, scene kit and authoring tools.",
+  "type": "module",
+  "private": true,
+  "main": "dist/zen-foil.js",
+  "module": "dist/zen-foil.js",
+  "types": "dist/zen-foil.d.ts",
+  "exports": {
+    ".": { "types": "./dist/zen-foil.d.ts", "default": "./dist/zen-foil.js" },
+    "./showcase": "./dist/zen-foil-showcase.js"
+  },
+  "files": ["dist", "LICENSES"],
+  "scripts": {
+    "build": "node scripts/gen-assets.mjs && node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "node scripts/check.mjs",
+    "preview": "node scripts/preview.mjs"
+  },
+  "license": "SEE LICENSE IN LICENSES"
+}

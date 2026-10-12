@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your Brand</title>
+<!--
+  A complete page built with zen-foil: a glyph-field background, a hero
+  seal, project cards, a stats band and a guilloche divider. Copy it, swap
+  the copy and accents, and point the script at your pinned build:
+  https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@<commit>/skills/zen-foil/dist/zen-foil.js
+  (or a vendored ./zen-foil.js next to this file).
+-->
+<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@main/skills/zen-foil/dist/zen-foil.js"></script>
+<style>
+  :root { --bg: #05070d; --ink: #e3e9f5; --dim: #8a95ab; --line: #1b2336; --gold: #d6b26a; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1240px; margin: 0 auto; padding: 0 max(16px, 4vw) 80px; display: grid; gap: 72px; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 40px; align-items: center; padding-top: 56px; }
+  .eyebrow { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.24em; color: var(--gold); margin: 0 0 12px; }
+  h1 { font-size: clamp(40px, 6vw, 76px); line-height: 0.98; margin: 0 0 16px; letter-spacing: -0.01em; text-wrap: balance; }
+  p.lede { color: var(--dim); max-width: 48ch; margin: 0; }
+  zen-foil { border-radius: 18px; }
+  h2 { font-size: 28px; margin: 0 0 20px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 28px; }
+  .card { display: grid; gap: 12px; }
+  .card h3 { margin: 0; font-size: 18px; }
+  .card p { margin: 0; color: var(--dim); font-size: 15px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 28px; }
+  footer { border-top: 1px solid var(--line); padding: 28px max(16px, 4vw); color: var(--dim); font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; }
+  @media (max-width: 860px) { .hero { grid-template-columns: minmax(0, 1fr); } .hero zen-foil { order: -1; } }
+</style>
+</head>
+<body>
+  <!-- Page background: drifting cipher glyphs; denser behind marked sections. -->
+  <zen-foil scene="field" fixed variant="dark" density="0.18" max-dpr="1.25" phrases="YOUR BRAND, YOUR MOTTO, YOURBRAND.EXAMPLE"></zen-foil>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">YOUR BRAND · EST. 2019</p>
+        <h1>Research instruments for the next decade</h1>
+        <p class="lede">Replace this copy with the real story. The plate beside it is decorative; the heading and text stay in the DOM for search engines and screen readers.</p>
+      </div>
+      <zen-foil scene="seal" accent="#86b7ff" headline="YOUR BRAND" subline="INSTRUMENTS · RESEARCH"
+                eyebrow="ISSUER" serial="YB-" caption="YOURBRAND.EXAMPLE" micro="YOUR BRAND · INSTRUMENTS · RESEARCH · " mark="none"
+                aria-label="Your Brand seal"></zen-foil>
+    </section>
+
+    <section data-foil-density="0.45">
+      <h2>Programs</h2>
+      <div class="cards">
+        <article class="card">
+          <zen-foil scene="network" accent="#67e8f9" headline="AGENT LAB" subline="ORCHESTRATION" nodes="PLANNER, RESEARCH, CODER, REVIEW" status="4 AGENTS" micro="YOUR BRAND · AGENT LAB · " mark="none"></zen-foil>
+          <h3>Agent lab</h3><p>One line on what the program does.</p>
+        </article>
+        <article class="card">
+          <zen-foil scene="globe" accent="#6ee7b7" headline="FIELD SITES" subline="WORLDWIDE" stat="REPLACE WITH REAL FIGURES"
+                    origin="-74.00, 40.71" points="-0.13,51.51; 2.35,48.86; 139.69,35.69; 151.21,-33.87; -46.63,-23.55" label="NYC" micro="YOUR BRAND · FIELD SITES · " mark="none"></zen-foil>
+          <h3>Field sites</h3><p>Origin and destinations are lon,lat pairs.</p>
+        </article>
+        <article class="card">
+          <zen-foil scene="certificate" theme="paper" headline="CERTIFIED INSTRUMENT" recipient="MODEL YB-7" program="CALIBRATED TO SPECIFICATION"
+                    date="MMXXVI" serial="YB7-000001" issuer="YOUR BRAND" micro="YOUR BRAND · CERTIFIED INSTRUMENT · " mark="none"></zen-foil>
+          <h3>Certification</h3><p>Paper theme prints the same scene as ink.</p>
+        </article>
+      </div>
+    </section>
+
+    <zen-foil scene="banner" headline="YOUR BRAND" subline="INSTRUMENTS · RESEARCH · EDUCATION" micro="YOUR BRAND · INSTRUMENTS · RESEARCH · EDUCATION · " mark="none" style="aspect-ratio: 6 / 1"></zen-foil>
+
+    <section>
+      <h2>By the numbers</h2>
+      <div class="stats">
+        <zen-foil scene="metric" accent="#f5d06f" value="0,000" label="REPLACE WITH A REAL FIGURE" delta="SOURCE · PERIOD" headline="METRIC" series="3,4,4,6,7,9,12" micro="YOUR BRAND · METRICS · " mark="none"></zen-foil>
+        <zen-foil scene="metric" accent="#c4b5fd" value="00" label="REPLACE WITH A REAL FIGURE" delta="SOURCE · PERIOD" headline="METRIC" series="9,8,9,11,10,13,15" micro="YOUR BRAND · METRICS · " mark="none"></zen-foil>
+      </div>
+    </section>
+  </main>
+
+  <footer>YOUR BRAND · ENGRAVED WITH ZEN-FOIL</footer>
+</body>
+</html>

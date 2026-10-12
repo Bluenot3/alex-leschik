@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>zen-foil lab</title>
+<style>
+  :root { color-scheme: dark; --bg: #05070d; --fg: #dfe7f5; --dim: #7d8aa3; --line: #1b2236; }
+  :root[data-bg="light"] { color-scheme: light; --bg: #f4f2ec; --fg: #1a2233; --dim: #5a6478; --line: #d9d5ca; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  header { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--bg); }
+  header b { letter-spacing: 0.18em; font-weight: 500; }
+  header label { color: var(--dim); display: inline-flex; gap: 6px; align-items: center; }
+  select, input { font: inherit; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+  #status { margin-left: auto; color: var(--dim); }
+  main { display: grid; gap: 18px; padding: 18px; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); }
+  figure { margin: 0; }
+  zen-foil { border-radius: 14px; width: 100%; }
+  figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 8px 2px 0; color: var(--dim); }
+  figcaption strong { color: var(--fg); font-weight: 500; }
+  .snap { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; border-radius: inherit; }
+  pre { margin: 18px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; white-space: pre-wrap; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <b>ZEN-FOIL LAB</b>
+  <label>scenes <select id="pick"></select></label>
+  <label>theme <select id="theme"><option>plate</option><option>paper</option><option>clear</option></select></label>
+  <label>accent <input id="accent" type="color" value="#6fb8ff" /></label>
+  <span id="status">loading…</span>
+</header>
+<main id="grid"></main>
+<pre id="report" hidden></pre>
+<script type="module">
+  /* Query: scenes=all|kit|showcase|a,b · theme · accent · w,h (px per plate) · cols · t (freeze time)
+     · bg=light · snap (read frames back, for headless WebGPU screenshots) · validate · p.<param>=value */
+  const q = new URLSearchParams(location.search);
+  const core = await import("./dist/zen-foil.js");
+  await import("./dist/zen-foil-showcase.js").catch(() => {});
+  // Your own scene modules: ?module=/path/a.js,/path/b.js (or injected by preview.mjs).
+  for (const m of [...(globalThis.__labModules ?? []), ...(q.get("module") ?? "").split(",").filter(Boolean)]) await import(m);
+  const { listScenes, validateScenes } = core;
+  if (q.has("t")) globalThis.ZEN_FOIL_FREEZE = Number(q.get("t"));
+  if (q.get("bg") === "light") document.documentElement.dataset.bg = "light";
+
+  const kitIds = new Set(core.KIT_IDS);
+  const all = listScenes();
+  const want = q.get("scenes") ?? "all";
+  const pick = document.getElementById("pick");
+  for (const v of ["all", "kit", "showcase", ...all.map((s) => s.id)]) pick.add(new Option(v, v, false, v === want));
+  const chosen =
+    want === "all" ? all
+    : want === "kit" ? all.filter((s) => kitIds.has(s.id))
+    : want === "showcase" ? all.filter((s) => !kitIds.has(s.id))
+    : want.split(",").map((id) => all.find((s) => s.id === id)).filter(Boolean);
+
+  const theme = q.get("theme") ?? "plate";
+  const accent = q.get("accent");
+  document.getElementById("theme").value = theme;
+  if (accent) document.getElementById("accent").value = accent;
+  const params = {};
+  for (const [k, v] of q) if (k.startsWith("p.")) params[k.slice(2)] = v;
+  const grid = document.getElementById("grid");
+  grid.style.setProperty("--cols", q.get("cols") ?? (chosen.length === 1 ? 1 : 2));
+  const w = q.get("w");
+  const h = q.get("h");
+  // Fixed-size tiles: size the columns to them so nothing overlaps.
+  if (w) grid.style.gridTemplateColumns = `repeat(${q.get("cols") ?? (chosen.length === 1 ? 1 : 2)}, ${w}px)`;
+
+  const tiles = chosen.map((scene) => {
+    const fig = document.createElement("figure");
+    const el = document.createElement("zen-foil");
+    el.setAttribute("scene", scene.id);
+    if (theme !== "plate") el.setAttribute("theme", theme);
+    if (accent) el.setAttribute("accent", accent);
+    if (q.has("seed")) el.setAttribute("seed", q.get("seed"));
+    for (const [k, v] of Object.entries(params)) el.setAttribute(k, v);
+    if (w) el.style.width = `${w}px`;
+    if (h) el.style.height = `${h}px`;
+    if (w && h) el.style.aspectRatio = "auto";
+    const cap = document.createElement("figcaption");
+    cap.innerHTML = `<strong>${scene.id}</strong><span>${scene.title ?? ""}</span>`;
+    fig.append(el, cap);
+    grid.append(fig);
+    return el;
+  });
+
+  const status = document.getElementById("status");
+  const settle = (el) =>
+    new Promise((resolve) => {
+      const done = (state) => resolve({ scene: el.getAttribute("scene"), state });
+      if (el.hasAttribute("data-live")) return done("live");
+      el.addEventListener("foil-live", () => done("live"), { once: true });
+      el.addEventListener("foil-fail", (e) => done(`failed: ${e.detail?.reason}`), { once: true });
+      setTimeout(() => done("timeout"), Number(q.get("timeout") ?? 30000));
+    });
+  const errors = [];
+  addEventListener("foil-error", (e) => errors.push(e.detail));
+
+  const ready = Promise.all(tiles.map(settle)).then(async (states) => {
+    // Readback mode presents through a 2D canvas a frame later: wait until
+    // every plate has actually landed pixels before anyone screenshots.
+    if (q.has("foil-readback")) {
+      await Promise.all(tiles.map((el) => Promise.race([el.capture(), new Promise((r) => setTimeout(r, 90000))])));
+    }
+    if (q.has("snap")) {
+      // Let a couple of frames land, then read each plate back from the GPU.
+      await new Promise((r) => setTimeout(r, 400));
+      for (const el of tiles) {
+        const img = await el.capture();
+        if (!img) continue;
+        const c = document.createElement("canvas");
+        c.className = "snap";
+        c.width = img.width;
+        c.height = img.height;
+        c.getContext("2d").putImageData(img, 0, 0);
+        el.append(c);
+        c.slot = "";
+      }
+    }
+    const backend = core.getFoilEngine().renderer;
+    status.textContent = `${backend} · ${states.filter((s) => s.state === "live").length}/${states.length} live`;
+    return { backend, states, errors };
+  });
+  globalThis.__lab = { ready, errors };
+
+  if (q.has("validate")) {
+    const results = await validateScenes(chosen.map((s) => s.id));
+    const bad = results.filter((r) => r.lint.length || r.webgpu?.length || r.webgl2?.length);
+    const pre = document.getElementById("report");
+    pre.hidden = false;
+    pre.textContent = bad.length
+      ? bad.map((r) => `${r.scene} (${r.post})\n  lint: ${r.lint.join("; ") || "ok"}\n  webgpu: ${r.webgpu === null ? "n/a" : r.webgpu.join("\n    ") || "ok"}\n  webgl2: ${r.webgl2 === null ? "n/a" : r.webgl2.join("\n    ") || "ok"}`).join("\n\n")
+      : `all ${results.length} programs compile (webgpu: ${results[0]?.webgpu === null ? "n/a" : "ok"}, webgl2: ${results[0]?.webgl2 === null ? "n/a" : "ok"})`;
+    globalThis.__lab.validation = results;
+  }
+
+  const reload = (k, v) => {
+    const n = new URLSearchParams(location.search);
+    n.set(k, v);
+    location.search = n.toString();
+  };
+  pick.onchange = () => reload("scenes", pick.value);
+  document.getElementById("theme").onchange = (e) => reload("theme", e.target.value);
+  document.getElementById("accent").onchange = (e) => reload("accent", e.target.value);
+</script>
+</body>
+</html>
