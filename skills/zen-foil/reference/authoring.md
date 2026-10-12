@@ -187,8 +187,8 @@ defineScene({
   accent: "#fbbf24",
   still: 3,
   params: {
-    target: { type: "url", default: "2027-01-01T00:00:00Z", description: "ISO date to count down to." },
-    label: { type: "text", slot: 0, default: "AI PIONEER PROGRAM · YEAR 4 BEGINS IN" },
+    target: { type: "url", default: "2030-01-01T00:00:00Z", description: "ISO date to count down to (set the real one)." },
+    label: { type: "text", slot: 0, default: "LAUNCH IN" },
     mark: { type: "mark", num: 0, default: "zen" },
   },
   behavior(ctx) {

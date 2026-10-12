@@ -22,7 +22,7 @@ These are the engraved-hologram GPU graphics from alexleschik.com, packaged so a
 | `reference/` | Aesthetic, scene params, authoring, the shader library and its exact signatures, portable WGSL, integration recipes |
 | `lab.html` | Browse every scene (serve this folder: `npx serve .`, or `python3 -m http.server`) |
 | `templates/` | A standalone page, the React wrapper (installed and CDN versions) with JSX typings, a scene template and a worked example |
-| `scripts/` | `install.mjs`, `new-scene.mjs`, `check.mjs`, `preview.mjs`, `build.mjs`, `gen-docs.mjs` |
+| `scripts/` | `install.mjs`, `new-scene.mjs`, `check.mjs`, `preview.mjs`, `build.mjs`, `gen-docs.mjs`, `single-file.mjs` |
 
 ## Install as a skill
 
@@ -31,8 +31,8 @@ These are the engraved-hologram GPU graphics from alexleschik.com, packaged so a
 | Claude Code (this repo) | Already available: `.claude/skills/zen-foil` points here. |
 | Claude Code (any project) | Copy this folder to `~/.claude/skills/zen-foil` (all projects) or `<project>/.claude/skills/zen-foil`. |
 | claude.ai / Claude Desktop | Upload the folder as a zip under Settings → Capabilities → Skills. |
-| Lovable | Add it as a workspace skill. The single-file version uses the pinned CDN build. |
-| Cursor, Codex and others | Point the agent at `SKILL.md`, for example from `AGENTS.md` or rules. |
+| Lovable | Add the single-file version as a workspace skill. `node scripts/single-file.mjs --sha <commit>` writes it, with the CDN pinned to that commit. |
+| Cursor, Codex and others | Point the agent at `SKILL.md`, for example from `AGENTS.md` or rules, or paste in the single-file version. |
 
 ## Develop
 

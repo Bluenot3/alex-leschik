@@ -1,7 +1,7 @@
 /**
  * Worked example from reference/authoring.md: a behavior writes the time
  * left into u.p0 every frame; the shader engraves the digits.
- *   <zen-foil scene="countdown" target="2027-01-01T00:00:00Z" label="LAUNCH IN"></zen-foil>
+ *   <zen-foil scene="countdown" target="2030-01-01T00:00:00Z" label="LAUNCH IN"></zen-foil>
  */
 import { defineScene } from "zen-foil";
 
@@ -13,8 +13,8 @@ export default defineScene({
   accent: "#fbbf24",
   still: 3,
   params: {
-    target: { type: "url", default: "2027-01-01T00:00:00Z", description: "ISO date to count down to." },
-    label: { type: "text", slot: 0, default: "AI PIONEER PROGRAM · YEAR 4 BEGINS IN", description: "Line above the digits." },
+    target: { type: "url", default: "2030-01-01T00:00:00Z", description: "ISO date to count down to (set the real one)." },
+    label: { type: "text", slot: 0, default: "LAUNCH IN", description: "Line above the digits." },
     mark: { type: "mark", num: 0, default: "zen", description: "Seal mark." },
   },
   behavior(ctx) {

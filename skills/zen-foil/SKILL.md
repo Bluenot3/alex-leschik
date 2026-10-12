@@ -63,6 +63,7 @@ Marks:
 - `mark` also accepts any SVG path data (Simple Icons' 24×24 paths work as-is), inline `<svg>` markup, or an image URL.
 - You can also call `registerMark("acme", source)`.
 - Only use marks the project has rights to. Use the ZEN marks only for ZEN AI Co. work.
+- The kit's text defaults are ZEN copy too. On any other brand, set every param on the scene's **Other brands** line in `reference/scenes.md`.
 
 ## 3. Make it look right
 
@@ -124,7 +125,7 @@ In a running page, `?foil-debug` logs lint warnings and exposes `window.__zenFoi
   - `src/scenes/kit/*.ts`: the kit, readable examples.
   - `src/library.ts`: the shader library.
 - `templates/`: `scene-template.ts`, `standalone.html` (a full demo page), and `react/ZenFoil.tsx` with JSX typings.
-- `scripts/`: `install.mjs`, `new-scene.mjs`, `check.mjs`, `preview.mjs`, `build.mjs`.
+- `scripts/`: `install.mjs`, `new-scene.mjs`, `check.mjs`, `preview.mjs`, `build.mjs`, `gen-docs.mjs`, and `single-file.mjs` (the whole skill as one markdown file, for agents that take one, such as Lovable workspace skills).
 - `lab.html`: open it (via any static server) to browse every scene with theme and accent controls.
 - `reference/`:
   - `aesthetic.md`
