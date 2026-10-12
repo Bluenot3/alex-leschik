@@ -92,7 +92,7 @@ The style is restrained engraving, not neon. Before composing a page, read `refe
 5. **See it.** Run `node <skill>/scripts/preview.mjs --scenes my-scene --module src/scenes/my-scene.ts --validate --w 960 --h 600`. This compiles the scene on WebGPU and WebGL2, reports `scene line N` errors, and saves screenshots. Then look at the PNGs, and iterate until it holds up next to the kit scenes.
 6. **Register it.** Import the module once before the element mounts.
 
-In a running page, `?foil-debug` logs lint warnings and exposes `window.__zenFoil`. You can also run `await ZenFoil.validate(["my-scene"])` in the console. `?foil=webgl2|webgpu|off` forces a backend.
+In a running page, `?foil-debug` logs lint warnings and exposes `window.__zenFoil`. You can also run `await ZenFoil.validate(["my-scene"])` in the console, ideally with `?foil=off` so the check has the GPU to itself. `?foil=webgl2|webgpu|off` forces a backend.
 
 ## 5. Quality bar (check before you hand off)
 
@@ -116,7 +116,7 @@ In a running page, `?foil-debug` logs lint warnings and exposes `window.__zenFoi
 | Image or mark doesn't appear | Cross-origin without CORS headers. Serve it same-origin or with `Access-Control-Allow-Origin`. The `foil-error` event says so. |
 | Text shows `·` | That character isn't in the glyph atlas (ASCII, `·•→←±×÷≈≡∞△◇◈✦αλΣΩπ∇∂`, a few kana). Accents fold to their base letter. |
 | Headless screenshots are black on WebGPU | Expected: use `?foil-readback` (preview.mjs does this for `--backend webgpu`). |
-| Two copies of the engine | The showcase or your scene loads `zen-foil.js` from a different URL. Load everything from one place. |
+| Showcase or custom-scene plates stay on their posters | The showcase or your scene loads `zen-foil.js` from a different URL, which starts a second engine. Load everything from one place. |
 
 ## Files
 

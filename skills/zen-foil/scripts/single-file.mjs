@@ -159,7 +159,7 @@ export function Examples() {
 - **\`params\`** are the scene's attributes (section 3). Changing one updates the plate live, without recompiling. \`true\` sets a bare attribute, and \`false\` removes it.
 - **\`label\`** sets the accessible name (\`aria-label\`, \`role="img"\`). Without it the plate is decorative and hidden from screen readers. Keep the real headings and copy in the DOM either way.
 - **Size and shape:** the element is \`display: block\` and fills its container's width. Its height comes from the scene's aspect ratio unless CSS sets \`height\` or \`aspect-ratio\`. \`border-radius\` rounds the plate.
-- **\`accent\`** takes any CSS colour, including \`hsl(var(--primary))\` from the theme. **\`theme\`** is \`plate\` (dark, the default), \`paper\` (light security paper, for light pages and printables) or \`clear\` (ink only, over your own dark background or photo).
+- **\`accent\`** takes any CSS colour, including theme tokens: \`hsl(var(--primary))\` where the token holds HSL numbers (shadcn on Tailwind 3), or \`var(--primary)\` where it holds a whole colour (Tailwind 4). **\`theme\`** is \`plate\` (dark, the default), \`paper\` (light security paper, for light pages and printables) or \`clear\` (ink only, over your own dark background or photo).
 - **\`onLive(backend)\`** fires on the first frame. **\`onFail(reason)\`** fires when there is no GPU or a scene fails, and the poster stays.
 - **The raw element in JSX:** write \`class\`, not \`className\`. React 18 renders \`className\` on a custom element as a dead \`classname\` attribute. The wrapper handles this for you.
 - **Images and marks by URL** must be same-origin (put them in \`public/\`) or served with CORS. Public Supabase Storage URLs work.
@@ -223,7 +223,7 @@ ${signatures}
 ### 6.6 Check it before you hand off
 
 There is no CLI here, so check in the preview:
-1. **Compile it on both backends.** Open the preview with \`?foil-debug\` and run \`await window.ZenFoil.validate(["my-scene"])\` in the console. Every result's \`lint\`, \`webgpu\` and \`webgl2\` lists must be empty. Errors read \`scene line N\`, counted from the first line of \`code\`.
+1. **Compile it on both backends.** Open the preview with \`?foil=off\`, so the plates stay posters and the check has the GPU to itself. Then run \`await window.ZenFoil.validate(["my-scene"])\` in the console. In every result, \`lint\`, \`webgpu\` and \`webgl2\` must be empty lists (\`null\` means that backend isn't available in this browser). Errors read \`scene line N\`, counted from the first line of \`code\`.
 2. **Look at it** at a phone width (390 px), card size (~600 px) and hero size (1440 px). Check it in \`paper\` if the site is light, with \`?foil=webgl2\`, and with reduced motion emulated in DevTools.
 3. **Compare it with a kit scene** side by side. It should look like the same hand made it.
 
@@ -246,7 +246,7 @@ There is no CLI here, so check in the preview:
 | Image or mark missing | Cross-origin without CORS. Serve it from \`public/\` or a CORS-enabled bucket; the \`foil-error\` event explains. |
 | Text shows \`·\` | The character isn't in the glyph atlas (section 5). |
 | \`window.ZenFoil\` is undefined | The script tag is missing or blocked, or code ran before it. Register scenes inside \`customElements.whenDefined("zen-foil")\`. |
-| Two engines warning, or showcase plates never mount | The showcase or a page loads \`zen-foil.js\` from a different URL. Use one commit everywhere. |
+| Showcase plates stay on their posters | The showcase or the page loads \`zen-foil.js\` from a different URL, which starts a second engine. Load everything from one commit. |
 
 ## 9. Upgrading
 
