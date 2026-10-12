@@ -103,7 +103,7 @@ Guilloche-bordered credential: title, recipient, program, date, serial and a gol
 Default aspect 1.41 · accent `#c9a45c` · output `plate` (themeable)
 
 ```html
-<zen-foil scene="certificate" title="CERTIFICATE OF ACHIEVEMENT" recipient="AI PIONEER" program="HAS COMPLETED THE AI LITERACY PROGRAM"></zen-foil>
+<zen-foil scene="certificate" title="CERTIFICATE OF ACHIEVEMENT" recipient="RECIPIENT NAME" program="HAS COMPLETED THE AI LITERACY PROGRAM"></zen-foil>
 ```
 
 | Param | Type | Default | Notes |
@@ -111,10 +111,10 @@ Default aspect 1.41 · accent `#c9a45c` · output `plate` (themeable)
 | `mark` | mark | `zen` | Mark in the seal. |
 | `speed` | number (0–4) | `1` | Animation speed. |
 | `title` | text | `CERTIFICATE OF ACHIEVEMENT` | Title line. |
-| `recipient` | text | `AI PIONEER` | Recipient's name. |
+| `recipient` | text | `RECIPIENT NAME` | Recipient's name. |
 | `program` | text | `HAS COMPLETED THE AI LITERACY PROGRAM` | What was achieved. |
 | `date` | text | `MMXXVI` | Date (left foot). |
-| `serial` | text | `ZEN-AIL-2026-00417` | Credential serial (right foot). |
+| `serial` | text | `ZEN-AIL-2026-00000` | Credential serial (right foot). Use the real ID; the default is a placeholder. |
 | `issuer` | text | `ZEN AI CO` | Issuer, above the title and around the seal. |
 | `micro` | text | `ZEN AI CO · VERIFIED CREDENTIAL · AI LITERACY · ` | Border microprint. |
 | `presented` | text | `THIS CERTIFIES THAT` | Line above the name. |
