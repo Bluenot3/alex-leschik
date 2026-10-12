@@ -70,8 +70,14 @@ interface ZenFoilSceneDef {
   description?: string;
 }
 
+/* window.ZenFoil carries every export of the module. The members typed here
+   are the ones scenes and pages use; the rest (wgslToGlsl, buildData…) are
+   there too, typed unknown. */
 interface ZenFoilGlobal {
   readonly VERSION: string;
+  readonly KIT_IDS: string[];
+  /** First float of u.d a scene's own data() may use. */
+  readonly SCENE_DATA_BASE: number;
   defineScene(scene: ZenFoilSceneDef): ZenFoilSceneDef;
   getScene(id: string): ZenFoilSceneDef | undefined;
   listScenes(): ZenFoilSceneDef[];
@@ -90,9 +96,24 @@ interface ZenFoilGlobal {
     limit?: number,
   ): { at: Record<K, { start: number; count: number; float: number; text: string }>; end: number; write(d: Float32Array): void };
   projectUS(lon: number, lat: number): [number, number];
+  packText(text: string, into: Float32Array, startFloat: number): number;
+  packPoints(points: [number, number][], into: Float32Array, baseVec4: number): void;
+  parsePoints(value: string | undefined): [number, number][];
+  parseNumbers(value: string | undefined): number[];
+  parseList(value: string | undefined): string[];
+  glyphCode(ch: string): number;
+  markSlot(value: string | undefined | null): number;
+  loadImage(url: string): Promise<HTMLImageElement>;
+  loadLayer(url: string, w: number, h: number): Promise<HTMLCanvasElement>;
+  drawContain(src: CanvasImageSource, iw: number, ih: number, canvas: HTMLCanvasElement): void;
+  drawCover(src: CanvasImageSource, iw: number, ih: number, canvas: HTMLCanvasElement): void;
+  subscribeTick(fn: (now: number, deltaMs: number) => void): () => void;
+  prefersReducedMotion(): boolean;
+  libraryNames(): string[];
   validate(ids?: string[]): Promise<{ scene: string; post: string; lint: string[]; webgpu: string[] | null; webgl2: string[] | null }[]>;
   lint(code: string, label?: string): string[];
   engine(): { readonly renderer: "pending" | "webgpu" | "webgl2" | "static"; subscribeStatus(cb: (status: string) => void): () => void };
+  readonly [other: string]: unknown;
 }
 
 declare module "react" {

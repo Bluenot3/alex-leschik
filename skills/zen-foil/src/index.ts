@@ -88,19 +88,53 @@ export const KIT_IDS = KIT.map((s) => s.id);
 KIT.forEach((scene) => defineScene(scene));
 defineElement();
 
-/* For pages that load the bundle with a plain <script type="module"> and
-   want the API without an import. */
+/* For pages that load the bundle with a plain <script type="module"> (a
+   CDN tag, Lovable) and want the API without an import: every export, plus
+   the short aliases validate, lint and engine. */
 if (typeof window !== "undefined") {
   (window as unknown as { ZenFoil: unknown }).ZenFoil = {
     VERSION,
+    KIT_IDS,
     defineScene,
     getScene,
     listScenes,
     mount,
+    buildData,
+    resolveParams,
+    resolveColor,
+    parseList,
+    parseNumbers,
+    parsePoints,
+    SCENE_DATA_BASE,
     registerMark,
+    markSlot,
+    markNames,
     setClock,
+    subscribeTick,
+    prefersReducedMotion,
+    getFoilEngine,
     layoutText,
+    packText,
+    packPoints,
     projectUS,
+    glyphCode,
+    GLYPH_TABLE,
+    LOGO,
+    lintWgsl,
+    libraryNames,
+    wgslToGlsl,
+    wgslModule,
+    glslFragment,
+    LIBRARY,
+    loadImage,
+    loadLayer,
+    drawContain,
+    drawCover,
+    videoLayer,
+    LayerLoadError,
+    validateScenes,
+    ZenFoilElement,
+    defineElement,
     validate: validateScenes,
     lint: lintWgsl,
     engine: getFoilEngine,

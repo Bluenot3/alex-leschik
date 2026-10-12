@@ -2,6 +2,8 @@
 
 A scene is one fragment program plus optional JavaScript around it. The engine adds the shared library, the post pass, uniforms and entry points. It compiles the program natively on WebGPU, or translates it to GLSL for WebGL2, and runs one draw per plate per frame.
 
+On a page that loads the CDN script instead of importing the module (Lovable), call the same functions on `window.ZenFoil`: `ZenFoil.defineScene`, `ZenFoil.layoutText`, `ZenFoil.packPoints`, `ZenFoil.loadImage` and so on (`reference/integration.md#lovable`).
+
 ```ts
 import { defineScene } from "zen-foil";
 

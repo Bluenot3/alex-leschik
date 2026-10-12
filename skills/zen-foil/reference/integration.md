@@ -102,22 +102,24 @@ In Nuxt, import it in a `.client.ts` plugin.
 
 ## Lovable
 
-Lovable projects are Vite + React + TypeScript. The Lovable agent can't run the installer, so load the bundle from the CDN:
+Lovable projects are React + TypeScript, usually on Vite. The Lovable agent can't run the installer, so load the bundle from the CDN:
 
 1. **`index.html`:** add this before `</head>`, pinned to a commit:
    ```html
    <script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@<commit-sha>/skills/zen-foil/dist/zen-foil.js"></script>
    ```
-   Module scripts run in document order, so `<zen-foil>` is defined before `src/main.tsx` renders.
+   Module scripts run in document order, so `<zen-foil>` is defined before `src/main.tsx` renders. A project whose framework renders the document (TanStack Start, Next.js) has no `index.html`: put the same tag in the root document's `<head>` through the framework's head API.
 2. **`src/components/ZenFoil.tsx`:** copy `templates/react/ZenFoil.cdn.tsx`. It's the same wrapper as the installed one, without the bundle import.
 3. **`src/zen-foil.d.ts`:** copy `templates/react/zen-foil-jsx.d.ts`. It types `<zen-foil>` for React 18 and 19, and `window.ZenFoil`.
 4. **Use it:** `<ZenFoil scene="seal" params={{ headline: "BRAND" }} className="w-full rounded-2xl" />`.
-5. **Your own scenes:** register them on the global API, in a module that `main.tsx` imports once:
+5. **Your own scenes:** register them on the global API, in a client-side module that `main.tsx` imports once:
    ```ts
    // src/scenes/my-scene.ts
-   window.ZenFoil?.defineScene({ id: "my-scene", params: { /* … */ }, code: /* wgsl */ `…` });
+   customElements.whenDefined("zen-foil").then(() =>
+     window.ZenFoil?.defineScene({ id: "my-scene", params: { /* … */ }, code: /* wgsl */ `…` }),
+   );
    ```
-   The `?.` keeps the app running if the CDN is unreachable. A plate that names a scene before it is defined mounts as soon as it is.
+   `whenDefined` waits for the bundle whichever script runs first, and the `?.` keeps the app running if the CDN is unreachable. A plate that names a scene before it is defined mounts as soon as it is.
 
 On the raw element in React 18, write `class`, not `className`: React 18 passes `className` to a custom element as a literal `classname` attribute, which styles nothing. The wrapper handles this for you.
 
@@ -149,6 +151,8 @@ The GPU can only read images that are same-origin or served with `Access-Control
 - **Posters:** before the first frame, and when there is no GPU, the element shows a CSS poster in the theme and accent. Set `--zen-foil-poster` to use your own image or gradient.
 
 ## Script API
+
+A page that loads the bundle with a `<script>` tag gets the same API on `window.ZenFoil`: every export, plus the short aliases `validate`, `lint` and `engine`.
 
 ```js
 import { mount, defineScene, registerMark, setClock, getFoilEngine } from "./vendor/zen-foil/zen-foil.js";
