@@ -20,7 +20,7 @@ export const certificate: FoilScene = {
   params: {
     mark: { type: "mark", num: 0, default: "zen", description: "Mark in the seal." },
     speed: { type: "number", num: 1, default: "1", min: 0, max: 4, description: "Animation speed." },
-    title: { type: "text", slot: 0, default: "CERTIFICATE OF ACHIEVEMENT", description: "Title line." },
+    headline: { type: "text", slot: 0, default: "CERTIFICATE OF ACHIEVEMENT", description: "Title line." },
     recipient: { type: "text", slot: 1, default: "RECIPIENT NAME", description: "Recipient's name." },
     program: { type: "text", slot: 2, default: "HAS COMPLETED THE AI LITERACY PROGRAM", description: "What was achieved." },
     date: { type: "text", slot: 3, default: "MMXXVI", description: "Date (left foot)." },

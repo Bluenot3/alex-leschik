@@ -1,34 +1,7 @@
 import { getFoilEngine } from "./engine";
 import { getScene, mount, resolveColor, SCENE_EVENT, type FoilHandle } from "./scene";
+import { isElementAttribute } from "./reserved";
 import type { ParamValues, Theme } from "./types";
-
-/* Attributes that configure the element itself rather than the scene. */
-const OWN = new Set([
-  "scene",
-  "accent",
-  "theme",
-  "seed",
-  "fixed",
-  "class",
-  "style",
-  "id",
-  "slot",
-  "part",
-  "role",
-  "hidden",
-  "tabindex",
-  "title",
-  "lang",
-  "dir",
-  "draggable",
-  "inert",
-  "is",
-  "nonce",
-  "popover",
-  "contenteditable",
-  "max-dpr",
-]);
-const isOwn = (name: string) => OWN.has(name) || name.startsWith("aria-") || name.startsWith("data-") || name.startsWith("on");
 
 const STYLE = /* css */ `
 :host {
@@ -101,44 +74,44 @@ function poster(theme: Theme | "raw" | "alpha", accent: [number, number, number]
 const ElementBase = (typeof HTMLElement !== "undefined" ? HTMLElement : class {}) as typeof HTMLElement;
 
 export class ZenFoilElement extends ElementBase {
-  private handle: FoilHandle | null = null;
-  private readonly plate: HTMLDivElement;
-  private readonly sheet: HTMLStyleElement;
-  private readonly observer: MutationObserver;
-  private extraParams: ParamValues = {};
-  private mountedKey = "";
-  private scheduled = false;
-  private waiting: (() => void) | null = null;
+  #handle: FoilHandle | null = null;
+  readonly #plate: HTMLDivElement;
+  readonly #sheet: HTMLStyleElement;
+  readonly #observer: MutationObserver;
+  #extraParams: ParamValues = {};
+  #mountedKey = "";
+  #scheduled = false;
+  #waiting: (() => void) | null = null;
 
   constructor() {
     super();
     const root = this.attachShadow({ mode: "open" });
     root.innerHTML = `<style>${STYLE}</style><style data-scene></style><div class="plate" part="plate" aria-hidden="true"></div><slot></slot>`;
-    this.plate = root.querySelector(".plate") as HTMLDivElement;
-    this.sheet = root.querySelector("style[data-scene]") as HTMLStyleElement;
-    this.observer = new MutationObserver((records) => this.onAttributes(records));
+    this.#plate = root.querySelector(".plate") as HTMLDivElement;
+    this.#sheet = root.querySelector("style[data-scene]") as HTMLStyleElement;
+    this.#observer = new MutationObserver((records) => this.#onAttributes(records));
   }
 
   connectedCallback() {
-    this.observer.observe(this, { attributes: true });
-    this.schedule();
+    this.#observer.observe(this, { attributes: true });
+    this.#schedule();
   }
 
   disconnectedCallback() {
-    this.observer.disconnect();
+    this.#observer.disconnect();
     // Moving the element re-connects it in the same task: only tear down if it stays gone.
     queueMicrotask(() => {
-      if (!this.isConnected) this.unmount();
+      if (!this.isConnected) this.#unmount();
     });
   }
 
   /** Scene params set from script (merged over attributes). */
   get params(): ParamValues {
-    return { ...this.attributeParams(), ...this.extraParams };
+    return { ...this.#attributeParams(), ...this.#extraParams };
   }
   set params(value: ParamValues) {
-    this.extraParams = { ...value };
-    this.handle?.update(this.params);
+    this.#extraParams = { ...value };
+    this.#handle?.update(this.params);
   }
 
   get scene() {
@@ -155,87 +128,87 @@ export class ZenFoilElement extends ElementBase {
 
   /** The next frame as ImageData (works headless, where WebGPU can't present). */
   capture(): Promise<ImageData | null> {
-    return this.handle ? this.handle.capture() : Promise.resolve(null);
+    return this.#handle ? this.#handle.capture() : Promise.resolve(null);
   }
 
   /** Merge params (same as setting attributes, without touching the DOM). */
   update(params: ParamValues) {
-    this.extraParams = { ...this.extraParams, ...params };
-    this.handle?.update(this.params);
+    this.#extraParams = { ...this.#extraParams, ...params };
+    this.#handle?.update(this.params);
   }
 
-  private attributeParams(): ParamValues {
+  #attributeParams(): ParamValues {
     const out: ParamValues = {};
-    for (const a of Array.from(this.attributes)) if (!isOwn(a.name)) out[a.name] = a.value;
+    for (const a of Array.from(this.attributes)) if (!isElementAttribute(a.name)) out[a.name] = a.value;
     return out;
   }
 
-  private onAttributes(records: MutationRecord[]) {
+  #onAttributes(records: MutationRecord[]) {
     let remount = false;
     let params = false;
     for (const r of records) {
       const name = r.attributeName ?? "";
       if (name === "scene" || name === "theme" || name === "seed" || name === "max-dpr") remount = true;
       else if (name === "accent") {
-        this.applyPoster();
+        this.#applyPoster();
         // Removing the attribute returns to the scene's own accent.
-        this.handle?.setAccent(this.getAttribute("accent") ?? getScene(this.scene)?.accent ?? "#6fb8ff");
-      } else if (name === "aria-label") this.applyLabel();
-      else if (!isOwn(name)) params = true;
+        this.#handle?.setAccent(this.getAttribute("accent") ?? getScene(this.scene)?.accent ?? "#6fb8ff");
+      } else if (name === "aria-label") this.#applyLabel();
+      else if (!isElementAttribute(name)) params = true;
     }
-    if (remount) this.schedule(true);
-    else if (params) this.handle?.update(this.params);
+    if (remount) this.#schedule(true);
+    else if (params) this.#handle?.update(this.params);
   }
 
-  private schedule(force = false) {
-    if (force) this.mountedKey = "";
-    if (this.scheduled) return;
-    this.scheduled = true;
+  #schedule(force = false) {
+    if (force) this.#mountedKey = "";
+    if (this.#scheduled) return;
+    this.#scheduled = true;
     // Wait a microtask so frameworks can finish setting attributes.
     queueMicrotask(() => {
-      this.scheduled = false;
-      if (this.isConnected) this.mountPlate();
+      this.#scheduled = false;
+      if (this.isConnected) this.#mountPlate();
     });
   }
 
   /* An aria-label makes the plate meaningful (role img); without one it is decorative. */
-  private applyLabel() {
+  #applyLabel() {
     if (this.getAttribute("aria-label") && !this.hasAttribute("role")) this.setAttribute("role", "img");
   }
 
-  private applyPoster() {
+  #applyPoster() {
     const def = getScene(this.scene);
     const theme = (this.getAttribute("theme") as Theme | null) ?? "plate";
     const accent = resolveColor(this.getAttribute("accent") ?? def?.accent ?? "#6fb8ff", this) ?? [0.43, 0.72, 1];
     const kind = def?.post && def.post !== "plate" ? def.post : theme;
     const aspect = def?.aspect ? `--zf-scene-aspect: ${def.aspect};` : "";
-    this.sheet.textContent = `:host { --zf-poster: ${poster(kind, accent)}; ${aspect} }`;
+    this.#sheet.textContent = `:host { --zf-poster: ${poster(kind, accent)}; ${aspect} }`;
   }
 
-  private mountPlate() {
+  #mountPlate() {
     const id = this.scene;
     const key = `${id}|${this.getAttribute("theme") ?? ""}|${this.getAttribute("seed") ?? ""}|${this.getAttribute("max-dpr") ?? ""}`;
-    if (key === this.mountedKey && this.handle) return;
-    this.unmount();
-    this.mountedKey = key;
-    this.applyPoster();
-    this.applyLabel();
+    if (key === this.#mountedKey && this.#handle) return;
+    this.#unmount();
+    this.#mountedKey = key;
+    this.#applyPoster();
+    this.#applyLabel();
     if (!id) return;
     if (!getScene(id)) {
       // Scenes defined later (your own module, the showcase bundle) mount as they arrive.
       const onDefined = (e: Event) => {
         if ((e as CustomEvent<string>).detail !== id) return;
         window.removeEventListener(SCENE_EVENT, onDefined);
-        this.waiting = null;
-        if (this.isConnected) this.schedule(true);
+        this.#waiting = null;
+        if (this.isConnected) this.#schedule(true);
       };
       window.addEventListener(SCENE_EVENT, onDefined);
-      this.waiting = () => window.removeEventListener(SCENE_EVENT, onDefined);
+      this.#waiting = () => window.removeEventListener(SCENE_EVENT, onDefined);
       return;
     }
     const seed = this.getAttribute("seed");
     const maxDpr = Number(this.getAttribute("max-dpr"));
-    this.handle = mount(this.plate, {
+    this.#handle = mount(this.#plate, {
       scene: id,
       accent: this.getAttribute("accent") ?? undefined,
       theme: (this.getAttribute("theme") as Theme | null) ?? undefined,
@@ -248,11 +221,11 @@ export class ZenFoilElement extends ElementBase {
     });
   }
 
-  private unmount() {
-    this.waiting?.();
-    this.waiting = null;
-    this.handle?.destroy();
-    this.handle = null;
+  #unmount() {
+    this.#waiting?.();
+    this.#waiting = null;
+    this.#handle?.destroy();
+    this.#handle = null;
     this.removeAttribute("data-live");
     this.removeAttribute("data-static");
   }

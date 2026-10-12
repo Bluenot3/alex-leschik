@@ -63,7 +63,7 @@ import "./vendor/zen-foil/zen-foil.js";
 export const Hero = () => <zen-foil scene="seal" headline="ACME" class="block w-full" />;
 ```
 
-For TypeScript, add `templates/react/zen-foil-jsx.d.ts` to the project.
+For TypeScript, add `templates/react/zen-foil-jsx.d.ts` to the project. On the raw element, write `class`, not `className`: React 18 renders `className` on a custom element as a `classname` attribute.
 
 ## Next.js (App Router)
 
@@ -102,37 +102,24 @@ In Nuxt, import it in a `.client.ts` plugin.
 
 ## Lovable
 
-Lovable projects are Vite + React + TypeScript. The Lovable agent cannot run the installer, so use the CDN:
+Lovable projects are Vite + React + TypeScript. The Lovable agent can't run the installer, so load the bundle from the CDN:
 
-1. **`index.html`:** add before `</head>` (pin a commit for production):
+1. **`index.html`:** add this before `</head>`, pinned to a commit:
    ```html
-   <script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@main/skills/zen-foil/dist/zen-foil.js"></script>
+   <script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@<commit-sha>/skills/zen-foil/dist/zen-foil.js"></script>
    ```
-2. **`src/components/ZenFoil.tsx`:**
-   ```tsx
-   import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
-
-   declare global {
-     // eslint-disable-next-line @typescript-eslint/no-namespace
-     namespace JSX { interface IntrinsicElements { "zen-foil": Record<string, unknown> } }
-   }
-
-   type Props = {
-     scene: string; accent?: string; theme?: "plate" | "paper" | "clear"; label?: string; fixed?: boolean;
-     params?: Record<string, string | number | boolean>; className?: string; style?: CSSProperties; children?: ReactNode;
-   };
-
-   export default function ZenFoil({ scene, accent, theme, label, fixed, params, className, style, children }: Props) {
-     const attrs: Record<string, string> = {};
-     for (const [k, v] of Object.entries(params ?? {})) if (v !== false) attrs[k] = v === true ? "" : String(v);
-     return (
-       <zen-foil scene={scene} accent={accent} theme={theme} aria-label={label} fixed={fixed ? "" : undefined}
-                 className={className} style={style} {...attrs}>{children}</zen-foil>
-     );
-   }
+   Module scripts run in document order, so `<zen-foil>` is defined before `src/main.tsx` renders.
+2. **`src/components/ZenFoil.tsx`:** copy `templates/react/ZenFoil.cdn.tsx`. It's the same wrapper as the installed one, without the bundle import.
+3. **`src/zen-foil.d.ts`:** copy `templates/react/zen-foil-jsx.d.ts`. It types `<zen-foil>` for React 18 and 19, and `window.ZenFoil`.
+4. **Use it:** `<ZenFoil scene="seal" params={{ headline: "BRAND" }} className="w-full rounded-2xl" />`.
+5. **Your own scenes:** register them on the global API, in a module that `main.tsx` imports once:
+   ```ts
+   // src/scenes/my-scene.ts
+   window.ZenFoil?.defineScene({ id: "my-scene", params: { /* … */ }, code: /* wgsl */ `…` });
    ```
-3. **Use it:** `<ZenFoil scene="seal" params={{ headline: "BRAND" }} className="w-full rounded-2xl" />`.
-4. **Your own scenes:** register them with the global API (`window.ZenFoil.defineScene({...})`) in a module that runs after the CDN script, for example inside a `useEffect` in `App.tsx`.
+   The `?.` keeps the app running if the CDN is unreachable. A plate that names a scene before it is defined mounts as soon as it is.
+
+On the raw element in React 18, write `class`, not `className`: React 18 passes `className` to a custom element as a literal `classname` attribute, which styles nothing. The wrapper handles this for you.
 
 ## claude.ai artifacts
 

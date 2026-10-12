@@ -249,7 +249,10 @@ try {
       }
     } else {
       const file = join(out, `${String(args.scenes ?? "kit").replace(/[^\w-]+/g, "_")}${args.theme ? "-" + args.theme : ""}-${result.backend}.png`);
-      await page.locator("main").screenshot({ path: file });
+      // Clip a page shot to the sheet: an element shot waits for the whole
+      // sheet to hold still, which a tall page of live plates may never do.
+      const box = await page.locator("main").boundingBox();
+      await page.screenshot({ path: file, fullPage: true, ...(box ? { clip: box } : {}) });
       console.log(`saved ${relative(process.cwd(), file)}`);
     }
   }

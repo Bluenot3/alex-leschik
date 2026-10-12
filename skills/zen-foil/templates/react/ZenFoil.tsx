@@ -57,7 +57,8 @@ export default function ZenFoil({ scene, accent, theme, label, fixed, seed, maxD
     };
   }, []);
 
-  // Params travel as attributes, so React 18 and 19 behave the same.
+  // Params travel as attributes, so React 18 and 19 behave the same. (Param
+  // names never shadow element members: defineScene rejects names like that.)
   const attrs: Record<string, string> = {};
   for (const [k, v] of Object.entries(params ?? {})) {
     if (v === false) continue;
@@ -74,7 +75,9 @@ export default function ZenFoil({ scene, accent, theme, label, fixed, seed, maxD
       fixed={fixed ? "" : undefined}
       seed={seed !== undefined ? String(seed) : undefined}
       max-dpr={maxDpr !== undefined ? String(maxDpr) : undefined}
-      className={className}
+      // `class`, not `className`: React 18 writes className on a custom
+      // element as a literal "classname" attribute, which styles nothing.
+      class={className}
       style={style}
       {...attrs}
     >

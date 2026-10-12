@@ -34,7 +34,7 @@ export const usmap: FoilScene = {
     cycle: { type: "number", num: 2, default: "10", min: 4, max: 60, description: "Seconds per wave." },
     label: { type: "text", slot: 0, default: "WASHINGTON, D.C.", description: "Origin label." },
     micro: { type: "text", slot: 1, default: "THE FIRST YOUTH AI LITERACY PROGRAM IN UNITED STATES HISTORY · ZEN AI CO · ", description: "Edge microprint." },
-    title: { type: "text", slot: 2, default: "ZEN AI CERTIFIED", description: "Credential title (gold)." },
+    headline: { type: "text", slot: 2, default: "ZEN AI CERTIFIED", description: "Credential title (gold)." },
     serial: { type: "text", slot: 3, default: "ZEN-AIL-2026-", description: "Serial (prefix, when counter is on)." },
     caption: { type: "text", slot: 4, default: "VERIFIED · ZENAI.WORLD", description: "Line under the serial." },
   },

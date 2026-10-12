@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * Regenerates reference/scenes.md from the scene definitions themselves, so
- * the catalogue never drifts from the code: `node scripts/gen-docs.mjs`.
+ * Regenerates reference/scenes.md from the scene definitions, and
+ * reference/shader-signatures.md from the shader library, so neither ever
+ * drifts from the code: `node scripts/gen-docs.mjs`.
  */
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -60,3 +61,40 @@ for (const s of SHOWCASE) md += `| \`${s.id}\` | ${esc(s.title)} | ${esc(s.descr
 
 writeFileSync(join(root, "reference", "scenes.md"), md);
 console.log(`reference/scenes.md: ${kit.length} kit scenes, ${SHOWCASE.length} portfolio plates`);
+
+/* Exact signatures, read from the shader library source (the bundle ships
+   it without comments): section banners ("── Name ──") start a table, and
+   a comment directly above a fn is its note. */
+const libSrc = readFileSync(join(root, "src", "library.ts"), "utf8");
+const libAt = libSrc.indexOf("export const LIBRARY = /* wgsl */ `");
+if (libAt < 0) throw new Error("gen-docs: LIBRARY not found in src/library.ts");
+const library = libSrc
+  .slice(libSrc.indexOf("`", libAt) + 1, libSrc.indexOf("\n`;", libAt))
+  .replace(/\\`/g, "`")
+  .replace(/\\\\/g, "\\");
+const token = /\/\*\s*──\s*(.+?)\s*──[\s\S]*?\*\/|(?:\/\*((?:[^*]|\*(?!\/))*)\*\/\n)?fn (\w+)\(([^)]*)\) -> (\S+) \{/g;
+const sections = new Map([["Math, noise, distance fields, strokes, engraving, foil", []]]);
+let section = sections.keys().next().value;
+let fnCount = 0;
+for (const m of library.matchAll(token)) {
+  if (m[1]) {
+    section = m[1];
+    if (!sections.has(section)) sections.set(section, []);
+    continue;
+  }
+  sections.get(section).push({ name: m[3], args: m[4], ret: m[5], note: (m[2] ?? "").replace(/\s+/g, " ").trim() });
+  fnCount++;
+}
+let sig = `# Shader library signatures
+
+Generated from the library source by \`scripts/gen-docs.mjs\`; don't edit it by hand. \`shader-library.md\` explains how to use these functions. The argument types are exact: where a signature says \`i32\`, pass an integer (\`rosette(…, 3, …)\`, not \`3.0\`), and where it says \`f32\`, pass a float literal (\`1.0\`, not \`1\`).
+
+`;
+for (const [name, fns] of sections) {
+  if (!fns.length) continue;
+  sig += `## ${name}\n\n| Signature | Returns | Notes |\n|---|---|---|\n`;
+  for (const f of fns) sig += `| \`${f.name}(${f.args})\` | \`${f.ret}\` | ${esc(f.note)} |\n`;
+  sig += "\n";
+}
+writeFileSync(join(root, "reference", "shader-signatures.md"), sig);
+console.log(`reference/shader-signatures.md: ${fnCount} library functions`);

@@ -19,9 +19,9 @@ These are the engraved-hologram GPU graphics from alexleschik.com, packaged so a
 | Start here | |
 |---|---|
 | `SKILL.md` | The skill file agents load: install paths, the scene catalog, the workflow and the quality bar |
-| `reference/` | Aesthetic, scene params, authoring, the shader library, portable WGSL, integration recipes |
+| `reference/` | Aesthetic, scene params, authoring, the shader library and its exact signatures, portable WGSL, integration recipes |
 | `lab.html` | Browse every scene (serve this folder: `npx serve .`, or `python3 -m http.server`) |
-| `templates/` | A standalone page, the React wrapper, a scene template and a worked example |
+| `templates/` | A standalone page, the React wrapper (installed and CDN versions) with JSX typings, a scene template and a worked example |
 | `scripts/` | `install.mjs`, `new-scene.mjs`, `check.mjs`, `preview.mjs`, `build.mjs`, `gen-docs.mjs` |
 
 ## Install as a skill
@@ -41,7 +41,7 @@ node scripts/build.mjs          # dist/zen-foil.js + dist/zen-foil-showcase.js (
 npx tsc -p tsconfig.json        # types, including the check that dist/zen-foil.d.ts matches
 node scripts/check.mjs --all    # static checks on every scene
 node scripts/preview.mjs --scenes kit --validate --backend webgpu   # compile on both backends + screenshots
-node scripts/gen-docs.mjs       # regenerate reference/scenes.md
+node scripts/gen-docs.mjs       # regenerate reference/scenes.md and reference/shader-signatures.md
 ```
 
 ## Licenses

@@ -256,6 +256,19 @@ fn charAt(i: i32) -> i32 {
   let raw: i32 = i32(f + 0.5);
   return (raw >> (u32(i % 3) * 8u)) & 255;
 }
+/* Tiled microprint (textLoop, ringText) repeats its text with a " · " joint,
+   unless the text already ends in a space or a dot, so runs never fuse
+   ("…AI COZEN AI…"). tiledLen is the repeat length; tiledChar(…, idx) the
+   atlas code at idx, reading only inside the text. */
+fn tiledLen(start: i32, count: i32) -> i32 {
+  let last: i32 = charAt(start + max(count - 1, 0));
+  let joined: bool = (count <= 0) || (last == 0) || (last == 95) || (last == 96);
+  return select(count + 3, count, joined);
+}
+fn tiledChar(start: i32, count: i32, idx: i32) -> i32 {
+  let c: i32 = charAt(start + clamp(idx, 0, max(count - 1, 0)));
+  return select(select(0, 95, idx == count + 1), c, idx < count);
+}
 /* Monospace text run from u.d with explicit tracking: start char index,
    count, top-left origin (p-space), cap size, advance = track × size.
    0.6 is the open microprint spacing; ~0.42 sets tight display figures. */
@@ -279,28 +292,29 @@ fn textLoop(p: vec2f, top: f32, size: f32, start: i32, count: i32, shift: f32, w
   let adv: f32 = size * 0.6;
   let lx: f32 = (p.x + shift + 64.0) / adv;
   let ly: f32 = (top - p.y) / size;
-  let idx: i32 = i32(floor(lx)) % max(count, 1);
-  let inside: bool = (ly >= 0.0) && (ly <= 1.0);
-  let code: i32 = charAt(start + idx);
+  let idx: i32 = i32(floor(lx)) % max(tiledLen(start, count), 1);
+  let inside: bool = (ly >= 0.0) && (ly <= 1.0) && (count > 0);
+  let code: i32 = tiledChar(start, count, idx);
   let q: vec2f = vec2f((fract(lx) - 0.5) * 0.6 + 0.5, ly);
   return select(0.0, glyphCov(code, q, size, weight), inside && (code > 0));
 }
 /* Microprint set around a circle (clockwise from twelve o'clock, glyph tops
-   facing outward). Tiles a whole number of times so the seam is invisible;
-   once = true prints a single run starting at rot instead. */
+   facing outward). Tiles a whole number of times so the seam is invisible
+   (joined like textLoop); once = true prints a single run starting at rot. */
 fn ringText(p: vec2f, ctr: vec2f, radius: f32, size: f32, start: i32, count: i32, rot: f32, once: bool) -> f32 {
   let d: vec2f = p - ctr;
   let r: f32 = length(d);
   let a: f32 = atan2(d.x, d.y) - rot;
   let fit: f32 = TAU * radius / (size * 0.6);
-  let n: f32 = f32(max(count, 1));
+  let len: i32 = max(select(tiledLen(start, count), count, once), 1);
+  let n: f32 = f32(len);
   let slots: f32 = select(max(floor(fit / n), 1.0) * n, floor(fit), once);
   let s: f32 = fract(a / TAU + 2.0) * slots;
   let raw: i32 = i32(floor(s));
-  let idx: i32 = raw % max(count, 1);
+  let idx: i32 = raw % len;
   let ly: f32 = (radius + size * 0.5 - r) / size;
-  let inside: bool = (ly >= 0.0) && (ly <= 1.0) && (!once || (raw < count));
-  let code: i32 = charAt(start + idx);
+  let inside: bool = (ly >= 0.0) && (ly <= 1.0) && (count > 0) && (!once || (raw < count));
+  let code: i32 = tiledChar(start, count, idx);
   let arc: f32 = TAU * r / slots;
   let q: vec2f = vec2f(0.5 + (fract(s) - 0.5) * arc / size, ly);
   return select(0.0, glyphCov(code, q, size, 0.0), inside && (code > 0));

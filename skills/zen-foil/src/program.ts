@@ -37,5 +37,8 @@ export function describeLine(kind: "wgsl" | "glsl", line: number, program: Progr
 
 /** Rewrites a GLSL info log so its line numbers point into the scene. */
 export function readableGlslLog(log: string, program: Program) {
-  return log.replace(/(ERROR|WARNING):\s*\d+:(\d+):/g, (_m, level: string, line: string) => `${level}: ${describeLine("glsl", Number(line), program)}:`);
+  return log
+    .replace(/\0/g, "") // some drivers end the info log with a NUL
+    .replace(/(ERROR|WARNING):\s*\d+:(\d+):/g, (_m, level: string, line: string) => `${level}: ${describeLine("glsl", Number(line), program)}:`)
+    .trim();
 }

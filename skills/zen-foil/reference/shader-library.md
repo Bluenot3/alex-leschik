@@ -1,6 +1,6 @@
 # Shader library
 
-Every scene can call these functions. They sit before your code, in portable WGSL. Distances are in **p-units** (1 = plate height) unless noted. Coverage values run 0–1 and are analytically antialiased. Never redeclare these names: `scripts/check.mjs` and `lintWgsl` catch it.
+Every scene can call these functions. They sit before your code, in portable WGSL. Distances are in **p-units** (1 = plate height) unless noted. Coverage values run 0–1 and are analytically antialiased. Never redeclare these names: `scripts/check.mjs` and `lintWgsl` catch it. The exact argument and return types of all of them are in `shader-signatures.md`, generated from the source: pass `i32` where a signature says `i32`.
 
 ## Frame and input
 
@@ -79,8 +79,8 @@ Text params, set by attributes:
 | `textCenterP(p, centre, size, k, weight)` | Centred on both axes. |
 | `textDecodeP(p, topLeft, size, k, weight, reveal)` | Decodes in: characters past `reveal` (0–1) re-roll as cipher glyphs. `reveal = saturate((intro() - 0.3) / 0.7)` is the standard entrance. |
 | `textRunPT(…, track)`, `textDecodePT(…, reveal, track)`, `textWidthPT(k, size, track)` | Explicit tracking. 0.44 suits big figures. |
-| `textLoopP(p, top, size, k, shift, weight)` | A microprint band, tiled horizontally. Animate `shift`. |
-| `ringTextP(p, centre, radius, size, k, rot, once)` | Text round a circle, tops outward, tiled seamlessly. |
+| `textLoopP(p, top, size, k, shift, weight)` | A microprint band, tiled horizontally. Animate `shift`. Repeats are joined with ` · ` unless the text already ends in a space or `·`. |
+| `ringTextP(p, centre, radius, size, k, rot, once)` | Text round a circle, tops outward, tiled seamlessly (joined like `textLoopP`). |
 | `textLenP(k)`, `textWidthP(k, size)`, `textFitP(k, maxWidth, maxSize)` | Measure the text and fit it to a column. |
 | `strParam(k) -> vec2i` | (start, count) for the raw functions below. |
 | `numParam(i) -> f32` | Numeric, boolean, choice and mark params. |
@@ -90,7 +90,7 @@ Raw text (fixed strings from `layoutText`, or tables you packed yourself):
 | Function | Notes |
 |---|---|
 | `textRun(p, topLeft, size, start, count, weight)`, `textRunT(…, track)` | A run from the data block. |
-| `textLoop(p, top, size, start, count, shift, weight)` | A tiled band. |
+| `textLoop(p, top, size, start, count, shift, weight)` | A tiled band (joined like `textLoopP`). |
 | `ringText(p, centre, radius, size, start, count, rot, once)` | Round a circle. |
 | `charAt(i) -> i32` | The atlas code of character `i`. |
 | `glyphAt(p, topLeft, size, code, weight)` | One glyph by atlas code (`100` is ×, `95` is ·, `16+d` is the digit d). |

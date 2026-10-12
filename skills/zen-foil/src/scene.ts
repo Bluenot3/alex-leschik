@@ -2,6 +2,7 @@ import { getFoilEngine } from "./engine";
 import { atlas, missingGlyphs, packText } from "./atlas";
 import { markSlot } from "./marks";
 import { lintWgsl } from "./lint";
+import { paramNameProblem } from "./reserved";
 import {
   DATA_FLOATS,
   FREE_BASE_FLOAT,
@@ -38,6 +39,8 @@ function debugging() {
 export function defineScene(scene: FoilScene): FoilScene {
   if (!scene.id || !/^[a-z0-9][\w-]*$/i.test(scene.id)) throw new Error(`zen-foil: invalid scene id "${scene.id}"`);
   for (const [name, spec] of Object.entries(scene.params ?? {})) {
+    const badName = paramNameProblem(name);
+    if (badName) throw new Error(`zen-foil: ${scene.id}.${name}: ${badName}. Rename the param.`);
     if (spec.type === "text" && (spec.slot === undefined || spec.slot < 0 || spec.slot >= STRING_SLOTS))
       throw new Error(`zen-foil: ${scene.id}.${name}: text params need a slot 0–${STRING_SLOTS - 1}`);
     // Numeric params without a slot are fine: data() or the behavior reads them.

@@ -61,7 +61,7 @@ Engraved U.S. map; arcs spread from an origin under your seal, and each arrival 
 Default aspect 1.6 · accent `#59c3ff` · output `plate` (themeable)
 
 ```html
-<zen-foil scene="usmap" label="WASHINGTON, D.C." micro="THE FIRST YOUTH AI LITERACY PROGRAM IN UNITED STATES HISTORY · ZEN AI CO ·" title="ZEN AI CERTIFIED"></zen-foil>
+<zen-foil scene="usmap" label="WASHINGTON, D.C." micro="THE FIRST YOUTH AI LITERACY PROGRAM IN UNITED STATES HISTORY · ZEN AI CO ·" headline="ZEN AI CERTIFIED"></zen-foil>
 ```
 
 | Param | Type | Default | Notes |
@@ -73,7 +73,7 @@ Default aspect 1.6 · accent `#59c3ff` · output `plate` (themeable)
 | `cycle` | number (4–60) | `10` | Seconds per wave. |
 | `label` | text | `WASHINGTON, D.C.` | Origin label. |
 | `micro` | text | `THE FIRST YOUTH AI LITERACY PROGRAM IN UNITED STATES HIST…` | Edge microprint. |
-| `title` | text | `ZEN AI CERTIFIED` | Credential title (gold). |
+| `headline` | text | `ZEN AI CERTIFIED` | Credential title (gold). |
 | `serial` | text | `ZEN-AIL-2026-` | Serial (prefix, when counter is on). |
 | `caption` | text | `VERIFIED · ZENAI.WORLD` | Line under the serial. |
 
@@ -103,14 +103,14 @@ Guilloche-bordered credential: title, recipient, program, date, serial and a gol
 Default aspect 1.41 · accent `#c9a45c` · output `plate` (themeable)
 
 ```html
-<zen-foil scene="certificate" title="CERTIFICATE OF ACHIEVEMENT" recipient="RECIPIENT NAME" program="HAS COMPLETED THE AI LITERACY PROGRAM"></zen-foil>
+<zen-foil scene="certificate" headline="CERTIFICATE OF ACHIEVEMENT" recipient="RECIPIENT NAME" program="HAS COMPLETED THE AI LITERACY PROGRAM"></zen-foil>
 ```
 
 | Param | Type | Default | Notes |
 |---|---|---|---|
 | `mark` | mark | `zen` | Mark in the seal. |
 | `speed` | number (0–4) | `1` | Animation speed. |
-| `title` | text | `CERTIFICATE OF ACHIEVEMENT` | Title line. |
+| `headline` | text | `CERTIFICATE OF ACHIEVEMENT` | Title line. |
 | `recipient` | text | `RECIPIENT NAME` | Recipient's name. |
 | `program` | text | `HAS COMPLETED THE AI LITERACY PROGRAM` | What was achieved. |
 | `date` | text | `MMXXVI` | Date (left foot). |
@@ -215,7 +215,7 @@ Default aspect 1 · accent `#6fa3f5` · output `alpha`
 | `mark` | mark | `zen` | Mark on the engraved seal faces. |
 | `spin` | number (-60–60) | `7` | Turn speed, degrees per second. |
 | `tilt` | number (-60–60) | `-20` | Downward view angle, degrees. |
-| `scroll` | boolean | `false` | Also turn with page scroll. |
+| `scrollspin` | boolean | `false` | Also turn with page scroll. |
 | `frame` | text | `ZEN AI CO · VISUAL ARCHIVE · ORDO AB CHAO · ` | Microprint round each face. |
 | `ring` | text | `ZEN AI CO · AUTHENTIC · ` | Microprint round the seal. |
 

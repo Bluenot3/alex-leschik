@@ -50,40 +50,48 @@ async function loadEsbuild() {
 }
 
 const tmp = mkdtempSync(join(tmpdir(), "zen-foil-check-"));
+let loadErrors = 0;
 try {
   if (all) await import(pathToFileURL(join(skillRoot, "dist", "zen-foil-showcase.js")).href);
   for (const f of files) {
-    const abs = resolve(f);
-    const ext = extname(abs);
-    if (ext === ".js" || ext === ".mjs") {
-      await import(pathToFileURL(abs).href);
-      continue;
-    }
-    const esbuild = await loadEsbuild();
-    if (!esbuild) {
-      console.error(`${f}: TypeScript needs esbuild (npm i -D esbuild), or pass the compiled .js`);
-      process.exit(2);
-    }
-    // Bundle the scene with "zen-foil" (or a vendored copy) pointing at this
-    // skill's dist, so its defineScene() calls land in the collector.
-    const out = join(tmp, `${Math.random().toString(36).slice(2)}.mjs`);
-    await esbuild.build({
-      entryPoints: [abs],
-      bundle: true,
-      format: "esm",
-      platform: "neutral",
-      outfile: out,
-      logLevel: "silent",
-      plugins: [
-        {
-          name: "zen-foil-core",
-          setup(b) {
-            b.onResolve({ filter: /(^zen-foil$|zen-foil(\.js)?$)/ }, () => ({ path: pathToFileURL(dist).href, external: true }));
+    try {
+      const abs = resolve(f);
+      const ext = extname(abs);
+      if (ext === ".js" || ext === ".mjs") {
+        await import(pathToFileURL(abs).href);
+        continue;
+      }
+      const esbuild = await loadEsbuild();
+      if (!esbuild) {
+        console.error(`${f}: TypeScript needs esbuild (npm i -D esbuild), or pass the compiled .js`);
+        process.exit(2);
+      }
+      // Bundle the scene with "zen-foil" (or a vendored copy) pointing at this
+      // skill's dist, so its defineScene() calls land in the collector.
+      const out = join(tmp, `${Math.random().toString(36).slice(2)}.mjs`);
+      await esbuild.build({
+        entryPoints: [abs],
+        bundle: true,
+        format: "esm",
+        platform: "neutral",
+        outfile: out,
+        logLevel: "silent",
+        plugins: [
+          {
+            name: "zen-foil-core",
+            setup(b) {
+              b.onResolve({ filter: /(^zen-foil$|zen-foil(\.js)?$)/ }, () => ({ path: pathToFileURL(dist).href, external: true }));
+            },
           },
-        },
-      ],
-    });
-    await import(pathToFileURL(out).href);
+        ],
+      });
+      await import(pathToFileURL(out).href);
+    } catch (err) {
+      // defineScene() throws on a bad param spec; esbuild throws on syntax errors.
+      loadErrors++;
+      console.log(`✗ ${f}`);
+      console.log(`    ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 } finally {
   rmSync(tmp, { recursive: true, force: true });
@@ -129,6 +137,7 @@ for (const scene of scenes) {
     console.log(`✓ ${scene.id}`);
   }
 }
-if (!scenes.length) console.log("no scenes found — does the file call defineScene()?");
+problems += loadErrors;
+if (!scenes.length && !loadErrors) console.log("no scenes found — does the file call defineScene()?");
 console.log(problems ? `${problems} problem(s)` : `${scenes.length} scene(s) clean`);
 process.exit(problems ? 1 : 0);

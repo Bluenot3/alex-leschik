@@ -64,7 +64,7 @@ export const vault: FoilScene = {
     mark: { type: "mark", num: 0, default: "zen", description: "Mark on the engraved seal faces." },
     spin: { type: "number", default: "7", min: -60, max: 60, description: "Turn speed, degrees per second." },
     tilt: { type: "number", default: "-20", min: -60, max: 60, description: "Downward view angle, degrees." },
-    scroll: { type: "boolean", default: "false", description: "Also turn with page scroll." },
+    scrollspin: { type: "boolean", default: "false", description: "Also turn with page scroll." },
     frame: { type: "text", slot: 0, default: "ZEN AI CO · VISUAL ARCHIVE · ORDO AB CHAO · ", description: "Microprint round each face." },
     ring: { type: "text", slot: 1, default: "ZEN AI CO · AUTHENTIC · ", description: "Microprint round the seal." },
   },
@@ -194,7 +194,7 @@ export const vault: FoilScene = {
         }
         const spin = Number(p.spin) || 0;
         const tilt = Number(p.tilt);
-        const scrollTurn = p.scroll === "" || p.scroll === "true" ? window.scrollY * 0.12 : 0;
+        const scrollTurn = p.scrollspin === "" || p.scrollspin === "true" ? window.scrollY * 0.12 : 0;
         const tt = frozen ? (globalThis as { ZEN_FOIL_FREEZE?: number }).ZEN_FOIL_FREEZE ?? 0 : t;
         const ry = 32 + (ctx.reduced ? 0 : tt * spin) + scrollTurn + (still ? 0 : 3.4 * Math.sin(t * 0.31) + ptr.x * ptr.on * 6.5);
         const rx = (Number.isFinite(tilt) ? tilt : -20) + (still ? 0 : 2.2 * Math.sin(t * 0.45) - ptr.y * ptr.on * 4.5);

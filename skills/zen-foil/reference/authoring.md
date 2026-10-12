@@ -64,6 +64,13 @@ Declare params, and the engine writes them into `u.d` and keeps them live as att
 
 Params without a slot are fine. Your `data()` or behavior reads them through `params` or `ctx.params()`.
 
+**Param names** are attribute names, so `defineScene` rejects three kinds:
+- **Not lowercase:** use lowercase letters, digits and hyphens (`headline`, `scroll-speed`), because HTML lowercases attribute names.
+- **The element's own attributes:** `title`, `id`, `class`, `style`, `hidden`, `lang`, `role`, `slot`, `aria-*`, `data-*`, `on*`, and the element's `scene`, `accent`, `theme`, `seed`, `fixed` and `max-dpr`.
+- **Members of the element:** React 19, Vue and Svelte set those as properties instead of attributes. The common ones are `scroll`, `focus`, `click`, `remove`, `append`, `prefix`, `dataset`, `children`, `params`, `update`, `capture` and `renderer`.
+
+Prefer the kit's names where they fit: `headline`, `subline`, `caption`, `serial`, `micro`, `mark`, `speed`.
+
 ### The data block
 
 ```
