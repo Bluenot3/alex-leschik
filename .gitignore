@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# The zen-foil skill ships its built bundle (served by the CDN straight from the repo)
+!skills/zen-foil/dist/
