@@ -1,0 +1,58 @@
+# zen-foil
+
+> One <zen-foil> element = one live engraved-hologram plate (WebGPU, WebGL2 fallback, CSS poster without a GPU). Load dist/zen-foil.js once as a module, then write tags. Every option is a plain HTML attribute.
+
+Version 1.1.0. Load once, then write tags:
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js"></script>
+<zen-foil scene="seal" mark="zen" headline="ZEN AI CO" subline="ISSUED UNDER SEAL"
+  serial="ZEN-2026-"></zen-foil>
+```
+
+## Rules
+
+- Load zen-foil.js exactly once, from one URL, as <script type="module">. Pin the CDN to a commit (@<sha>), not @main.
+- Use only scene ids and attributes listed here. Anything else is ignored, so check with ZenFoil.check() or scripts/verify.mjs.
+- Points are "lon,lat; lon,lat" with longitude first (Washington, D.C. is -77.04,38.91).
+- Engraved text is short, UPPERCASE and true. Never invent figures, partners or credentials: leave the attribute out instead.
+- Brand params default to ZEN AI Co. copy. For any other brand set every brandParams entry, or remove ZEN marks with mark="none" where allowed.
+- One hero plate per viewport, at most ~8 plates on screen, field backgrounds at low density (0.15–0.3).
+- Real headings and copy stay in the DOM next to the plate (SEO, accessibility); the plate is the visual.
+- The plate's height comes from the scene's aspect ratio unless your CSS sets a height; give it a width (it is display:block, full width).
+
+## Scenes
+
+- `seal`: Guilloche medallion around a brand mark, ring microprint, a stamping pulse and a live credential serial. Params: mark, layout, counter, speed, headline, subline, micro, serial, caption, eyebrow.
+- `globe`: Engraved Earth turning under a holographic atmosphere; great-circle arcs carry your mark from an origin to every destination. Params: origin, points, mark, partner, layout, spin, hubs, headline, subline, label, micro, stat.
+- `usmap`: Engraved U.S. map; arcs spread from an origin under your seal, and each arrival issues the next credential serial. Params: origin, points, mark, counter, cycle, label, micro, headline, serial, caption.
+- `banner`: Interlaced guilloche waves across a wide band, a cartouche headline, end seals and edge microprint. Params: mark, strands, speed, headline, subline, micro.
+- `certificate`: Guilloche-bordered credential: title, recipient, program, date, serial and a gold seal. Paper or holographic. Params: mark, speed, headline, recipient, program, date, serial, issuer, micro, presented.
+- `metric`: A decoding headline figure over an engraved, foil-lined chart of your series, with a live read head. Params: value, label, delta, headline, micro, series, mark, speed.
+- `network`: Your mark as an orchestrating hub with labelled agents on an engraved orbit and packets streaming along the links. Params: nodes, mark, speed, headline, subline, status, micro.
+- `engrave`: Turns any image into a holographic banknote engraving; reveal mode adds a full-colour loupe that follows the pointer. Params: src, mark, mode, frame, density, headline, subline, micro.
+- `stage`: Gallery that mints each image in through its own engraved lines, over a blurred copy of itself, with sheen and microprint. Params: images, src, interval, top, bottom.
+- `vault`: Ray-traced glass cube with dispersion, your images (or video) printed on its faces, and engraved seals until they load. Params: images, mark, spin, tilt, scrollspin, frame, ring.
+- `field`: Page-background field of floating cipher glyphs with parallax, sheen, watermark seals and decoding phrases. Params: variant, density, rate, seals, phrases.
+- Portfolio plates (load `zen-foil-showcase.js` from the same place): `pioneer`, `dmv`, `near`, `parks`, `spark`, `gallery`, `stem`, `medcode`, `cipher`, `terminal`, `planet`, `proto`, `weekly`, `forge`, `lens`, `gravity`, `toon`, `chronos`, `deadline`, `baker`.
+
+## Element attributes
+
+- `scene`: Required. Which scene to draw (see scenes).
+- `accent`: Any CSS colour: #hex, rgb(), hsl(var(--primary)), oklch(). One per plate, from the brand.
+- `theme`: plate (dark, default), paper (light security paper) or clear (ink only, over your own background). Ignored by raw/alpha scenes.
+- `aria-label`: Accessible name. Without it the plate is decorative.
+- `fixed`: Full-viewport background layer (use with scene="field").
+- `seed`: Fixes the plate's random phase.
+- `max-dpr`: Device-pixel-ratio ceiling (1–3). Use 1.25–1.5 for big background layers.
+- `class`: CSS classes. On the raw element in React 18 write class, not className.
+- `style`: Inline CSS. The height comes from the scene's aspect unless CSS sets one.
+
+## Files
+
+- [AGENTS.md](AGENTS.md): the tiered brief for coding agents (start here)
+- [manifest.json](manifest.json): every scene, param, type, range and default, with examples and templates
+- [SKILL.md](SKILL.md): the full skill (install paths, workflow, quality bar)
+- [reference/scenes.md](reference/scenes.md): the scene catalogue
+- [reference/aesthetic.md](reference/aesthetic.md): how it should look
+- [reference/authoring.md](reference/authoring.md): writing new scenes

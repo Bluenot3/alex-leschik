@@ -13,6 +13,10 @@ Treat the supplied source as the technical and visual baseline, not as inspirati
 - Creating or updating this skill does not authorize any change to the source portfolio, its graphics, or its publication.
 - Reuse mechanics, not Alex's biography, claims, project names, logos, private data, or hidden mottos in unrelated products. Brand assets in the source snapshot are reference-only until authorized for that target.
 
+## Start with zen-foil
+
+If the request is a plate the zen-foil kit already draws (seal, globe, U.S. map, banner, certificate, metric, agent network, engraved photo, image stage, crystal cube, glyph background, or one of the 20 portfolio plates), use the `zen-foil` skill instead: read `skills/zen-foil/AGENTS.md`, write tags with `scripts/replicate.mjs`, and check them with `scripts/verify.mjs`. That is one script tag and a checked element, not a copied engine. Use this skill for what the kit can't do: new motifs, engine work, or effects outside the plate format.
+
 ## Read before building
 
 - Read [aesthetic.md](references/aesthetic.md) for every use: it defines the actual material language and the standard for a stronger variation.

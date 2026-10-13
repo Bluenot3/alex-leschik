@@ -1,0 +1,1243 @@
+{
+  "name": "zen-foil",
+  "version": "1.1.0",
+  "element": "zen-foil",
+  "summary": "One <zen-foil> element = one live engraved-hologram plate (WebGPU, WebGL2 fallback, CSS poster without a GPU). Load dist/zen-foil.js once as a module, then write tags. Every option is a plain HTML attribute.",
+  "install": {
+    "script": "<script type=\"module\" src=\"https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js\"></script>",
+    "cdn": "https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js",
+    "showcase": "https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil-showcase.js",
+    "commit": "2285a08ee32e5cec72aff9ef30dbfd296e44dfb5",
+    "vendored": "node skills/zen-foil/scripts/install.mjs <project-dir>",
+    "check": "node skills/zen-foil/scripts/verify.mjs <files or folders>",
+    "write": "node skills/zen-foil/scripts/replicate.mjs tag <scene> --<param> <value>"
+  },
+  "rules": [
+    "Load zen-foil.js exactly once, from one URL, as <script type=\"module\">. Pin the CDN to a commit (@<sha>), not @main.",
+    "Use only scene ids and attributes listed here. Anything else is ignored, so check with ZenFoil.check() or scripts/verify.mjs.",
+    "Points are \"lon,lat; lon,lat\" with longitude first (Washington, D.C. is -77.04,38.91).",
+    "Engraved text is short, UPPERCASE and true. Never invent figures, partners or credentials: leave the attribute out instead.",
+    "Brand params default to ZEN AI Co. copy. For any other brand set every brandParams entry, or remove ZEN marks with mark=\"none\" where allowed.",
+    "One hero plate per viewport, at most ~8 plates on screen, field backgrounds at low density (0.15–0.3).",
+    "Real headings and copy stay in the DOM next to the plate (SEO, accessibility); the plate is the visual.",
+    "The plate's height comes from the scene's aspect ratio unless your CSS sets a height; give it a width (it is display:block, full width)."
+  ],
+  "attributes": {
+    "scene": {
+      "type": "scene id",
+      "description": "Required. Which scene to draw (see scenes)."
+    },
+    "accent": {
+      "type": "color",
+      "description": "Any CSS colour: #hex, rgb(), hsl(var(--primary)), oklch(). One per plate, from the brand."
+    },
+    "theme": {
+      "type": "choice",
+      "options": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "description": "plate (dark, default), paper (light security paper) or clear (ink only, over your own background). Ignored by raw/alpha scenes."
+    },
+    "aria-label": {
+      "type": "text",
+      "description": "Accessible name. Without it the plate is decorative."
+    },
+    "fixed": {
+      "type": "boolean",
+      "description": "Full-viewport background layer (use with scene=\"field\")."
+    },
+    "seed": {
+      "type": "number",
+      "description": "Fixes the plate's random phase."
+    },
+    "max-dpr": {
+      "type": "number",
+      "description": "Device-pixel-ratio ceiling (1–3). Use 1.25–1.5 for big background layers."
+    },
+    "class": {
+      "type": "text",
+      "description": "CSS classes. On the raw element in React 18 write class, not className."
+    },
+    "style": {
+      "type": "text",
+      "description": "Inline CSS. The height comes from the scene's aspect unless CSS sets one."
+    }
+  },
+  "marks": [
+    "zen",
+    "bgc",
+    "near",
+    "none"
+  ],
+  "events": {
+    "foil-live": "First frame presented (detail.backend: webgpu | webgl2).",
+    "foil-fail": "No GPU or the scene failed to compile: the CSS poster stays (detail.reason).",
+    "foil-error": "A problem with an image, mark or param (detail.message)."
+  },
+  "methods": {
+    "replay()": "Plays the minting intro again (burin, foil, press).",
+    "update(params)": "Merges params without touching attributes.",
+    "capture()": "The next frame as ImageData.",
+    "ZenFoil.check()": "Checks every plate on the page; returns problems with exact fixes.",
+    "ZenFoil.describe(id?)": "This contract, or one scene's entry.",
+    "ZenFoil.snippet(id, params, opts?)": "A valid tag for a scene, or an error saying what to fix."
+  },
+  "glyphs": "ASCII, ·•→←±×∷∵∴⊕⊗※÷≈≡∞△◇◈✦αλΣΩπ∇∂ and アイウエオカ. Accents fold to the base letter, — prints as -, anything else as ·.",
+  "scenes": [
+    {
+      "id": "seal",
+      "group": "kit",
+      "title": "Security seal",
+      "description": "Guilloche medallion around a brand mark, ring microprint, a stamping pulse and a live credential serial.",
+      "aspect": 1.6,
+      "accent": "#7cc4ff",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Brand mark: zen, bgc, near, a registered name, SVG path data or an image URL.",
+          "brand": true
+        },
+        "layout": {
+          "type": "choice",
+          "options": [
+            "auto",
+            "left",
+            "center",
+            "right"
+          ],
+          "default": "auto",
+          "description": "Medallion position; auto stacks on narrow plates."
+        },
+        "counter": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Append a live 6-digit counter to the serial."
+        },
+        "speed": {
+          "type": "number",
+          "default": "1",
+          "min": 0,
+          "max": 4,
+          "description": "Animation speed (0 holds still)."
+        },
+        "headline": {
+          "type": "text",
+          "default": "ZEN AI CO",
+          "description": "Main line (fits the column automatically).",
+          "brand": true
+        },
+        "subline": {
+          "type": "text",
+          "default": "ISSUED UNDER SEAL",
+          "description": "Second line."
+        },
+        "micro": {
+          "type": "text",
+          "default": "ZEN AI CO · AUTHENTIC · ORDO AB CHAO · ",
+          "description": "Microprint around the ring and along the edges.",
+          "brand": true
+        },
+        "serial": {
+          "type": "text",
+          "default": "ZEN-2026-",
+          "description": "Credential serial (prefix, when counter is on).",
+          "brand": true
+        },
+        "caption": {
+          "type": "text",
+          "default": "VERIFIED · ZENAI.WORLD",
+          "description": "Small line under the serial.",
+          "brand": true
+        },
+        "eyebrow": {
+          "type": "text",
+          "default": "CERTIFIED ISSUER",
+          "description": "Small label above the headline."
+        }
+      },
+      "brandParams": [
+        "mark",
+        "headline",
+        "micro",
+        "serial",
+        "caption"
+      ],
+      "example": "<zen-foil scene=\"seal\" mark=\"zen\" headline=\"ZEN AI CO\" subline=\"ISSUED UNDER SEAL\"\n  serial=\"ZEN-2026-\"></zen-foil>",
+      "template": "<zen-foil scene=\"seal\" mark=\"{{MARK: /logo.svg or none}}\" headline=\"{{HEADLINE}}\"\n  subline=\"{{SUBLINE}}\" micro=\"{{MICRO}}\" serial=\"{{SERIAL}}\" caption=\"{{CAPTION}}\"></zen-foil>"
+    },
+    {
+      "id": "globe",
+      "group": "kit",
+      "title": "Engraved globe",
+      "description": "Engraved Earth turning under a holographic atmosphere; great-circle arcs carry your mark from an origin to every destination.",
+      "aspect": 1.6,
+      "accent": "#6ee7b7",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "origin": {
+          "type": "points",
+          "default": "-77.04, 38.91",
+          "description": "Where every arc starts: lon,lat.",
+          "brand": true
+        },
+        "points": {
+          "type": "points",
+          "default": "-79.38,43.65; -0.13,51.51; 13.40,52.52; 55.27,25.20; 103.82,1.35; 139.69,35.69; -87.63,41.88; -84.39,33.75; -96.80,32.78; -104.99,39.74; -118.24,34.05; -122.33,47.61; -80.19,25.76; -93.27,44.98",
+          "description": "Destinations \"lon,lat; lon,lat; …\" (up to 14).",
+          "brand": true
+        },
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Mark carried along the arcs and shown in the lockup.",
+          "brand": true
+        },
+        "partner": {
+          "type": "mark",
+          "description": "Optional partner mark: the lockup reads mark × partner."
+        },
+        "layout": {
+          "type": "choice",
+          "options": [
+            "auto",
+            "left",
+            "center",
+            "right"
+          ],
+          "default": "auto",
+          "description": "Globe position (auto: right on wide plates, top on narrow)."
+        },
+        "spin": {
+          "type": "number",
+          "default": "1",
+          "min": 0,
+          "max": 6,
+          "description": "Rotation speed."
+        },
+        "hubs": {
+          "type": "number",
+          "default": "6",
+          "min": 0,
+          "max": 14,
+          "description": "How many leading destinations carry the mark (the rest a spark)."
+        },
+        "headline": {
+          "type": "text",
+          "default": "GLOBAL REACH",
+          "description": "Main line."
+        },
+        "subline": {
+          "type": "text",
+          "default": "ZEN AI CO · WORLDWIDE",
+          "description": "Second line.",
+          "brand": true
+        },
+        "label": {
+          "type": "text",
+          "default": "D.C.",
+          "description": "Label at the origin.",
+          "brand": true
+        },
+        "micro": {
+          "type": "text",
+          "default": "ZEN AI CO · GLOBAL NETWORK · AI LITERACY WORLDWIDE · ",
+          "description": "Edge microprint.",
+          "brand": true
+        },
+        "stat": {
+          "type": "text",
+          "default": "42 STATES · 12 COUNTRIES",
+          "description": "Small figure line.",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "origin",
+        "points",
+        "mark",
+        "subline",
+        "label",
+        "micro",
+        "stat"
+      ],
+      "example": "<zen-foil scene=\"globe\" origin=\"-77.04, 38.91\"\n  points=\"-0.13,51.51; 13.40,52.52; 55.27,25.20; 139.69,35.69\" mark=\"zen\"\n  headline=\"GLOBAL REACH\" subline=\"AI PIONEER PROGRAM\"></zen-foil>",
+      "template": "<zen-foil scene=\"globe\" origin=\"{{LON,LAT}}\" points=\"{{LON,LAT; LON,LAT}}\"\n  mark=\"{{MARK: /logo.svg or none}}\" headline=\"{{HEADLINE}}\" subline=\"{{SUBLINE}}\"\n  label=\"{{LABEL}}\" micro=\"{{MICRO}}\" stat=\"{{STAT}}\"></zen-foil>"
+    },
+    {
+      "id": "usmap",
+      "group": "kit",
+      "title": "U.S. reach map",
+      "description": "Engraved U.S. map; arcs spread from an origin under your seal, and each arrival issues the next credential serial.",
+      "aspect": 1.6,
+      "accent": "#59c3ff",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "origin": {
+          "type": "points",
+          "default": "-77.04, 38.91",
+          "description": "Where the wave starts: lon,lat (contiguous U.S.).",
+          "brand": true
+        },
+        "points": {
+          "type": "points",
+          "default": "-76.61,39.29; -77.44,37.54; -75.17,39.95; -74.00,40.71; -80.00,40.44; -80.84,35.23; -71.06,42.36; -83.05,42.33; -84.39,33.75; -86.78,36.16; -81.38,28.54; -87.63,41.88; -90.20,38.63; -80.19,25.76; -90.07,29.95; -94.58,39.10; -93.27,44.98; -95.94,41.26; -96.80,32.78; -95.37,29.76; -97.74,30.27; -104.99,39.74; -106.65,35.08; -111.89,40.76; -112.07,33.45; -115.14,36.17; -116.20,43.62; -118.24,34.05; -122.42,37.77; -122.68,45.52; -122.33,47.61",
+          "description": "Cities \"lon,lat; lon,lat; …\" (up to 31).",
+          "brand": true
+        },
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Seal at the origin.",
+          "brand": true
+        },
+        "counter": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Live 5-digit counter after the serial."
+        },
+        "cycle": {
+          "type": "number",
+          "default": "10",
+          "min": 4,
+          "max": 60,
+          "description": "Seconds per wave."
+        },
+        "label": {
+          "type": "text",
+          "default": "WASHINGTON, D.C.",
+          "description": "Origin label.",
+          "brand": true
+        },
+        "micro": {
+          "type": "text",
+          "default": "THE FIRST YOUTH AI LITERACY PROGRAM IN UNITED STATES HISTORY · ZEN AI CO · ",
+          "description": "Edge microprint.",
+          "brand": true
+        },
+        "headline": {
+          "type": "text",
+          "default": "ZEN AI CERTIFIED",
+          "description": "Credential title (gold).",
+          "brand": true
+        },
+        "serial": {
+          "type": "text",
+          "default": "ZEN-AIL-2026-",
+          "description": "Serial (prefix, when counter is on).",
+          "brand": true
+        },
+        "caption": {
+          "type": "text",
+          "default": "VERIFIED · ZENAI.WORLD",
+          "description": "Line under the serial.",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "origin",
+        "points",
+        "mark",
+        "label",
+        "micro",
+        "headline",
+        "serial",
+        "caption"
+      ],
+      "example": "<zen-foil scene=\"usmap\" origin=\"-77.04, 38.91\" mark=\"zen\" label=\"WASHINGTON, D.C.\"\n  headline=\"ZEN AI CERTIFIED\" serial=\"ZEN-AIL-2026-\"></zen-foil>",
+      "template": "<zen-foil scene=\"usmap\" origin=\"{{LON,LAT}}\" points=\"{{LON,LAT; LON,LAT}}\"\n  mark=\"{{MARK: /logo.svg or none}}\" label=\"{{LABEL}}\" micro=\"{{MICRO}}\"\n  headline=\"{{HEADLINE}}\" serial=\"{{SERIAL}}\" caption=\"{{CAPTION}}\"></zen-foil>"
+    },
+    {
+      "id": "banner",
+      "group": "kit",
+      "title": "Guilloche banner",
+      "description": "Interlaced guilloche waves across a wide band, a cartouche headline, end seals and edge microprint.",
+      "aspect": 4,
+      "accent": "#8fb4ff",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "End seals (none to omit).",
+          "brand": true
+        },
+        "strands": {
+          "type": "number",
+          "default": "12",
+          "min": 3,
+          "max": 16,
+          "description": "Guilloche strands per rope."
+        },
+        "speed": {
+          "type": "number",
+          "default": "1",
+          "min": 0,
+          "max": 4,
+          "description": "Wave drift speed."
+        },
+        "headline": {
+          "type": "text",
+          "default": "AI PIONEER PROGRAM",
+          "description": "Cartouche headline.",
+          "brand": true
+        },
+        "subline": {
+          "type": "text",
+          "default": "ZEN AI CO · AI LITERACY",
+          "description": "Line under the headline.",
+          "brand": true
+        },
+        "micro": {
+          "type": "text",
+          "default": "ZEN AI CO · AI LITERACY · BUILT IN PUBLIC · ",
+          "description": "Edge microprint.",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "mark",
+        "headline",
+        "subline",
+        "micro"
+      ],
+      "example": "<zen-foil scene=\"banner\" mark=\"zen\" headline=\"AI PIONEER PROGRAM\"\n  subline=\"FIRST YOUTH AI LITERACY PROGRAM IN U.S. HISTORY\"></zen-foil>",
+      "template": "<zen-foil scene=\"banner\" mark=\"{{MARK: /logo.svg or none}}\" headline=\"{{HEADLINE}}\"\n  subline=\"{{SUBLINE}}\" micro=\"{{MICRO}}\"></zen-foil>"
+    },
+    {
+      "id": "certificate",
+      "group": "kit",
+      "title": "Certificate",
+      "description": "Guilloche-bordered credential: title, recipient, program, date, serial and a gold seal. Paper or holographic.",
+      "aspect": 1.414,
+      "accent": "#c9a45c",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Mark in the seal.",
+          "brand": true
+        },
+        "speed": {
+          "type": "number",
+          "default": "1",
+          "min": 0,
+          "max": 4,
+          "description": "Animation speed."
+        },
+        "headline": {
+          "type": "text",
+          "default": "CERTIFICATE OF ACHIEVEMENT",
+          "description": "Title line."
+        },
+        "recipient": {
+          "type": "text",
+          "default": "RECIPIENT NAME",
+          "description": "Recipient's name."
+        },
+        "program": {
+          "type": "text",
+          "default": "HAS COMPLETED THE AI LITERACY PROGRAM",
+          "description": "What was achieved.",
+          "brand": true
+        },
+        "date": {
+          "type": "text",
+          "default": "MMXXVI",
+          "description": "Date (left foot)."
+        },
+        "serial": {
+          "type": "text",
+          "default": "ZEN-AIL-2026-00000",
+          "description": "Credential serial (right foot). Use the real ID; the default is a placeholder.",
+          "brand": true
+        },
+        "issuer": {
+          "type": "text",
+          "default": "ZEN AI CO",
+          "description": "Issuer, above the title and around the seal.",
+          "brand": true
+        },
+        "micro": {
+          "type": "text",
+          "default": "ZEN AI CO · VERIFIED CREDENTIAL · AI LITERACY · ",
+          "description": "Border microprint.",
+          "brand": true
+        },
+        "presented": {
+          "type": "text",
+          "default": "THIS CERTIFIES THAT",
+          "description": "Line above the name."
+        }
+      },
+      "brandParams": [
+        "mark",
+        "program",
+        "serial",
+        "issuer",
+        "micro"
+      ],
+      "example": "<zen-foil scene=\"certificate\" mark=\"zen\" recipient=\"RECIPIENT NAME\"\n  program=\"HAS COMPLETED THE AI PIONEER PROGRAM\" serial=\"ZEN-AIL-2026-00000\"\n  issuer=\"ZEN AI CO\"></zen-foil>",
+      "template": "<zen-foil scene=\"certificate\" mark=\"{{MARK: /logo.svg or none}}\"\n  recipient=\"{{RECIPIENT}}\" program=\"{{PROGRAM}}\" serial=\"{{SERIAL}}\"\n  issuer=\"{{ISSUER}}\" micro=\"{{MICRO}}\"></zen-foil>"
+    },
+    {
+      "id": "metric",
+      "group": "kit",
+      "title": "Metric plate",
+      "description": "A decoding headline figure over an engraved, foil-lined chart of your series, with a live read head.",
+      "aspect": 1.6,
+      "accent": "#f5d06f",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "value": {
+          "type": "text",
+          "default": "20,000+",
+          "description": "The headline figure.",
+          "brand": true
+        },
+        "label": {
+          "type": "text",
+          "default": "SUBSCRIBERS",
+          "description": "What the figure counts.",
+          "brand": true
+        },
+        "delta": {
+          "type": "text",
+          "default": "WEEKLY RESEARCH DISPATCH",
+          "description": "Change or context line (accent). Use real figures only.",
+          "brand": true
+        },
+        "headline": {
+          "type": "text",
+          "default": "ZEN WEEKLY",
+          "description": "Plate title, top left.",
+          "brand": true
+        },
+        "micro": {
+          "type": "text",
+          "default": "ZEN AI CO · RESEARCH + INTELLIGENCE · ",
+          "description": "Edge microprint.",
+          "brand": true
+        },
+        "series": {
+          "type": "list",
+          "default": "12,14,13,17,19,18,23,26,25,31,34,33,39,44,43,51,56,60,66,71",
+          "description": "Values to chart (up to 24). The default is sample data — pass the real series.",
+          "brand": true
+        },
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Issuer stamp, bottom right (none to omit).",
+          "brand": true
+        },
+        "speed": {
+          "type": "number",
+          "default": "1",
+          "min": 0,
+          "max": 4,
+          "description": "Read-head speed."
+        }
+      },
+      "brandParams": [
+        "value",
+        "label",
+        "delta",
+        "headline",
+        "micro",
+        "series",
+        "mark"
+      ],
+      "example": "<zen-foil scene=\"metric\" value=\"20,000+\" label=\"ZEN WEEKLY SUBSCRIBERS\"\n  headline=\"ZEN WEEKLY\"></zen-foil>",
+      "template": "<zen-foil scene=\"metric\" value=\"{{VALUE}}\" label=\"{{LABEL}}\" delta=\"{{DELTA}}\"\n  headline=\"{{HEADLINE}}\" micro=\"{{MICRO}}\" series=\"{{SERIES}}\"\n  mark=\"{{MARK: /logo.svg or none}}\"></zen-foil>"
+    },
+    {
+      "id": "network",
+      "group": "kit",
+      "title": "Agent network",
+      "description": "Your mark as an orchestrating hub with labelled agents on an engraved orbit and packets streaming along the links.",
+      "aspect": 1.6,
+      "accent": "#67e8f9",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "nodes": {
+          "type": "list",
+          "default": "RESEARCH, WRITER, ANALYST, DESIGNER, CODER, OPS",
+          "description": "Agent labels, comma separated (up to 8)."
+        },
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Hub mark.",
+          "brand": true
+        },
+        "speed": {
+          "type": "number",
+          "default": "1",
+          "min": 0,
+          "max": 4,
+          "description": "Packet speed."
+        },
+        "headline": {
+          "type": "text",
+          "default": "ZEN ARSENAL",
+          "description": "Title, top left.",
+          "brand": true
+        },
+        "subline": {
+          "type": "text",
+          "default": "AGENTS · ORCHESTRATED",
+          "description": "Line under the title."
+        },
+        "status": {
+          "type": "text",
+          "default": "6 AGENTS ONLINE",
+          "description": "Status line, bottom left.",
+          "brand": true
+        },
+        "micro": {
+          "type": "text",
+          "default": "ARSENAL.WORLD · AGENT + APP BUILDER · ZEN AI CO · ",
+          "description": "Microprint around the hub orbit.",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "mark",
+        "headline",
+        "status",
+        "micro"
+      ],
+      "example": "<zen-foil scene=\"network\" nodes=\"RESEARCH, WRITER, ANALYST, DESIGNER, CODER, OPS\"\n  mark=\"zen\" headline=\"ZEN ARSENAL\" subline=\"AGENTS · ORCHESTRATED\"></zen-foil>",
+      "template": "<zen-foil scene=\"network\" nodes=\"RESEARCH, WRITER, ANALYST, DESIGNER, CODER, OPS\"\n  mark=\"{{MARK: /logo.svg or none}}\" headline=\"{{HEADLINE}}\" subline=\"{{SUBLINE}}\"\n  status=\"{{STATUS}}\" micro=\"{{MICRO}}\"></zen-foil>"
+    },
+    {
+      "id": "engrave",
+      "group": "kit",
+      "title": "Image engraving",
+      "description": "Turns any image into a holographic banknote engraving; reveal mode adds a full-colour loupe that follows the pointer.",
+      "aspect": 1.333,
+      "accent": "#9cc8ff",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {
+        "src": {
+          "type": "url",
+          "description": "The image (same-origin or CORS-enabled)."
+        },
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Corner seal (none to omit).",
+          "brand": true
+        },
+        "mode": {
+          "type": "choice",
+          "options": [
+            "engraved",
+            "duotone",
+            "reveal"
+          ],
+          "default": "reveal",
+          "description": "Rendering."
+        },
+        "frame": {
+          "type": "choice",
+          "options": [
+            "rect",
+            "oval",
+            "none"
+          ],
+          "default": "rect",
+          "description": "Frame shape."
+        },
+        "density": {
+          "type": "number",
+          "default": "1",
+          "min": 0.4,
+          "max": 3,
+          "description": "Line density (higher = finer)."
+        },
+        "headline": {
+          "type": "text",
+          "description": "Caption title (bottom)."
+        },
+        "subline": {
+          "type": "text",
+          "description": "Caption line."
+        },
+        "micro": {
+          "type": "text",
+          "default": "ZEN AI CO · ENGRAVED EDITION · ",
+          "description": "Frame microprint.",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "mark",
+        "micro"
+      ],
+      "example": "<zen-foil scene=\"engrave\" src=\"/images/photo.jpg\" mode=\"reveal\" headline=\"ZEN-GEN\"\n  subline=\"ENGRAVED EDITION\"></zen-foil>",
+      "template": "<zen-foil scene=\"engrave\" src=\"{{IMAGE URL}}\" mark=\"{{MARK: /logo.svg or none}}\"\n  mode=\"reveal\" headline=\"{{HEADLINE}}\" subline=\"{{SUBLINE}}\" micro=\"{{MICRO}}\"></zen-foil>"
+    },
+    {
+      "id": "stage",
+      "group": "kit",
+      "title": "Image stage",
+      "description": "Gallery that mints each image in through its own engraved lines, over a blurred copy of itself, with sheen and microprint.",
+      "aspect": 1.778,
+      "accent": "#6ba3f5",
+      "post": "raw",
+      "themes": [],
+      "params": {
+        "images": {
+          "type": "list",
+          "description": "Image URLs (same-origin or CORS-enabled), shown in turn."
+        },
+        "src": {
+          "type": "url",
+          "description": "Show this one image (overrides images; set it to drive the stage yourself)."
+        },
+        "interval": {
+          "type": "number",
+          "default": "6",
+          "min": 2,
+          "max": 120,
+          "description": "Seconds per image."
+        },
+        "top": {
+          "type": "text",
+          "default": "VISUAL ARCHIVE · ZEN AI CO · BUILT IN PUBLIC · ",
+          "description": "Microprint along the top.",
+          "brand": true
+        },
+        "bottom": {
+          "type": "text",
+          "default": "ARCHIVE OF CAMPAIGNS, INTERFACES & GENERATIVE SYSTEMS · ",
+          "description": "Microprint along the bottom.",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "top",
+        "bottom"
+      ],
+      "example": "<zen-foil scene=\"stage\" images=\"/one.jpg, /two.jpg, /three.jpg\" interval=\"6\"></zen-foil>",
+      "template": "<zen-foil scene=\"stage\" images=\"{{IMAGE URLS, COMMA-SEPARATED}}\" interval=\"6\"\n  top=\"{{TOP}}\" bottom=\"{{BOTTOM}}\"></zen-foil>"
+    },
+    {
+      "id": "vault",
+      "group": "kit",
+      "title": "Crystal vault",
+      "description": "Ray-traced glass cube with dispersion, your images (or video) printed on its faces, and engraved seals until they load.",
+      "aspect": 1,
+      "accent": "#6fa3f5",
+      "post": "alpha",
+      "themes": [],
+      "params": {
+        "images": {
+          "type": "list",
+          "description": "Up to six image/video URLs, one per face (same-origin or CORS-enabled)."
+        },
+        "mark": {
+          "type": "mark",
+          "default": "zen",
+          "description": "Mark on the engraved seal faces.",
+          "brand": true
+        },
+        "spin": {
+          "type": "number",
+          "default": "7",
+          "min": -60,
+          "max": 60,
+          "description": "Turn speed, degrees per second."
+        },
+        "tilt": {
+          "type": "number",
+          "default": "-20",
+          "min": -60,
+          "max": 60,
+          "description": "Downward view angle, degrees."
+        },
+        "scrollspin": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Also turn with page scroll."
+        },
+        "frame": {
+          "type": "text",
+          "default": "ZEN AI CO · VISUAL ARCHIVE · ORDO AB CHAO · ",
+          "description": "Microprint round each face.",
+          "brand": true
+        },
+        "ring": {
+          "type": "text",
+          "default": "ZEN AI CO · AUTHENTIC · ",
+          "description": "Microprint round the seal.",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "mark",
+        "frame",
+        "ring"
+      ],
+      "example": "<zen-foil scene=\"vault\" images=\"/a.jpg, /b.jpg, /c.jpg, /d.mp4\" mark=\"zen\"></zen-foil>",
+      "template": "<zen-foil scene=\"vault\" images=\"{{IMAGE URLS, COMMA-SEPARATED}}\"\n  mark=\"{{MARK: /logo.svg or none}}\" frame=\"{{FRAME}}\" ring=\"{{RING}}\"></zen-foil>"
+    },
+    {
+      "id": "field",
+      "group": "kit",
+      "title": "Treasury field",
+      "description": "Page-background field of floating cipher glyphs with parallax, sheen, watermark seals and decoding phrases.",
+      "aspect": 1.778,
+      "accent": "#5b8fd6",
+      "post": "raw",
+      "themes": [],
+      "params": {
+        "variant": {
+          "type": "choice",
+          "options": [
+            "light",
+            "dark"
+          ],
+          "default": "light",
+          "description": "Light paper ground or dark ground."
+        },
+        "density": {
+          "type": "number",
+          "default": "0.3",
+          "min": 0,
+          "max": 1,
+          "description": "Glyph density where no region says otherwise."
+        },
+        "rate": {
+          "type": "number",
+          "default": "0.9",
+          "min": 0,
+          "max": 6,
+          "description": "Shimmer rate (glyph changes per second)."
+        },
+        "seals": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Guilloche watermark seals."
+        },
+        "phrases": {
+          "type": "list",
+          "default": "ORDO AB CHAO, AS ABOVE SO BELOW, SOLVE ET COAGULA, ANNUIT COEPTIS, NOVUS ORDO SECLORUM, LET THERE BE LIGHT, ZEN AI CO",
+          "description": "Phrases that decode out of the noise (up to 8, 24 characters each).",
+          "brand": true
+        }
+      },
+      "brandParams": [
+        "phrases"
+      ],
+      "example": "<zen-foil scene=\"field\" fixed variant=\"dark\" density=\"0.25\"></zen-foil>",
+      "template": "<zen-foil scene=\"field\" fixed variant=\"dark\" density=\"0.25\" phrases=\"{{PHRASES}}\"></zen-foil>"
+    },
+    {
+      "id": "pioneer",
+      "group": "showcase",
+      "title": "AI Pioneer Program",
+      "description": "Engraved U.S. map; the program arcs out from Washington, D.C. under the ZEN seal and each arrival mints a credential.",
+      "aspect": 1.6,
+      "accent": "#59c3ff",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"pioneer\"></zen-foil>",
+      "template": "<zen-foil scene=\"pioneer\"></zen-foil>"
+    },
+    {
+      "id": "dmv",
+      "group": "showcase",
+      "title": "Boys & Girls Clubs × ZEN",
+      "description": "Intaglio globe; the Clubs' hands mark rides great-circle arcs from D.C. to world hubs.",
+      "aspect": 1.6,
+      "accent": "#6ee7b7",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"dmv\"></zen-foil>",
+      "template": "<zen-foil scene=\"dmv\"></zen-foil>"
+    },
+    {
+      "id": "near",
+      "group": "showcase",
+      "title": "NEAR Protocol × ZEN",
+      "description": "Sharded chunks gathered into blocks on a hash-linked chain while the NEAR mark assembles.",
+      "aspect": 1.6,
+      "accent": "#4ee6ad",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"near\"></zen-foil>",
+      "template": "<zen-foil scene=\"near\"></zen-foil>"
+    },
+    {
+      "id": "parks",
+      "group": "showcase",
+      "title": "ParkPulse",
+      "description": "USGS-style engraved topographic sheet with a live trail.",
+      "aspect": 1.6,
+      "accent": "#86d9a8",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"parks\"></zen-foil>",
+      "template": "<zen-foil scene=\"parks\"></zen-foil>"
+    },
+    {
+      "id": "spark",
+      "group": "showcase",
+      "title": "SparkLab AI",
+      "description": "A prompt is typed; a diffusion sampler resolves halftone noise into an engraved flask.",
+      "aspect": 1.6,
+      "accent": "#ffb86b",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"spark\"></zen-foil>",
+      "template": "<zen-foil scene=\"spark\"></zen-foil>"
+    },
+    {
+      "id": "gallery",
+      "group": "showcase",
+      "title": "CuratePro",
+      "description": "One-point-perspective gallery with a roving spotlight and red dots as works sell.",
+      "aspect": 1.6,
+      "accent": "#f2a7c3",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"gallery\"></zen-foil>",
+      "template": "<zen-foil scene=\"gallery\"></zen-foil>"
+    },
+    {
+      "id": "stem",
+      "group": "showcase",
+      "title": "STEMScore",
+      "description": "Judges' rubric polygons converge on a consensus; the leaderboard re-ranks.",
+      "aspect": 1.6,
+      "accent": "#8fb4ff",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"stem\"></zen-foil>",
+      "template": "<zen-foil scene=\"stem\"></zen-foil>"
+    },
+    {
+      "id": "medcode",
+      "group": "showcase",
+      "title": "MedCode",
+      "description": "Phosphor ECG sweep driving an ICD-10 lookup behind an encryption seal.",
+      "aspect": 1.6,
+      "accent": "#5eead4",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"medcode\"></zen-foil>",
+      "template": "<zen-foil scene=\"medcode\"></zen-foil>"
+    },
+    {
+      "id": "cipher",
+      "group": "showcase",
+      "title": "ClinicalCipher",
+      "description": "An engraved Alberti cipher disk re-encrypting a record as the key turns.",
+      "aspect": 1.6,
+      "accent": "#ff8fa3",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"cipher\"></zen-foil>",
+      "template": "<zen-foil scene=\"cipher\"></zen-foil>"
+    },
+    {
+      "id": "terminal",
+      "group": "showcase",
+      "title": "Prompt Playground",
+      "description": "A terminal streams an answer token by token beside next-token probabilities.",
+      "aspect": 1.6,
+      "accent": "#7ef0c2",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"terminal\"></zen-foil>",
+      "template": "<zen-foil scene=\"terminal\"></zen-foil>"
+    },
+    {
+      "id": "planet",
+      "group": "showcase",
+      "title": "Prompt a Planet",
+      "description": "Analytic planet with procedural continents, rings and a regeneration sweep.",
+      "aspect": 1.6,
+      "accent": "#b69cff",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"planet\"></zen-foil>",
+      "template": "<zen-foil scene=\"planet\"></zen-foil>"
+    },
+    {
+      "id": "proto",
+      "group": "showcase",
+      "title": "Prompt a Prototype",
+      "description": "A dimensioned blueprint that renders into a shaded, engraved product shot.",
+      "aspect": 1.6,
+      "accent": "#67e8f9",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"proto\"></zen-foil>",
+      "template": "<zen-foil scene=\"proto\"></zen-foil>"
+    },
+    {
+      "id": "weekly",
+      "group": "showcase",
+      "title": "ZEN Weekly",
+      "description": "An engraved front page runs through the press, then fans out to subscribers.",
+      "aspect": 1.6,
+      "accent": "#f5d06f",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"weekly\"></zen-foil>",
+      "template": "<zen-foil scene=\"weekly\"></zen-foil>"
+    },
+    {
+      "id": "forge",
+      "group": "showcase",
+      "title": "CanvasForge",
+      "description": "A pen plotter inks streamlines of a divergence-free flow field.",
+      "aspect": 1.6,
+      "accent": "#fb9a6b",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"forge\"></zen-foil>",
+      "template": "<zen-foil scene=\"forge\"></zen-foil>"
+    },
+    {
+      "id": "lens",
+      "group": "showcase",
+      "title": "InspireLens",
+      "description": "An engraved prime lens: knurled barrel, stepping iris, heptagonal bokeh.",
+      "aspect": 1.6,
+      "accent": "#c4b5fd",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"lens\"></zen-foil>",
+      "template": "<zen-foil scene=\"lens\"></zen-foil>"
+    },
+    {
+      "id": "gravity",
+      "group": "showcase",
+      "title": "GravityGrid",
+      "description": "Ray-marched spacetime sheet sagging under an orbiting binary.",
+      "aspect": 1.6,
+      "accent": "#60a5fa",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"gravity\"></zen-foil>",
+      "template": "<zen-foil scene=\"gravity\"></zen-foil>"
+    },
+    {
+      "id": "toon",
+      "group": "showcase",
+      "title": "Animatic Pro",
+      "description": "Bouncing ball with squash and stretch, onion skins and timeline keys.",
+      "aspect": 1.6,
+      "accent": "#fda4af",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"toon\"></zen-foil>",
+      "template": "<zen-foil scene=\"toon\"></zen-foil>"
+    },
+    {
+      "id": "chronos",
+      "group": "showcase",
+      "title": "ChronosLife",
+      "description": "A lifetime in weeks receding in perspective; the current week pulses.",
+      "aspect": 1.6,
+      "accent": "#93c5fd",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"chronos\"></zen-foil>",
+      "template": "<zen-foil scene=\"chronos\"></zen-foil>"
+    },
+    {
+      "id": "deadline",
+      "group": "showcase",
+      "title": "DeadlineDash",
+      "description": "Engraved chronograph countdown; momentum fills as time runs out.",
+      "aspect": 1.6,
+      "accent": "#fbbf24",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"deadline\"></zen-foil>",
+      "template": "<zen-foil scene=\"deadline\"></zen-foil>"
+    },
+    {
+      "id": "baker",
+      "group": "showcase",
+      "title": "BakerSpot",
+      "description": "Minted medallion with an engraved croissant over a map of pop-up pins.",
+      "aspect": 1.6,
+      "accent": "#fcd34d",
+      "post": "plate",
+      "themes": [
+        "plate",
+        "paper",
+        "clear"
+      ],
+      "params": {},
+      "brandParams": [],
+      "example": "<zen-foil scene=\"baker\"></zen-foil>",
+      "template": "<zen-foil scene=\"baker\"></zen-foil>"
+    }
+  ]
+}
