@@ -58,6 +58,13 @@ const SUBSTITUTE: Record<string, string> = {
   "\u00a0": " ",
 };
 
+/** Whether a character prints as itself (directly, by substitute or by its base letter). */
+export function hasGlyph(ch: string): boolean {
+  if (CODE_OF.has(ch) || CODE_OF.has(SUBSTITUTE[ch] ?? "")) return true;
+  const base = ch.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return base.length === 1 && CODE_OF.has(base);
+}
+
 /** Atlas code for a character (unknown characters map to "·"). */
 export function glyphCode(ch: string): number {
   const code = CODE_OF.get(ch) ?? CODE_OF.get(SUBSTITUTE[ch] ?? "");

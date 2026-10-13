@@ -96,6 +96,8 @@ export interface FoilHandle {
   setLayer(index: number, source: LayerSource | null): void;
   setActive(active: boolean): void;
   capture(): Promise<ImageData | null>;
+  /** Plays the minting intro again (no-op under reduced motion). */
+  replay(): void;
   destroy(): void;
 }
 
@@ -126,6 +128,7 @@ export interface FoilEngine {
   readonly diagnostics: { backend: string; errors: { scene: string; message: string }[]; frames: number; quality: number };
   subscribeStatus(cb: (s: RendererStatus) => void): () => void;
   capture(host: HTMLElement): Promise<ImageData | null>;
+  replay(host: HTMLElement): void;
   invalidate(host: HTMLElement): void;
 }
 
@@ -202,8 +205,85 @@ export declare class ZenFoilElement extends HTMLElement {
   readonly renderer: RendererStatus;
   update(params: ParamValues): void;
   capture(): Promise<ImageData | null>;
+  /** Plays the minting intro again: burin, foil, press. */
+  replay(): void;
 }
 export declare function defineElement(name?: string): void;
+
+/* ── Self-description and checking (manifest.json is describe()) ── */
+
+export type ProblemLevel = "error" | "warning" | "hint";
+export interface Problem {
+  level: ProblemLevel;
+  code: string;
+  attribute?: string;
+  message: string;
+  /** What to write instead, when there is one exact answer. */
+  fix?: string;
+}
+export interface PageProblem extends Problem {
+  element?: Element;
+  where: string;
+}
+export interface ParamManifest {
+  type: ParamSpec["type"];
+  options?: string[];
+  default?: string;
+  min?: number;
+  max?: number;
+  description?: string;
+  brand?: boolean;
+}
+export interface SceneManifest {
+  id: string;
+  group: "kit" | "other";
+  title: string;
+  description: string;
+  aspect: number;
+  accent: string;
+  post: "plate" | "raw" | "alpha";
+  themes: ("plate" | "paper" | "clear")[];
+  params: Record<string, ParamManifest>;
+  brandParams: string[];
+  example: string;
+  template: string;
+}
+export interface AttributeManifest {
+  type: string;
+  options?: string[];
+  description: string;
+}
+export interface Manifest {
+  name: "zen-foil";
+  version: string;
+  element: "zen-foil";
+  summary: string;
+  attributes: Record<string, AttributeManifest>;
+  marks: string[];
+  events: Record<string, string>;
+  methods: Record<string, string>;
+  glyphs: string;
+  rules: string[];
+  scenes: SceneManifest[];
+}
+export interface SnippetOptions {
+  theme?: "plate" | "paper" | "clear";
+  accent?: string;
+  label?: string;
+  fixed?: boolean;
+  format?: "html" | "react";
+}
+/** The machine-readable contract (every scene, param and attribute), or one scene's entry. */
+export declare function describe(): Manifest;
+export declare function describe(id: string): SceneManifest | null;
+/** A valid tag for a scene; throws with each problem and its fix when the input is wrong. */
+export declare function snippet(id: string, params?: Record<string, string | number | boolean>, opts?: SnippetOptions): string;
+/** Problems with one tag's attributes (as written, including scene). */
+export declare function checkTag(attrs: Record<string, string>): Problem[];
+/** Checks every plate on the page (window.ZenFoil.check()); logs a table unless log is false. */
+export declare function checkPage(root?: ParentNode, log?: boolean): PageProblem[];
+/** The element's own attributes. */
+export declare const ELEMENT_SPEC: Record<string, AttributeManifest>;
 
 export declare const VERSION: string;
 /** Ids of the built-in kit scenes. */

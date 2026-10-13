@@ -33,7 +33,8 @@ function requestedMode(): Mode {
   return q === "webgpu" || q === "webgl2" || q === "off" ? q : "auto";
 }
 
-const INTRO_MS = 1500;
+/* The minting intro: burin, foil, press (see POST_FX in library.ts). */
+const INTRO_MS = 2400;
 /** WebGPU device losses tolerated before the session moves to WebGL2. */
 const MAX_GPU_LOSSES = 2;
 
@@ -326,6 +327,8 @@ export class FoilEngine {
       hover: 0,
       hoverTarget: 0,
       pulse: 0,
+      sx: 0.5,
+      sy: 0.5,
       tiltX: 0,
       tiltY: 0,
       introStart: -1,
@@ -371,7 +374,10 @@ export class FoilEngine {
     };
     const onDown = (e: PointerEvent) => {
       local(e);
-      view.pulse = 1;
+      // The stamp ring starts exactly where the plate was pressed.
+      view.sx = view.tmx;
+      view.sy = view.tmy;
+      view.pulse = this.reduced ? 0 : 1;
     };
     t.addEventListener("pointermove", onMove, { passive: true });
     t.addEventListener("pointerleave", onLeave, { passive: true });
@@ -442,6 +448,14 @@ export class FoilEngine {
     if (!v || !this.backend?.capture) return Promise.resolve(null);
     v.dirty = true;
     return this.backend.capture(v);
+  }
+
+  /** Plays the minting intro again (burin, foil, press) from the start. */
+  replay(host: HTMLElement) {
+    const v = this.byHost.get(host);
+    if (!v || this.reduced) return;
+    v.introStart = -1;
+    v.dirty = true;
   }
 
   /** Request a redraw (reduced motion renders on demand). */
@@ -540,7 +554,7 @@ export class FoilEngine {
     v.mx += (v.tmx - v.mx) * k;
     v.my += (v.tmy - v.my) * k;
     v.hover += (v.hoverTarget - v.hover) * kh;
-    v.pulse *= Math.exp(-dt / 600);
+    v.pulse *= Math.exp(-dt / 900);
 
     // Tilt: the pointer while hovered, otherwise the plate's travel through
     // the viewport — the foil shifts colour as it scrolls, like a hologram.
@@ -556,7 +570,9 @@ export class FoilEngine {
     // ZEN_FOIL_FREEZE pins every plate to one scene time (deterministic previews).
     const freeze = (globalThis as { ZEN_FOIL_FREEZE?: number }).ZEN_FOIL_FREEZE;
     const frozen = typeof freeze === "number";
-    const intro = this.reduced || frozen ? 1 : Math.min(1, (now - v.introStart) / INTRO_MS);
+    // ZEN_FOIL_INTRO (0–1) pins the minting intro's progress, to preview its beats.
+    const pin = (globalThis as { ZEN_FOIL_INTRO?: number }).ZEN_FOIL_INTRO;
+    const intro = typeof pin === "number" ? Math.min(1, Math.max(0, pin)) : this.reduced || frozen ? 1 : Math.min(1, (now - v.introStart) / INTRO_MS);
     const t = frozen ? freeze : this.reduced ? v.program.scene.still ?? 6 : now / 1000 + v.seed;
 
     const u = v.uniforms;
@@ -574,8 +590,8 @@ export class FoilEngine {
     u[11] = v.pulse;
     u[12] = v.tiltX;
     u[13] = v.tiltY;
-    u[14] = 0;
-    u[15] = 1;
+    u[14] = v.sx;
+    u[15] = v.sy;
     u[16] = v.accent[0];
     u[17] = v.accent[1];
     u[18] = v.accent[2];

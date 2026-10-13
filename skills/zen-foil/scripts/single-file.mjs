@@ -88,6 +88,17 @@ const signatures = swap(section(read("reference/shader-signatures.md"), { by: 2 
   ["`shader-library.md` explains how to use these functions.", "Section 6.4 explains how to use these functions."],
 ]);
 
+// The common-mistakes table, shared with AGENTS.md so both stay in step.
+const agents = read("AGENTS.md");
+const failures = swap(agents.slice(agents.indexOf("| Symptom | Cause | Fix |"), agents.indexOf("\n\n## Done means")).trim(), [
+  ["Use the pinned URL from `release.json` (`replicate.mjs cdn` prints the tag)", "Use the exact URL in section 1"],
+  ["Load one URL; run `verify.mjs`", "Load one URL; run `ZenFoil.check()`"],
+  ["Set every `[brand]` param that `replicate.mjs show <scene>` lists", "Set every param on the scene's **Other brands** line (section 3)"],
+])
+  .split("\n")
+  .filter((row) => !row.includes("dist/zen-foil.js"))
+  .join("\n");
+
 const doc = `---
 name: zen-foil
 description: Drop-in engraved-hologram GPU graphics in the alexleschik.com / ZEN AI Co. style, loaded from one CDN script as <zen-foil> elements with no engine code to copy. Banknote guilloche, intaglio line engraving, microprint, holographic foil and security seals, live on WebGPU with a WebGL2 fallback. Use for hero emblems, project and portfolio cards, certificates and credentials, KPI plates, globes, U.S. reach maps, AI agent-network diagrams, engraved photos, image galleries, a crystal-cube showcase and Treasury / hologram / security-print page backgrounds, and for writing new scenes in the same style. Prefer it to copying engine source unless the task is changing the engine itself.
@@ -121,6 +132,7 @@ ${indent(jsx, 3)}
 ${indent(wrapper, 3)}
    \`\`\`
 4. **Check the preview.** Plates fade in over their CSS posters, and the console shows no \`[zen-foil]\` errors. Add \`?foil=webgl2\` to the preview URL to test the fallback, \`?foil=off\` to see the no-GPU posters, and \`?foil-debug\` for lint warnings and \`window.__zenFoil\` diagnostics.
+5. **Check every plate.** Run \`ZenFoil.check()\` in the preview console after each change. It checks every \`<zen-foil>\` on the page against the real scene definitions and prints a table of problems, each with the exact attribute to write instead. Apply the fixes and run it again until it reports no problems. \`ZenFoil.describe("globe")\` returns a scene's params, types, ranges and a working example, and \`ZenFoil.snippet("seal", { headline: "ACME LABS" })\` writes a valid tag (or throws with the fix).
 
 ## 2. Use it
 
@@ -238,6 +250,10 @@ There is no CLI here, so check in the preview:
 - **Plates are \`aria-hidden\` unless they have a \`label\`.** Real text belongs in the DOM.
 
 ## 8. Troubleshooting
+
+${failures}
+
+More causes:
 
 | Symptom | Cause / fix |
 |---|---|

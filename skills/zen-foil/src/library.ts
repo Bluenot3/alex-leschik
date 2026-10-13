@@ -76,6 +76,8 @@ fn hov() -> f32 { return u.mouse.z; }
 fn pulse() -> f32 { return u.mouse.w; }
 fn mouseP() -> vec2f { return vec2f((u.mouse.x - 0.5) * aspect(), 0.5 - u.mouse.y); }
 fn intro() -> f32 { return u.time.w; }
+/* Where the plate was last pressed (pointerdown), in p coordinates. */
+fn stampP() -> vec2f { return vec2f((u.tilt.z - 0.5) * aspect(), 0.5 - u.tilt.w); }
 
 fn rot2(a: f32) -> mat2x2f { let c: f32 = cos(a); let s: f32 = sin(a); return mat2x2f(c, s, -s, c); }
 fn sat3(v: vec3f) -> vec3f { return clamp(v, vec3f(0.0), vec3f(1.0)); }
@@ -551,8 +553,58 @@ fn frameCorners(p: vec2f, inset: f32, r: f32) -> f32 {
 }
 `;
 
+/**
+ * Motion shared by the plate, paper and clear passes. Every effect here is
+ * light on the line work, never movement of it:
+ * - zfMint: the minting intro in three beats. A burin cuts the engraving in
+ *   along a wavering diagonal, the foil floods in behind it, then the plate
+ *   is pressed (a brief bloom as the impression lands).
+ * - zfGlint: every ~11 s a narrow light crosses the line work, as if the
+ *   plate were tilted under a lamp. tnow() carries the view's seed, so the
+ *   plates on a page glint in turn, never together.
+ * - zfTorch: the pointer brightens and iridises the lines near it.
+ * - zfStamp: pressing the plate stamps a guilloche ring out from that point.
+ */
+const POST_FX = /* wgsl */ `
+/* (ink, foil, burin edge, foil edge) for this pixel. */
+fn zfMint(uv: vec2f, px: vec2f) -> vec4f {
+  let k: f32 = u.time.w;
+  let diag: f32 = uv.x * 0.72 + (1.0 - uv.y) * 0.28;
+  let wob: f32 = sin(uv.y * 23.0 + k * 7.0) * 0.011 + sin(uv.x * 37.0 - k * 11.0) * 0.006;
+  let grain: f32 = (h21(floor(px * 0.5)) - 0.5) * 0.03;
+  let d1: f32 = diag + wob - (k * 1.5 - 0.2);
+  let d2: f32 = diag + wob * 0.6 - (k * 1.62 - 0.45);
+  let fade: f32 = 1.0 - k;
+  let ink: f32 = sstep(0.035, -0.035, d1 + grain);
+  let foil: f32 = sstep(0.14, -0.14, d2);
+  return vec4f(ink, foil, exp(-abs(d1) * 70.0) * fade, exp(-abs(d2) * 16.0) * fade);
+}
+/* The press: rises as the foil lands, then settles back to zero. */
+fn zfPress() -> f32 { let k: f32 = u.time.w; return sstep(0.84, 0.94, k) * sstep(1.0, 0.95, k); }
+fn zfDiag(uv: vec2f) -> f32 { return uv.x * 0.72 + (1.0 - uv.y) * 0.28; }
+fn zfGlint(uv: vec2f) -> f32 {
+  let ph: f32 = fract(tnow() * 0.09);
+  let gd: f32 = dot(uv - 0.5, vec2f(0.8, -0.6)) - (ph * 9.0 - 1.1);
+  return (exp(-gd * gd * 520.0) + exp(-gd * gd * 40.0) * 0.18) * u.time.w;
+}
+fn zfTorch(p: vec2f) -> f32 {
+  let d: vec2f = p - mouseP();
+  return exp(-dot(d, d) * 22.0) * hov();
+}
+fn zfStamp(p: vec2f) -> f32 {
+  let s: f32 = pulse();
+  let d: vec2f = p - stampP();
+  let r: f32 = length(d);
+  let age: f32 = 1.0 - s;
+  let ring: f32 = exp(-abs(r - age * 0.85) * 70.0) + exp(-abs(r - age * 0.58) * 120.0) * 0.55;
+  let rope: f32 = 0.6 + 0.4 * sin(atan2(d.y, d.x + 1e-5) * 36.0 + r * 40.0);
+  return ring * rope * s * (0.35 + 0.65 * s);
+}
+`;
+
 /** Dark plate: engraved navy substrate, minting intro, sheen, filmic. */
 export const POST_PLATE = /* wgsl */ `
+${POST_FX}
 fn substrate(uv: vec2f, p: vec2f) -> vec3f {
   let base: vec3f = mix(vec3f(0.020, 0.026, 0.044), vec3f(0.040, 0.052, 0.086), ease(1.0 - uv.y * 0.9));
   let c: vec2f = p - vec2f(-0.35 * aspect(), 0.62);
@@ -569,18 +621,27 @@ fn shade(px: vec2f) -> vec4f {
   let light: vec3f = max(scene(uv, p), vec3f(0.0));
 
   let k: f32 = u.time.w;
-  let front: f32 = k * 1.4 - 0.2;
-  let diag: f32 = uv.x * 0.72 + (1.0 - uv.y) * 0.28;
-  let reveal: f32 = sstep(front + 0.05, front - 0.05, diag);
-  let edge: f32 = exp(-abs(diag - front) * 34.0) * (1.0 - k);
+  let diag: f32 = zfDiag(uv);
+  let m: vec4f = zfMint(uv, px);
+  let lw: f32 = saturate(luma(light) * 2.4);
 
-  var c: vec3f = substrate(uv, p) + light * reveal + holo(diag * 2.2 + k) * edge * 0.28;
+  // Engraved first in bare silver ink, then the foil floods the colour in.
+  let bare: vec3f = silver() * luma(light) * 1.05;
+  let lit: vec3f = mix(bare, light, m.y) * m.x;
+  var c: vec3f = substrate(uv, p) + lit * (1.0 + zfPress() * 0.4);
+  c += mix(vec3f(1.0, 0.96, 0.88), holo(diag * 2.2 + k), 0.45) * m.z * (0.09 + lw * 0.9);
+  c += holo(diag * 2.6 + k * 1.3) * m.w * (0.03 + lw * 0.32);
 
   let dir: vec2f = normalize(vec2f(0.84, 0.54));
   let off: f32 = u.tilt.x * 0.42 + u.tilt.y * 0.22 + sin(tnow() * 0.17) * 0.12;
   let sd: f32 = dot(uv - 0.5, dir) - off;
   let band: f32 = exp(-sd * sd * 24.0);
   c += holo(sd * 1.6 + 0.3) * band * (0.022 + 0.05 * u.mouse.z);
+
+  c += mix(vec3f(1.0, 0.98, 0.94), holo(dot(uv, vec2f(1.3, 0.7)) + tnow() * 0.05), 0.55) * zfGlint(uv) * (0.02 + lw * 1.5);
+  let tc: f32 = zfTorch(p);
+  c += (light * 0.8 + holo(foilPhase(p, 1.8)) * lw * 0.45) * tc;
+  c += holo(length(p - stampP()) * 2.0 + k) * zfStamp(p) * (0.22 + lw * 1.2);
 
   let v: vec2f = uv - 0.5;
   c *= 1.0 - dot(v, v) * 0.62;
@@ -596,6 +657,7 @@ fn shade(px: vec2f) -> vec4f {
  * shows as an iridescent sheen across the printed areas.
  */
 export const POST_PAPER = /* wgsl */ `
+${POST_FX}
 fn paperBase(uv: vec2f, p: vec2f) -> vec3f {
   var base: vec3f = mix(vec3f(0.980, 0.975, 0.958), vec3f(0.950, 0.944, 0.924), ease(uv.y * 0.9 + 0.05));
   // Security fibres: sparse short threads in the paper.
@@ -618,28 +680,34 @@ fn shade(px: vec2f) -> vec4f {
   let light: vec3f = max(scene(uv, p), vec3f(0.0));
 
   let k: f32 = u.time.w;
-  let front: f32 = k * 1.4 - 0.2;
-  let diag: f32 = uv.x * 0.72 + (1.0 - uv.y) * 0.28;
-  let reveal: f32 = sstep(front + 0.05, front - 0.05, diag);
-  let edge: f32 = exp(-abs(diag - front) * 34.0) * (1.0 - k);
+  let diag: f32 = zfDiag(uv);
+  let mi: vec4f = zfMint(uv, px);
 
-  let L: vec3f = light * reveal;
+  let L: vec3f = light * mi.x;
   let m: f32 = max(max(L.r, L.g), L.b);
   let hue: vec3f = L / max(m, 1e-3);
   // Hairlines print crisp; glows become the faintest wash.
   let dens: f32 = saturate(1.0 - exp(-m * m * 3.2 - m * 0.9));
   let deep: vec3f = mix(vec3f(0.05, 0.07, 0.13), hue * vec3f(0.36, 0.34, 0.38), 0.66);
-  let ink: vec3f = mix(deep, u.accent.rgb * 0.42, 0.18);
-  var c: vec3f = mix(paperBase(uv, p), ink, dens * 0.93);
+  // Printed first in plain black-blue ink; the colour arrives with the foil.
+  let ink: vec3f = mix(vec3f(0.09, 0.10, 0.13), mix(deep, u.accent.rgb * 0.42, 0.18), mi.y);
+  var c: vec3f = mix(paperBase(uv, p), ink, dens * (0.93 + zfPress() * 0.05));
 
-  // Foil: an iridescent sheen over the printed areas, shifting with tilt.
+  // Foil: an iridescent sheen over the printed areas, shifting with tilt,
+  // brightened by the glint, the pointer and a press.
   let dir: vec2f = normalize(vec2f(0.84, 0.54));
   let off: f32 = u.tilt.x * 0.42 + u.tilt.y * 0.22 + sin(tnow() * 0.17) * 0.12;
   let sd: f32 = dot(uv - 0.5, dir) - off;
   let band: f32 = exp(-sd * sd * 18.0);
   let foil: vec3f = holo(sd * 1.6 + 0.3 + foilPhase(p, 1.2) * 0.3);
-  c = mix(c, foil * 0.72, saturate(dens * band * (0.32 + 0.3 * u.mouse.z)));
-  c = mix(c, holo(diag * 2.2 + k) * 0.8, edge * 0.35);
+  let st: f32 = zfStamp(p);
+  let fx: f32 = band * (0.32 + 0.3 * u.mouse.z) + zfGlint(uv) * 0.85 + zfTorch(p) * 0.5 + st;
+  c = mix(c, foil * 0.72, saturate(dens * fx));
+  // A blind emboss where the stamp passes over bare paper.
+  c -= vec3f(0.035, 0.03, 0.02) * st * (1.0 - dens);
+  // The burin shows on what it cuts; on bare paper it is a faint graphite line.
+  c = mix(c, holo(diag * 2.2 + k) * 0.8, saturate(mi.z * dens * 0.7 + mi.w * 0.14 * dens));
+  c -= vec3f(0.05, 0.05, 0.045) * mi.z * (1.0 - dens);
 
   let v: vec2f = uv - 0.5;
   c *= 1.0 - dot(v, v) * 0.16;
@@ -653,25 +721,29 @@ fn shade(px: vec2f) -> vec4f {
  * (premultiplied alpha). For dark sections, photos and video.
  */
 export const POST_CLEAR = /* wgsl */ `
+${POST_FX}
 fn shade(px: vec2f) -> vec4f {
   let uv: vec2f = px / u.res.xy;
   let p: vec2f = vec2f((px.x - 0.5 * u.res.x) / u.res.y, (0.5 * u.res.y - px.y) / u.res.y);
   let light: vec3f = max(scene(uv, p), vec3f(0.0));
 
   let k: f32 = u.time.w;
-  let front: f32 = k * 1.4 - 0.2;
-  let diag: f32 = uv.x * 0.72 + (1.0 - uv.y) * 0.28;
-  let reveal: f32 = sstep(front + 0.05, front - 0.05, diag);
-  let edge: f32 = exp(-abs(diag - front) * 34.0) * (1.0 - k);
+  let diag: f32 = zfDiag(uv);
+  let mi: vec4f = zfMint(uv, px);
+  let lw: f32 = saturate(luma(light) * 2.4);
 
-  var c: vec3f = light * reveal;
+  let bare: vec3f = silver() * luma(light) * 1.05;
+  var c: vec3f = mix(bare, light, mi.y) * mi.x * (1.0 + zfPress() * 0.4);
   let dir: vec2f = normalize(vec2f(0.84, 0.54));
   let off: f32 = u.tilt.x * 0.42 + u.tilt.y * 0.22 + sin(tnow() * 0.17) * 0.12;
   let sd: f32 = dot(uv - 0.5, dir) - off;
   let band: f32 = exp(-sd * sd * 24.0);
   c += holo(sd * 1.6 + 0.3) * band * saturate(luma(c) * 3.0) * (0.08 + 0.1 * u.mouse.z);
+  c += mix(vec3f(1.0, 0.98, 0.94), holo(dot(uv, vec2f(1.3, 0.7)) + tnow() * 0.05), 0.55) * zfGlint(uv) * lw * 1.5;
+  c += (light * 0.55 + holo(foilPhase(p, 1.8)) * lw * 0.3) * zfTorch(p);
+  c += holo(length(p - stampP()) * 2.0 + k) * zfStamp(p) * lw * 0.8;
   c = vec3f(1.0) - exp(-c * 1.32);
-  c += holo(diag * 2.2 + k) * edge * 0.28 * saturate(luma(c) * 4.0 + 0.15);
+  c += holo(diag * 2.2 + k) * (mi.z * 0.5 + mi.w * 0.12) * saturate(luma(c) * 4.0 + 0.15);
   let a: f32 = saturate(max(max(c.r, c.g), c.b) * 1.1);
   let n: f32 = (h21(px + vec2f(fract(tnow() * 7.3) * 97.0, 0.0)) - 0.5) / 255.0;
   return vec4f(clamp(c + vec3f(n * a), vec3f(0.0), vec3f(a)), a);

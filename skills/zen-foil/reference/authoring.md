@@ -42,7 +42,7 @@ Lay things out in `p`, so circles stay round at every aspect ratio. Size hairlin
 | `u.res` | (pixel width, pixel height, DPR used, aspect). Prefer `aspect()` and `pxs()`. |
 | `u.time` | (t seconds, dt, seed, intro 0→1). Use `tnow()` and `intro()`. |
 | `u.mouse` | (x, y in uv, hover 0..1, pulse 1→0 after a click). Use `mouseP()` for p-space, plus `hov()` and `pulse()`. |
-| `u.tilt` | (x, y): the hologram tilt from pointer, scroll and idle drift. `foilPhase()` uses it. |
+| `u.tilt` | (x, y, stamp x, stamp y): the hologram tilt from pointer, scroll and idle drift (`foilPhase()` uses it), then where the plate was last pressed in uv. Use `stampP()` for that point in p-space. |
 | `u.accent` | The accent ink, in RGB. |
 | `u.p0`, `u.p1` | Free per-frame vec4s that your behavior writes. |
 | `u.d[64]` | The data block: 256 floats, written once and again when params change. |
@@ -143,7 +143,7 @@ Images must be same-origin or CORS-enabled. `loadImage` throws `LayerLoadError` 
 ## Themes and post modes
 
 - **`post: "plate"`** (the default): `scene()` returns additive light, and the user's `theme` picks the substrate:
-  - `plate`: the dark engraved plate, with the minting intro, sheen and filmic tone;
+  - `plate`: the dark engraved plate, with the minting intro, sheen, glint, pointer light, press stamp and filmic tone (all applied for you; see `aesthetic.md`, Motion);
   - `paper`: light is printed as ink (brightness becomes ink density, and the ink takes a deep version of your hue);
   - `clear`: premultiplied ink over the page.
 - **`post: "raw"`**: `scene()` returns the final colour, with no substrate or intro. Use it for full-bleed fields and stages that paint their own ground.

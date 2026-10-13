@@ -6,6 +6,8 @@
 
 # Reusable Graphics
 
-- `skills/zen-foil/` packages the foil engine for other projects: the `<zen-foil>` element (WebGPU with WebGL2 fallback), an 11-scene kit, the 20 portfolio plates, and tools to write, check and preview new scenes. Read its `SKILL.md` before reusing or extending the style anywhere else.
+- `skills/zen-foil/` packages the foil engine for other projects: the `<zen-foil>` element (WebGPU with WebGL2 fallback), an 11-scene kit, the 20 portfolio plates, and tools to write, check and preview new scenes.
+- To put these graphics on any page, start with `skills/zen-foil/AGENTS.md`. It is tiered so any model can follow it: copy-paste templates, then `scripts/replicate.mjs` to write tags and `scripts/verify.mjs` to check them (it exits 1 until every tag is valid). Don't copy or re-derive engine source to reproduce a plate that a kit scene already draws.
+- Read `skills/zen-foil/SKILL.md` before extending the style: new scenes, engine changes, the quality bar.
 - It is a portable fork of `src/foil/`, and the site does not import it. Port engine fixes between the two deliberately. Rebuild `skills/zen-foil/dist/` with `node skills/zen-foil/scripts/build.mjs` after changing its `src/`, and commit the result (the CDN serves `dist/` straight from the repo).
 

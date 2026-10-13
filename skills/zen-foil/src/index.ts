@@ -21,6 +21,7 @@ import { loadImage, loadLayer, drawContain, drawCover, videoLayer, LayerLoadErro
 import { validateScenes } from "./validate";
 import { ZenFoilElement, defineElement } from "./element";
 import { KIT } from "./scenes/kit";
+import { describe, snippet, checkTag, checkPage, setKitIds, VERSION_REF, ELEMENT_SPEC } from "./describe";
 
 export {
   defineScene,
@@ -63,11 +64,17 @@ export {
   validateScenes,
   ZenFoilElement,
   defineElement,
+  describe,
+  snippet,
+  checkTag,
+  checkPage,
+  ELEMENT_SPEC,
 };
 export type { FoilHandle, MountOptions } from "./scene";
 export type { MarkSource, MarkChannel } from "./marks";
 export type { RendererStatus } from "./engine";
 export type { ValidationResult } from "./validate";
+export type { Manifest, SceneManifest, ParamManifest, AttributeManifest, Problem, ProblemLevel, PageProblem, SnippetOptions } from "./describe";
 export type { TickFn, SubscribeTick } from "./clock";
 export type {
   FoilScene,
@@ -81,10 +88,12 @@ export type {
   BehaviorContext,
 } from "./types";
 
-export const VERSION = "1.0.0";
+export const VERSION = "1.1.0";
 /** Ids of the built-in kit scenes. */
 export const KIT_IDS = KIT.map((s) => s.id);
 
+VERSION_REF.value = VERSION;
+setKitIds(KIT.map((s) => s.id));
 KIT.forEach((scene) => defineScene(scene));
 defineElement();
 
@@ -135,6 +144,12 @@ if (typeof window !== "undefined") {
     validateScenes,
     ZenFoilElement,
     defineElement,
+    describe,
+    snippet,
+    checkTag,
+    checkPage,
+    ELEMENT_SPEC,
+    check: checkPage,
     validate: validateScenes,
     lint: lintWgsl,
     engine: getFoilEngine,

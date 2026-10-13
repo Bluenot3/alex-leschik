@@ -1,6 +1,6 @@
 {
   "name": "zen-foil",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Engraved-hologram GPU plates (WebGPU + WebGL2) for any web project: <zen-foil> web component, scene kit and authoring tools.",
   "type": "module",
   "private": true,

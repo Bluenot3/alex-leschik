@@ -236,6 +236,8 @@ export interface FoilHandle {
   setActive(active: boolean): void;
   /** The next frame as ImageData (read back from the GPU on WebGPU). */
   capture(): Promise<ImageData | null>;
+  /** Plays the minting intro again (no-op under reduced motion). */
+  replay(): void;
   destroy(): void;
 }
 
@@ -318,6 +320,9 @@ export function mount(host: HTMLElement, opts: MountOptions): FoilHandle {
     },
     setActive(on) {
       engine.setActive(host, on);
+    },
+    replay() {
+      engine.replay(host);
     },
     capture() {
       return engine.capture(host);

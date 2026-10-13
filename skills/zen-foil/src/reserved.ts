@@ -48,7 +48,7 @@ const ELEMENT_MEMBERS: ReadonlySet<string> = new Set(
     "after animate append attributes autocapitalize autocorrect autofocus before blur children click closest " +
     "constructor contains dataset dir draggable focus hidden id inert lang matches nonce normalize part popover " +
     "prefix prepend remove role scroll slot spellcheck style title translate when writingsuggestions " +
-    "capture params renderer scene update"
+    "capture params renderer replay scene update"
   ).split(" "),
 );
 

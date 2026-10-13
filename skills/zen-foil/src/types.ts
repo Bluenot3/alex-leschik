@@ -118,7 +118,9 @@ export interface FoilScene {
 }
 
 /* ── Uniform block ──────────────────────────────────────────────
-   res, time, mouse, tilt, accent, p0, p1 (7 vec4) + d: array<vec4f, 64>. */
+   res, time, mouse, tilt, accent, p0, p1 (7 vec4) + d: array<vec4f, 64>.
+   time = (t, dt, seed, intro) · mouse = (x, y, hover, pulse) ·
+   tilt = (x, y, stamp x, stamp y) — stamp in uv, read with stampP(). */
 export const DATA_VEC4S = 64;
 export const UNIFORM_FLOATS = (7 + DATA_VEC4S) * 4;
 export const UNIFORM_BYTES = UNIFORM_FLOATS * 4;
@@ -160,6 +162,9 @@ export interface ViewState {
   hover: number;
   hoverTarget: number;
   pulse: number;
+  /** Where the plate was last pressed, in uv (the stamp ring's centre). */
+  sx: number;
+  sy: number;
   tiltX: number;
   tiltY: number;
   introStart: number;

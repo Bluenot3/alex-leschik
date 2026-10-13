@@ -8,3 +8,5 @@ description: Engraved-hologram GPU graphics in the alexleschik.com / ZEN AI Co. 
 The full skill lives at `skills/zen-foil/` in this repository. Read `skills/zen-foil/SKILL.md` and follow it. Paths in it (`scripts/`, `reference/`, `dist/`, `templates/`) are relative to `skills/zen-foil/`.
 
 The skill's engine is a portable fork of this site's `src/foil/`. The site keeps its own copy and does not import the skill. When you fix a bug in one, check whether the other needs the same fix.
+
+For putting plates on a page, `skills/zen-foil/AGENTS.md` is the short path: templates, `scripts/replicate.mjs` to write tags, and `scripts/verify.mjs` to check them.

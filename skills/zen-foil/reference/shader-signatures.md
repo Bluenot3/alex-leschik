@@ -13,6 +13,7 @@ Generated from the library source by `scripts/gen-docs.mjs`; don't edit it by ha
 | `pulse()` | `f32` |  |
 | `mouseP()` | `vec2f` |  |
 | `intro()` | `f32` |  |
+| `stampP()` | `vec2f` | Where the plate was last pressed (pointerdown), in p coordinates. |
 | `rot2(a: f32)` | `mat2x2f` |  |
 | `sat3(v: vec3f)` | `vec3f` |  |
 | `luma(c: vec3f)` | `f32` |  |

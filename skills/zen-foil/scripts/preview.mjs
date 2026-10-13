@@ -14,6 +14,7 @@
  *   --module   extra ES module(s) to load first (your defineScene() files, built JS)
  *   --theme    plate | paper | clear             --accent  #hex
  *   --t        freeze scene time (deterministic frames; default 6)
+ *   --intro    pin the minting intro's progress, 0–1 (default 1: finished)
  *   --backend  webgl2 | webgpu | auto            (default webgl2; webgpu reads frames back)
  *   --w --h    plate size in CSS px              --cols   grid columns
  *   --dpr      device pixel ratio (default 1.5)  --bg light
@@ -172,6 +173,7 @@ try {
     const q = new URLSearchParams();
     q.set("scenes", String(args.scenes ?? "kit"));
     q.set("t", String(args.t ?? 6));
+    if (args.intro !== undefined) q.set("intro", String(args.intro));
     if (backend !== "auto") q.set("foil", backend);
     // Headless browsers can't present WebGPU canvases: read frames back instead.
     if (backend === "webgpu") q.set("foil-readback", "1");

@@ -131,6 +131,11 @@ export class ZenFoilElement extends ElementBase {
     return this.#handle ? this.#handle.capture() : Promise.resolve(null);
   }
 
+  /** Plays the minting intro again: burin, foil, press. */
+  replay() {
+    this.#handle?.replay();
+  }
+
   /** Merge params (same as setting attributes, without touching the DOM). */
   update(params: ParamValues) {
     this.#extraParams = { ...this.#extraParams, ...params };

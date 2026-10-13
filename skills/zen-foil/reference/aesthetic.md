@@ -46,9 +46,17 @@ Everything is drawn **analytically** in the shader: lines, text and marks come f
   - sheen bands cross every 8–16 s;
   - stamps and pulses come every 6–10 s.
 - **Events have a cause.** An arc *arrives*, then a ring stamps. A packet *lands*, then the node flashes. A serial ticks *with* the stamp.
-- **The minting intro** is the diagonal reveal plus the headline decode. The post pass and `intro()` provide it on first view, so don't add another entrance.
-- **The pointer adds light, not motion.** It brightens a nearby foil, opens a loupe, or leans a cube. On touch screens, scroll tilt takes over automatically.
-- **Reduced motion** shows a still at the scene's `still` time. Choose a moment where the story reads: an arrival, a stamp, a decoded headline.
+- **The minting intro** plays when a plate first scrolls into view, in three beats over 2.4 s:
+  1. a burin cuts the line work in along a wavering diagonal, in bare silver ink (plain ink on paper);
+  2. the foil floods the colour in behind it;
+  3. the plate is pressed: a brief bloom as the impression lands, while the headline decodes.
+
+  The post pass and `intro()` provide it, so don't add another entrance. `element.replay()` plays it again (for a "re-mint" control, or after swapping content).
+- **A glint every ~11 s:** a narrow light crosses the line work, as if the plate were tilted under a lamp. Each plate's seed staggers it, so plates on a page glint in turn, never together.
+- **The pointer adds light, not motion.** Near the pointer the line work brightens and iridises (the torch), a loupe opens, or a cube leans. On touch screens, scroll tilt takes over automatically.
+- **Pressing stamps.** A press sends a guilloche ring out from that point across the line work (a blind emboss on paper). It is the plate's only response to a click, so don't add click animations on top.
+- **Reduced motion** turns all of this off: one still per plate, no glint, no stamp.
+- **The still** under reduced motion is the scene's `still` time. Choose a moment where the story reads: an arrival, a stamp, a decoded headline.
 
 ## Copy
 

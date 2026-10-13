@@ -15,6 +15,18 @@ description: Engraved-hologram GPU graphics in the alexleschik.com / ZEN AI Co. 
 
 The element is `display:block` and full width. Its height comes from the scene's aspect ratio unless your CSS sets one. Children render on top of the plate.
 
+## 0. The shortest path (any agent, any model size)
+
+`AGENTS.md` is the tiered brief: five rules, then copy-paste templates (tier 1), generator and checker commands (tier 2), and scene authoring (tier 3). `manifest.json` is the same contract as data: every scene, param, type, range, default, example and template. Don't compose markup from prose when a command can write it:
+
+```bash
+node <skill>/scripts/replicate.mjs show globe                                  # params, example, template
+node <skill>/scripts/replicate.mjs tag seal --headline "ACME LABS" --mark /logo.svg   # a valid tag, or the fix
+node <skill>/scripts/verify.mjs src index.html                                 # every tag checked; exit 1 until clean
+```
+
+In a browser, `ZenFoil.describe()`, `ZenFoil.snippet()` and `ZenFoil.check()` give the same answers.
+
 ## 1. Choose how to install
 
 | Situation | Do this |
@@ -71,7 +83,7 @@ The style is restrained engraving, not neon. Before composing a page, read `refe
 - **One hero plate per viewport.** Pair it with quiet type. Use secondary plates as cards. The `field` background stays at low density.
 - **Choose an accent from the brand.** Let the foil (`holo`) do the colour work. Never put rainbow gradients on text.
 - **Keep copy factual and short.** Engraved type is UPPERCASE and tracked. Use microprint for real names, mottos and URLs. Never invent statistics or credentials: use the client's numbers or leave the param empty.
-- **Motion is slow and physical.** Drift, minting sweeps, a stamp every few seconds. Nothing should bounce or spin fast.
+- **Motion is slow and physical.** Drift, minting sweeps, a stamp every few seconds. Nothing should bounce or spin fast. The engine already mints each plate in (burin, foil, press), glints it every ~11 s, lights the line work under the pointer and stamps a ring where it's pressed: don't add entrances or click effects of your own. `element.replay()` re-mints a plate.
 - **Check it at 3 sizes**: a phone width (390px), a card (~600px) and a hero (1440px). Check both `plate` and `paper` if the site is light.
 
 ## 4. Write a new scene (when the kit doesn't fit)
@@ -96,7 +108,9 @@ In a running page, `?foil-debug` logs lint warnings and exposes `window.__zenFoi
 
 ## 5. Quality bar (check before you hand off)
 
-- `scripts/check.mjs` is clean.
+- `scripts/verify.mjs` prints `OK` for every file with plates (or `ZenFoil.check()` reports no problems).
+- The script tag is pinned to a commit (`release.json`), once per page.
+- For new scenes, `scripts/check.mjs` is clean.
 - `scripts/preview.mjs --validate` reports every program clean on both backends.
 - You have looked at screenshots:
   - at phone, card and hero sizes;
@@ -120,12 +134,13 @@ In a running page, `?foil-debug` logs lint warnings and exposes `window.__zenFoi
 
 ## Files
 
+- `AGENTS.md`: the tiered brief for any coding agent. `manifest.json`: the contract as data. `llms.txt`: the one-page summary. `release.json`: the pinned build every doc points at (`scripts/pin.mjs <commit>` re-pins them all).
 - `dist/zen-foil.js`: the ESM bundle (engine, kit, `<zen-foil>`, `window.ZenFoil`). `dist/zen-foil.d.ts`: the types. `dist/zen-foil-showcase.js`: the 20 portfolio plates.
 - `src/`: the TypeScript source, rebuilt with `node scripts/build.mjs` (needs esbuild).
   - `src/scenes/kit/*.ts`: the kit, readable examples.
   - `src/library.ts`: the shader library.
 - `templates/`: `scene-template.ts`, `standalone.html` (a full demo page), and `react/ZenFoil.tsx` with JSX typings.
-- `scripts/`: `install.mjs`, `new-scene.mjs`, `check.mjs`, `preview.mjs`, `build.mjs`, `gen-docs.mjs`, and `single-file.mjs` (the whole skill as one markdown file, for agents that take one, such as Lovable workspace skills).
+- `scripts/`: `replicate.mjs` (writes valid tags and pages), `verify.mjs` (checks tags in any source files), `install.mjs`, `new-scene.mjs`, `check.mjs`, `preview.mjs`, `build.mjs`, `gen-docs.mjs` (also writes `manifest.json`, `llms.txt` and the `AGENTS.md` table), `pin.mjs`, and `single-file.mjs` (the whole skill as one markdown file, for agents that take one, such as Lovable workspace skills).
 - `lab.html`: open it (via any static server) to browse every scene with theme and accent controls.
 - `reference/`:
   - `aesthetic.md`

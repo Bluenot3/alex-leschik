@@ -199,4 +199,8 @@ alexleschik.com's AGENTS.md requires this for every decorative canvas: the plate
 | `?foil-debug` | Lint scenes as they register, warn about missing glyphs, and expose `window.__zenFoil` diagnostics. |
 | `?foil-readback` | Copy each WebGPU frame through a 2D canvas, so headless browsers and screenshot tools can capture it. |
 | `ZEN_FOIL_FREEZE = 6` | Pin every plate to scene time 6, for deterministic screenshots. |
+| `ZEN_FOIL_INTRO = 0.3` | Pin the minting intro at 30%, to look at its beats (`preview.mjs --intro 0.3`). |
+| `ZenFoil.check()` | Check every plate on the page against the scene definitions; prints a table of problems with exact fixes. |
+| `ZenFoil.describe("globe")` | A scene's params, types, ranges, example and template (the same data as `manifest.json`). |
+| `el.replay()` | Play a plate's minting intro again. |
 | `await ZenFoil.validate()` | Compile every registered scene on both backends and return errors as `scene line N`. |

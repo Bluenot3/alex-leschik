@@ -44,6 +44,7 @@
   for (const m of [...(globalThis.__labModules ?? []), ...(q.get("module") ?? "").split(",").filter(Boolean)]) await import(m);
   const { listScenes, validateScenes } = core;
   if (q.has("t")) globalThis.ZEN_FOIL_FREEZE = Number(q.get("t"));
+  if (q.has("intro")) globalThis.ZEN_FOIL_INTRO = Number(q.get("intro"));
   if (q.get("bg") === "light") document.documentElement.dataset.bg = "light";
 
   const kitIds = new Set(core.KIT_IDS);
