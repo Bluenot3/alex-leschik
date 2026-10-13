@@ -36,7 +36,8 @@ const STYLE = /* css */ `
   height: 100%;
   display: block;
   opacity: 0;
-  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Short: the minting intro is the entrance, so don't fade over it. */
+  transition: opacity 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .plate[data-live] > canvas { opacity: 1; }
 ::slotted(*) { position: relative; z-index: 1; }
