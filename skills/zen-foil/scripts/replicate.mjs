@@ -98,7 +98,9 @@ function page(spec) {
   const loader = opts.inline
     ? `<script type="module">\n${readFileSync(join(root, "dist", "zen-foil.js"), "utf8").replace(/<\/script/gi, "<\\/script")}\n</script>`
     : scriptTag();
-  const field = opts["no-field"] || spec.scene === "field" ? "" : `\n  <zen-foil scene="field" fixed variant="${light ? "light" : "dark"}" density="0.18" max-dpr="1.25"></zen-foil>\n`;
+  // The background decodes the page's own words, never ZEN AI Co.'s defaults.
+  const phrases = String(spec.params.headline ?? heading).toUpperCase().replace(/"/g, "");
+  const field = opts["no-field"] || spec.scene === "field" ? "" : `\n  <zen-foil scene="field" fixed variant="${light ? "light" : "dark"}" density="0.18" max-dpr="1.25" phrases="${esc(phrases)}"></zen-foil>\n`;
   return `<!doctype html>
 <html lang="en">
 <head>

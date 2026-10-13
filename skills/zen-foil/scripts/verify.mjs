@@ -155,6 +155,9 @@ function report(file, src, at, p) {
 function mask(src, ext) {
   const blank = (m) => m.replace(/[^\n]/g, " ");
   let s = src.replace(/<!--[\s\S]*?-->/g, blank);
+  // In HTML, inline scripts and styles are code, not markup (an inlined bundle mentions <zen-foil> plenty).
+  if ([".html", ".htm", ".php", ".liquid", ".hbs", ".njk", ".erb"].includes(ext))
+    s = s.replace(/(<(script|style)\b[^>]*>)([\s\S]*?)(<\/\2>)/gi, (_m, open, _t, body, close) => open + blank(body) + close);
   if (![".html", ".htm", ".md"].includes(ext)) s = s.replace(/\/\*[\s\S]*?\*\//g, blank).replace(/(^|[^:"'`\\])(\/\/[^\n]*)/gm, (_m, a, b) => a + blank(b));
   if (ext === ".md" || ext === ".mdx") {
     // Only fenced code blocks count in markdown.
@@ -171,7 +174,9 @@ function mask(src, ext) {
 
 function checkFile(file) {
   const ext = extname(file).toLowerCase();
-  const src = mask(readFileSync(file, "utf8"), ext);
+  const raw = readFileSync(file, "utf8");
+  const src = mask(raw, ext);
+  const inlined = /\/\*! zen-foil \d/.test(raw);
   const isJsx = [".jsx", ".tsx", ".js", ".mjs", ".ts", ".astro", ".mdx"].includes(ext);
   let tags = 0;
 
@@ -227,7 +232,7 @@ function checkFile(file) {
   if (urls.length > 1) report(file, src, src.indexOf(urls[1]), { level: "error", code: "two-engines", message: `zen-foil.js loads from ${urls.length} different URLs (${urls.join(", ")}). Each starts its own engine: use one.` });
   for (const u of urls)
     if (/@main\//.test(u)) report(file, src, src.indexOf(u), { level: "warning", code: "cdn-main", message: "The CDN URL follows a branch. Pin it to a commit (@<sha>) so the page can't change (or 404) underneath you.", fix: u.replace(/@main\//, "@<commit-sha>/") });
-  if ([".html", ".htm"].includes(ext) && !urls.length && !/import\s*["'][^"']*zen-foil/.test(src) && !/ZenFoil\s*=\s*\{|window\.ZenFoil|zen-foil\.js/.test(src))
+  if ([".html", ".htm"].includes(ext) && !urls.length && !inlined && !/import\s*["'][^"']*zen-foil/.test(src) && !/ZenFoil\s*=\s*\{|window\.ZenFoil|zen-foil\.js/.test(src))
     report(file, src, 0, { level: "warning", code: "no-loader", message: "This page uses <zen-foil> but never loads zen-foil.js. Add the module script once (head or end of body).", fix: '<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@<commit-sha>/skills/zen-foil/dist/zen-foil.js"></script>' });
 }
 
