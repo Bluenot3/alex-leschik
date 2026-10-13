@@ -8,7 +8,7 @@ description: Engraved-hologram GPU graphics in the alexleschik.com / ZEN AI Co. 
 `zen-foil` is a dependency-free GPU engine plus a ready scene kit. Every graphic is one `<zen-foil>` element: it works in any framework and renders on WebGPU (or WebGL2). One GPU device drives every plate on the page. DPR caps, adaptive resolution, visibility culling, reduced-motion stills and device-loss recovery are built in.
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@main/skills/zen-foil/dist/zen-foil.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js"></script>
 
 <zen-foil scene="seal" accent="#7cc4ff" headline="ACME LABS" subline="ISSUED UNDER SEAL" mark="/logo.svg"></zen-foil>
 ```

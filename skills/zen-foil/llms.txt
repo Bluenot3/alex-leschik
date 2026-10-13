@@ -5,7 +5,7 @@
 Version 1.1.0. Load once, then write tags:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@f8129c60668b77bb8332de356b4c2d9bbc648221/skills/zen-foil/dist/zen-foil.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js"></script>
 <zen-foil scene="seal" mark="zen" headline="ZEN AI CO" subline="ISSUED UNDER SEAL"
   serial="ZEN-2026-"></zen-foil>
 ```

@@ -4,7 +4,7 @@ This file is the whole contract for any agent: Codex, Claude, Cursor, Copilot, G
 
 ## The contract in five lines
 
-1. **Load once:** `<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@main/skills/zen-foil/dist/zen-foil.js"></script>`, one URL per page, pinned to a commit.
+1. **Load once:** `<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js"></script>`, one URL per page, pinned to a commit.
 2. **Write tags:** `<zen-foil scene="…" attribute="…"></zen-foil>`. Every option is a plain HTML attribute. Close the tag; never self-close it in HTML.
 3. **Only what's listed exists.** Scene ids and attributes come from `manifest.json` (or the table below). Anything else is silently ignored.
 4. **Check, then fix:** run `node skills/zen-foil/scripts/verify.mjs <files>` (or `ZenFoil.check()` in the browser console). Apply each `fix:` line and run it again until it prints `OK`.

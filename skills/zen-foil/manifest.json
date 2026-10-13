@@ -4,10 +4,10 @@
   "element": "zen-foil",
   "summary": "One <zen-foil> element = one live engraved-hologram plate (WebGPU, WebGL2 fallback, CSS poster without a GPU). Load dist/zen-foil.js once as a module, then write tags. Every option is a plain HTML attribute.",
   "install": {
-    "script": "<script type=\"module\" src=\"https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@f8129c60668b77bb8332de356b4c2d9bbc648221/skills/zen-foil/dist/zen-foil.js\"></script>",
-    "cdn": "https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@f8129c60668b77bb8332de356b4c2d9bbc648221/skills/zen-foil/dist/zen-foil.js",
-    "showcase": "https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@f8129c60668b77bb8332de356b4c2d9bbc648221/skills/zen-foil/dist/zen-foil-showcase.js",
-    "commit": "f8129c60668b77bb8332de356b4c2d9bbc648221",
+    "script": "<script type=\"module\" src=\"https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js\"></script>",
+    "cdn": "https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js",
+    "showcase": "https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil-showcase.js",
+    "commit": "2285a08ee32e5cec72aff9ef30dbfd296e44dfb5",
     "vendored": "node skills/zen-foil/scripts/install.mjs <project-dir>",
     "check": "node skills/zen-foil/scripts/verify.mjs <files or folders>",
     "write": "node skills/zen-foil/scripts/replicate.mjs tag <scene> --<param> <value>"

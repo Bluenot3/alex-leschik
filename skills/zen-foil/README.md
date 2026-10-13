@@ -3,7 +3,7 @@
 These are the engraved-hologram GPU graphics from alexleschik.com, packaged so any project, built by any agent or by hand, can use them.
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@main/skills/zen-foil/dist/zen-foil.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js"></script>
 <zen-foil scene="seal" headline="ZEN AI CO" subline="ISSUED UNDER SEAL"></zen-foil>
 ```
 

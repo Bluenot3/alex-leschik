@@ -9,8 +9,8 @@ It is safe to import during server-side rendering, because it never touches the 
 CDN (jsDelivr serves straight from the repo):
 
 ```
-https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@main/skills/zen-foil/dist/zen-foil.js            latest on main
-https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@<commit-sha>/skills/zen-foil/dist/zen-foil.js    pinned (production)
+https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js            latest on main
+https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js    pinned (production)
 …/dist/zen-foil-showcase.js                                                                        the 20 portfolio plates
 ```
 
@@ -19,7 +19,7 @@ https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@<commit-sha>/skills/zen-foil/d
 ## Plain HTML / any site builder
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@main/skills/zen-foil/dist/zen-foil.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js"></script>
 
 <style>
   .hero-plate { border-radius: 20px; max-width: 1100px; margin: 0 auto; }
@@ -106,7 +106,7 @@ Lovable projects are React + TypeScript, usually on Vite. The Lovable agent can'
 
 1. **`index.html`:** add this before `</head>`, pinned to a commit:
    ```html
-   <script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@<commit-sha>/skills/zen-foil/dist/zen-foil.js"></script>
+   <script type="module" src="https://cdn.jsdelivr.net/gh/Bluenot3/alex-leschik@2285a08ee32e5cec72aff9ef30dbfd296e44dfb5/skills/zen-foil/dist/zen-foil.js"></script>
    ```
    Module scripts run in document order, so `<zen-foil>` is defined before `src/main.tsx` renders. A project whose framework renders the document (TanStack Start, Next.js) has no `index.html`: put the same tag in the root document's `<head>` through the framework's head API.
 2. **`src/components/ZenFoil.tsx`:** copy `templates/react/ZenFoil.cdn.tsx`. It's the same wrapper as the installed one, without the bundle import.
