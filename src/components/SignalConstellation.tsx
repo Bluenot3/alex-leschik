@@ -2,6 +2,7 @@ import {
   type CSSProperties,
   type RefObject,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -14,11 +15,9 @@ import {
   Cpu,
   Globe,
   Monitor,
-  Orbit,
-  Radar,
   Sparkles,
 } from "lucide-react";
-import { AnimatedBeam } from "@/components/AnimatedBeam";
+
 
 /* ─────────────────────────────────────────────────────────────
    Data
@@ -75,7 +74,7 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
     accentHex: "#3b9ef5",
     accentHexFade: "#93cefb",
     angle: -8,
-    radius: 39,
+    radius: 33,
     icon: Cpu,
     metrics: [
       { value: "50+", label: "Shipped builds and client systems" },
@@ -101,8 +100,7 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
     radius: 34,
     icon: Monitor,
     metrics: [
-      { value: "0", label: "Generic template layouts used" },
-      { value: "1", label: "Clear focus per screen" },
+      { value: "3.5M+", label: "Lines of production code shipped" },
     ],
     highlights: [
       "First screens designed like posters, not stock SaaS pages.",
@@ -125,7 +123,6 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
     icon: Atom,
     metrics: [
       { value: "Weekly", label: "New prototypes built" },
-      { value: "Open", label: "Source of production ideas" },
     ],
     highlights: [
       "Experiments are treated as a pipeline, not a hobby.",
@@ -148,7 +145,6 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
     icon: Globe,
     metrics: [
       { value: "5", label: "Fortune 500 companies" },
-      { value: "Many", label: "Schools and nonprofits served" },
     ],
     highlights: [
       "Technical work explained so non-technical partners can act on it.",
@@ -162,16 +158,63 @@ const CONSTELLATION_NODES: ConstellationNode[] = [
    Helpers
 ───────────────────────────────────────────────────────────── */
 
-/** Convert a mutable element ref-array entry into a RefObject for AnimatedBeam */
-function makeRefObj(
-  arr: React.MutableRefObject<(HTMLDivElement | null)[]>,
-  index: number
-): RefObject<HTMLDivElement | null> {
-  return {
-    get current() {
-      return arr.current[index];
-    },
-  } as RefObject<HTMLDivElement | null>;
+/* Pulse styles: each route gets its own path bend, comet length, speed and direction */
+const PULSE_VARIANTS = [
+  { bend: 0,    dash: 6,  dur: 2.6, dir: "out" },
+  { bend: 0.22, dash: 2,  dur: 3.4, dir: "back" },
+  { bend: -0.3, dash: 10, dur: 4.2, dir: "out" },
+  { bend: 0.4,  dash: 3,  dur: 5.1, dir: "both" },
+] as const;
+
+function PulseNetwork({ stageRef }: { stageRef: RefObject<HTMLDivElement | null> }) {
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => {
+      const { width, height } = e.contentRect;
+      setSize((s) => (Math.abs(s.w - width) < 1 && Math.abs(s.h - height) < 1 ? s : { w: width, h: height }));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [stageRef]);
+  if (!size.w) return null;
+  const cx = size.w / 2, cy = size.h / 2;
+  return (
+    <svg className="sc-pulses" width={size.w} height={size.h} viewBox={`0 0 ${size.w} ${size.h}`} aria-hidden>
+      {CONSTELLATION_NODES.map((node, i) => {
+        const rad = (node.angle * Math.PI) / 180;
+        const x = (50 + Math.cos(rad) * node.radius) / 100 * size.w;
+        const y = (50 + Math.sin(rad) * node.radius) / 100 * size.h;
+        const dx = x - cx, dy = y - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len, ny = dx / len;
+        return (
+          <g key={node.id} style={{ "--node-accent": node.accent } as CSSProperties}>
+            <path className="sc-pulses__rail" d={`M${cx},${cy} L${x},${y}`} />
+            {PULSE_VARIANTS.map((v, k) => {
+              const b = v.bend * len * (i % 2 ? -1 : 1);
+              const d = `M${cx},${cy} Q${cx + dx / 2 + nx * b},${cy + dy / 2 + ny * b} ${x},${y}`;
+              return (
+                <path
+                  key={k}
+                  d={d}
+                  pathLength={100}
+                  className={`sc-pulses__beam sc-pulses__beam--${v.dir}`}
+                  style={{
+                    strokeDasharray: `${v.dash} ${100 - v.dash}`,
+                    animationDuration: `${v.dur + i * 0.37}s`,
+                    animationDelay: `${-(i * 0.9 + k * 1.7)}s`,
+                    strokeWidth: v.dash > 6 ? 1.2 : 2.2,
+                  }}
+                />
+              );
+            })}
+          </g>
+        );
+      })}
+    </svg>
+  );
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -188,15 +231,7 @@ export default function SignalConstellation({ onExploreWork }: SignalConstellati
   // Refs for beam anchors
   const stageRef = useRef<HTMLDivElement>(null);
   const coreRef  = useRef<HTMLDivElement>(null);
-  const nodeRefs = useRef<(HTMLDivElement | null)[]>(
-    Array(CONSTELLATION_NODES.length).fill(null)
-  );
 
-  // Pre-build RefObject wrappers (stable, no hooks in loops)
-  const nodeRefObjects = useMemo(
-    () => CONSTELLATION_NODES.map((_, i) => makeRefObj(nodeRefs, i)),
-    []
-  );
 
   const activeNode = useMemo(
     () => CONSTELLATION_NODES.find((n) => n.id === activeId) ?? CONSTELLATION_NODES[0],
@@ -216,87 +251,43 @@ export default function SignalConstellation({ onExploreWork }: SignalConstellati
           <span /><span /><span />
         </div>
 
-        {/* Animated beams – one per node, travelling core → node */}
-        {CONSTELLATION_NODES.map((node, i) => (
-          <AnimatedBeam
-            key={node.id}
-            containerRef={stageRef as RefObject<HTMLElement | null>}
-            fromRef={coreRef as RefObject<HTMLElement | null>}
-            toRef={nodeRefObjects[i] as RefObject<HTMLElement | null>}
-            duration={3.2 + i * 0.45}
-            delay={i * 0.55}
-            gradientStartColor={node.accentHex}
-            gradientStopColor={node.accentHexFade}
-            pathColor="rgba(15,23,42,0.07)"
-            pathWidth={1.5}
-            curvature={0}
-          />
-        ))}
+        <PulseNetwork stageRef={stageRef} />
 
-        {/* Node cards */}
         {CONSTELLATION_NODES.map((node, i) => {
           const rad   = (node.angle * Math.PI) / 180;
           const left  = 50 + Math.cos(rad) * node.radius;
           const top   = 50 + Math.sin(rad) * node.radius;
           const isActive = node.id === activeId;
           const NodeIcon = node.icon;
-
+          const ring = `${node.label.toUpperCase()} · ${node.orbit.toUpperCase()} · `;
           return (
             <button
               key={node.id}
               type="button"
-              ref={(el) => { nodeRefs.current[i] = el as unknown as HTMLDivElement | null; }}
-              className={`sc-node ${isActive ? "sc-node--active" : ""}`}
-              style={
-                {
-                  "--node-accent": node.accent,
-                  "--node-hex": node.accentHex,
-                  left: `${left}%`,
-                  top: `${top}%`,
-                } as CSSProperties
-              }
+              className={`sc-orb ${isActive ? "sc-orb--active" : ""}`}
+              style={{ "--node-accent": node.accent, left: `${left}%`, top: `${top}%`, animationDelay: `${i * -1.3}s` } as CSSProperties}
               onMouseEnter={() => handleActivate(node.id)}
               onFocus={() => handleActivate(node.id)}
               onClick={() => handleActivate(node.id)}
               aria-pressed={isActive}
+              aria-label={node.label}
             >
-              {/* Pulse ring */}
-              <span className="sc-node__pulse" aria-hidden />
-
-              {/* Card shell */}
-              <div className="sc-node__card">
-
-                {/* Top row: icon + orbit tag */}
-                <div className="sc-node__header">
-                  <span className="sc-node__icon-wrap">
-                    <NodeIcon className="sc-node__icon" />
-                  </span>
-                  <span className="sc-node__orbit">{node.orbit}</span>
-                </div>
-
-                {/* Label */}
-                <div className="sc-node__label">{node.label}</div>
-
-                {/* Primary metric */}
-                <div className="sc-node__metric">
-                  <strong className="sc-node__metric-value">
-                    {node.metrics[0].value}
-                  </strong>
-                  <span className="sc-node__metric-label">
-                    {node.metrics[0].label.split(" ").slice(0, 3).join(" ")}
-                  </span>
-                </div>
-              </div>
+              <span className="sc-orb__halo" aria-hidden />
+              <svg className="sc-orb__print" viewBox="0 0 120 120" aria-hidden>
+                <defs>
+                  <path id={`orb-ring-${node.id}`} d="M60,60 m-50,0 a50,50 0 1,1 100,0 a50,50 0 1,1 -100,0" />
+                </defs>
+                <text><textPath href={`#orb-ring-${node.id}`} textLength="310" lengthAdjust="spacing">{ring.length < 22 ? ring + ring + ring : ring + ring}</textPath></text>
+              </svg>
+              <span className="sc-orb__sphere" aria-hidden>
+                <NodeIcon className="sc-orb__icon" />
+              </span>
+              <span className="sc-orb__label">{node.label}</span>
             </button>
           );
         })}
 
-        {/* Core circle */}
         <div className="sc-core" ref={coreRef}>
-          <div className="sc-core__badge">
-            <Orbit className="h-3.5 w-3.5" />
-            Core
-          </div>
           <div className="sc-core__name">Alex Leschik</div>
           <p className="sc-core__tagline">
             Strategy · Software<br />Design · Storytelling
@@ -306,10 +297,6 @@ export default function SignalConstellation({ onExploreWork }: SignalConstellati
 
       {/* ── Detail panel ─────────────────────────────────────── */}
       <div className="signal-constellation__detail">
-        <div className="signal-constellation__detail-topline">
-          <Radar className="h-4 w-4" />
-          Active orbit
-        </div>
 
         <AnimatePresence mode="wait">
           <motion.div

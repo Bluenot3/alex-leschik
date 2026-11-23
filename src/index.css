@@ -5913,3 +5913,74 @@
   }
   .artifact__skeleton::after { animation: none; }
 }
+
+/* — Constellation: glowing orbs + pulse network — */
+.sc-pulses { position: absolute; inset: 0; pointer-events: none; z-index: 2; overflow: visible; }
+.sc-pulses__rail { fill: none; stroke: hsl(var(--foreground) / 0.07); stroke-width: 1; stroke-dasharray: 2 5; }
+.sc-pulses__beam {
+  fill: none; stroke: hsl(var(--node-accent)); stroke-linecap: round; stroke-width: 2.6;
+  filter: drop-shadow(0 0 4px hsl(var(--node-accent) / 0.9));
+  animation-timing-function: cubic-bezier(.45,.05,.35,1); animation-iteration-count: infinite;
+}
+.sc-pulses__beam--out  { animation-name: sc-pulse-out; }
+.sc-pulses__beam--back { animation-name: sc-pulse-back; }
+.sc-pulses__beam--both { animation-name: sc-pulse-both; }
+@keyframes sc-pulse-out  { 0% { stroke-dashoffset: 100; opacity: 0; } 10%,85% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes sc-pulse-back { 0% { stroke-dashoffset: 0; opacity: 0; } 10%,85% { opacity: 1; } 100% { stroke-dashoffset: 100; opacity: 0; } }
+@keyframes sc-pulse-both { 0% { stroke-dashoffset: 100; opacity: 0; } 8% { opacity: 1; } 48% { stroke-dashoffset: 3; } 52% { stroke-dashoffset: 3; } 92% { opacity: 1; } 100% { stroke-dashoffset: 100; opacity: 0; } }
+
+.sc-orb {
+  position: absolute; z-index: 3; width: 7.5rem; height: 7.5rem;
+  transform: translate(-50%, -50%); background: none; border: 0; padding: 0; cursor: pointer;
+  display: grid; place-items: center; border-radius: 999px;
+  animation: sc-orb-float 7s ease-in-out infinite;
+}
+.sc-orb__halo {
+  position: absolute; inset: 1.4rem; border-radius: 999px;
+  background: radial-gradient(circle, hsl(var(--node-accent) / 0.55), transparent 70%);
+  filter: blur(14px); animation: sc-orb-glow 3.6s ease-in-out infinite;
+}
+.sc-orb__print {
+  position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+  animation: sc-orb-spin 26s linear infinite;
+}
+.sc-orb:nth-of-type(even) .sc-orb__print { animation-direction: reverse; }
+.sc-orb__print text {
+  font-family: var(--font-display); font-size: 11px; letter-spacing: 0.06em;
+  fill: hsl(var(--background)); stroke: hsl(var(--foreground)); stroke-width: 2.4px;
+  paint-order: stroke fill; stroke-linejoin: round;
+}
+.sc-orb__sphere {
+  position: relative; width: 3.9rem; height: 3.9rem; border-radius: 999px;
+  display: grid; place-items: center;
+  background:
+    radial-gradient(circle at 32% 28%, hsl(0 0% 100% / 0.95), hsl(0 0% 100% / 0) 34%),
+    radial-gradient(circle at 50% 55%, hsl(var(--node-accent)), hsl(var(--node-accent) / 0.75) 62%, hsl(var(--foreground) / 0.55));
+  border: 2px solid hsl(var(--foreground));
+  box-shadow: 0 0 22px hsl(var(--node-accent) / 0.7), 0 0 50px hsl(var(--node-accent) / 0.35), inset 0 -6px 12px hsl(var(--foreground) / 0.25);
+  transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s;
+}
+.sc-orb__icon { width: 1.35rem; height: 1.35rem; color: hsl(var(--background)); filter: drop-shadow(0 1px 1px hsl(var(--foreground) / 0.6)); }
+.sc-orb__label {
+  position: absolute; top: 100%; margin-top: 0.35rem; white-space: nowrap;
+  font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: hsl(var(--foreground) / 0.6);
+}
+.sc-orb:hover .sc-orb__sphere, .sc-orb--active .sc-orb__sphere {
+  transform: scale(1.12);
+  box-shadow: 0 0 30px hsl(var(--node-accent) / 0.95), 0 0 80px hsl(var(--node-accent) / 0.5), inset 0 -6px 12px hsl(var(--foreground) / 0.25);
+}
+.sc-orb--active .sc-orb__label { color: hsl(var(--foreground)); }
+.sc-orb:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 3.5px hsl(var(--node-accent)); }
+@keyframes sc-orb-spin { to { transform: rotate(360deg); } }
+@keyframes sc-orb-glow { 0%,100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.15); } }
+@keyframes sc-orb-float { 0%,100% { margin-top: 0; } 50% { margin-top: -6px; } }
+@media (max-width: 640px) {
+  .sc-orb { width: 5.6rem; height: 5.6rem; }
+  .sc-orb__sphere { width: 2.9rem; height: 2.9rem; }
+  .sc-orb__print text { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-orb, .sc-orb__halo, .sc-orb__print, .sc-pulses__beam { animation: none; }
+  .sc-pulses__beam { opacity: 0; }
+}
